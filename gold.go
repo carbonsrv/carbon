@@ -112,9 +112,7 @@ func luaroute(dir string) func(*gin.Context) {
 		luar.Register(L, "", luar.Map{
 			"context": context,
 			"req":     context.Request,
-			"finish": func(ret int, code string) {
-				context.HTMLString(ret, code)
-			},
+			"finish":  context.HTMLString,
 		})
 		code, err := cacheRead(c, file)
 		if err != nil {
