@@ -182,8 +182,8 @@ function content(data, code)
 	if type(data) == "string" then
 		finish(code, data)
 	elseif type(data) == "table" then
-		finish(code, data:render())
+		context.HTMLString(code, data:render())
 	else
-		finish(code, tostring(data))
+		context.HTMLString(code, tostring(data))
 	end
 end
