@@ -14,8 +14,12 @@ import (
 	"io/ioutil"
 	//"net/http"
 	//"runtime"
+	"flag"
 	"log"
+	"net/http"
 	"os"
+	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -115,7 +119,7 @@ func luaroute(dir string) func(*gin.Context) {
 		}
 		err = L.DoString(code)
 		if err != nil {
-			context.HTMLString(500, `<html>
+			context.HTMLString(http.StatusInternalServerError, `<html>
 			<head><title>Error in `+context.Request.URL.Path+`</title>
 			<body>
 				<h1>Error in file `+context.Request.URL.Path+`</h1>
@@ -128,23 +132,32 @@ func luaroute(dir string) func(*gin.Context) {
 		m := v.(map[string]interface{})
 		i := int(m["code"].(float64))
 		if err != nil {
-			i = 200
+			i = http.StatusOK
 		}
 		defer L.Close()
 		context.HTMLString(i, m["content"].(string))
 	}
 }
 
-func run(dir string) {
+func run(host string, port int, dir string) {
 	go preloader() // Run the instance starter.
 	srv := new_server()
 	//srv.Use(gzip.Gzip(gzip.DefaultCompression))
 	srv.GET(`/:file`, logic_switcher(dir))
 
 	//srv.Use(martini.Static(dir))
-	srv.Run(":3000")
+	srv.Run(host + ":" + strconv.Itoa(port))
 }
 
 func main() {
-	run(".")
+	var host = flag.String("host", "", "IP of host to run webserver on")
+	var port = flag.Int("port", 8080, "Port to run webserver on")
+	jobs = *flag.Int("states", 16, "Number of Preinitialized Lua States")
+	var workers = flag.Int("workers", runtime.NumCPU(), "Number of Worker threads.")
+	var webroot = flag.String("root", ".", "Path to web root")
+	flag.Parse()
+
+	runtime.GOMAXPROCS(*workers)
+
+	run(*host, *port, *webroot)
 }
