@@ -16,7 +16,6 @@ import (
 	//"runtime"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -117,9 +116,9 @@ func luaroute(dir string) func(*gin.Context) {
 		err = L.DoString(code)
 		if err != nil {
 			context.HTMLString(500, `<html>
-			<head><title>Error in "`+context.Request.URL.Path+`"</title>
+			<head><title>Error in `+context.Request.URL.Path+`</title>
 			<body>
-				<h1>Error in file "`+context.Request.URL.Path+`"</h1>
+				<h1>Error in file `+context.Request.URL.Path+`</h1>
 				<code>`+string(err.Error())+`</code>
 			</body>
 			</html>`)
@@ -127,7 +126,7 @@ func luaroute(dir string) func(*gin.Context) {
 		L.DoString("return CONTENT_TO_RETURN")
 		v := luar.CopyTableToMap(L, nil, -1)
 		m := v.(map[string]interface{})
-		i, err := strconv.Atoi(m["code"].(string))
+		i := int(m["code"].(float64))
 		if err != nil {
 			i = 200
 		}

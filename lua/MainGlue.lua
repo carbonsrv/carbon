@@ -1,5 +1,5 @@
 CONTENT_TO_RETURN = {
-	code="200",
+	code=200,
 	content=""
 }
 local html_escape={["<"]="&lt;",[">"]="&gt;",["&"]="&amp;"}
@@ -177,7 +177,7 @@ end
 -- Return function
 function content(data, code)
 	if code ~= nil then
-		CONTENT_TO_RETURN["code"] = tostring(code)
+		CONTENT_TO_RETURN["code"] = code
 	end
 	if type(data) == "string" then
 		CONTENT_TO_RETURN["content"] = data
