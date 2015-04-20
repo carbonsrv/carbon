@@ -176,14 +176,14 @@ function doctype()
 end
 -- Return function
 function content(data, code)
-	if code ~= nil then
-		CONTENT_TO_RETURN["code"] = code
+	if code == nil then
+		code = 200
 	end
 	if type(data) == "string" then
-		CONTENT_TO_RETURN["content"] = data
+		finish(code, data)
 	elseif type(data) == "table" then
-		CONTENT_TO_RETURN["content"] = data:render()
+		finish(code, data:render())
 	else
-		CONTENT_TO_RETURN["content"] = tostring(data)
+		finish(code, tostring(data))
 	end
 end

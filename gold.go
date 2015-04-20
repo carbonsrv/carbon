@@ -16,7 +16,7 @@ import (
 	//"runtime"
 	"flag"
 	"log"
-	"net/http"
+	//"net/http"
 	"os"
 	"runtime"
 	"strconv"
@@ -112,13 +112,16 @@ func luaroute(dir string) func(*gin.Context) {
 		luar.Register(L, "", luar.Map{
 			"context": context,
 			"req":     context.Request,
+			"finish": func(ret int, code string) {
+				context.HTMLString(ret, code)
+			},
 		})
 		code, err := cacheRead(c, file)
 		if err != nil {
 			context.String(404, "404 page not found")
 		}
 		err = L.DoString(code)
-		if err != nil {
+		/*if err != nil {
 			context.HTMLString(http.StatusInternalServerError, `<html>
 			<head><title>Error in `+context.Request.URL.Path+`</title>
 			<body>
@@ -133,9 +136,9 @@ func luaroute(dir string) func(*gin.Context) {
 		i := int(m["code"].(float64))
 		if err != nil {
 			i = http.StatusOK
-		}
+		}*/
 		defer L.Close()
-		context.HTMLString(i, m["content"].(string))
+		//context.HTMLString(i, m["content"].(string))
 	}
 }
 
