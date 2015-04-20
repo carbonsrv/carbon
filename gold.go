@@ -16,7 +16,7 @@ import (
 	//"runtime"
 	"flag"
 	"log"
-	//"net/http"
+	"net/http"
 	"os"
 	"runtime"
 	"strconv"
@@ -53,6 +53,23 @@ func cacheRead(c *cache.Cache, file string) (string, error) {
 			return "", err
 		}
 		res = string(data)
+		c.Set(file, res, cache.DefaultExpiration)
+	} else {
+		log.Printf("Using cache for %s", file)
+		res = data_tmp.(string)
+	}
+	return res, nil
+}
+func cacheDump(c *cache.Cache, L *lua.State, file string) (string, error) {
+	res := ""
+	data_tmp, found := c.Get(file)
+	if found == false {
+		data, err := ioutil.ReadFile(file)
+		if err != nil {
+			return "", err
+		}
+		L.LoadString(string(data))
+		res = L.FDump()
 		c.Set(file, res, cache.DefaultExpiration)
 	} else {
 		log.Printf("Using cache for %s", file)
@@ -105,6 +122,7 @@ func logic_switcher(dir string) func(*gin.Context) {
 }
 
 func luaroute(dir string) func(*gin.Context) {
+	LDumper := luar.Init()
 	c := cache.New(5*time.Minute, 30*time.Second) // Initialize cache with 5 minute lifetime and purge every 30 seconds
 	return func(context *gin.Context) {
 		L := getInstance()
@@ -114,21 +132,32 @@ func luaroute(dir string) func(*gin.Context) {
 			"req":     context.Request,
 			//"finish":  context.HTMLString,
 		})
-		code, err := cacheRead(c, file)
+		code, err := cacheDump(c, LDumper, file)
 		if err != nil {
 			context.String(404, "404 page not found")
 		}
-		err = L.DoString(code)
-		/*if err != nil {
+		if L.LoadBuffer(code, len(code), file) != 0 {
 			context.HTMLString(http.StatusInternalServerError, `<html>
-			<head><title>Error in `+context.Request.URL.Path+`</title>
+			<head><title>Syntax Error in `+context.Request.URL.Path+`</title>
 			<body>
-				<h1>Error in file `+context.Request.URL.Path+`</h1>
-				<code>`+string(err.Error())+`</code>
+				<h1>Syntax Error in file `+context.Request.URL.Path+`</h1>
+				<code>`+L.ToString(-1)+`</code>
 			</body>
 			</html>`)
+			context.Abort()
+		} else {
+			if L.Pcall(0, 0, 0) != 0 {
+				context.HTMLString(http.StatusInternalServerError, `<html>
+				<head><title>Runtime Error in `+context.Request.URL.Path+`</title>
+				<body>
+					<h1>Runtime Error in file `+context.Request.URL.Path+`</h1>
+					<code>`+L.ToString(-1)+`</code>
+				</body>
+				</html>`)
+				context.Abort()
+			}
 		}
-		L.DoString("return CONTENT_TO_RETURN")
+		/*L.DoString("return CONTENT_TO_RETURN")
 		v := luar.CopyTableToMap(L, nil, -1)
 		m := v.(map[string]interface{})
 		i := int(m["code"].(float64))
