@@ -5,16 +5,19 @@ package main
 import (
 	"./glue"
 	"fmt"
-	martini "github.com/go-martini/martini"
-	//"github.com/martini-contrib/gzip"
+	//"github.com/gin-gonic/contrib/gzip"
+	"github.com/gin-gonic/contrib/static"
+	"github.com/gin-gonic/gin"
 	"github.com/pmylund/go-cache"
 	lua "github.com/vifino/golua/lua"
 	luar "github.com/vifino/luar"
 	"io/ioutil"
-	"net/http"
+	//"net/http"
 	//"runtime"
 	"log"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -37,6 +40,7 @@ func getInstance() *lua.State {
 	return <-preloaded
 }
 
+// Cache
 func cacheRead(c *cache.Cache, file string) (string, error) {
 	res := ""
 	data_tmp, found := c.Get(file)
@@ -53,44 +57,72 @@ func cacheRead(c *cache.Cache, file string) (string, error) {
 	}
 	return res, nil
 }
-
-func new_server(dir string) *martini.ClassicMartini {
-	r := martini.NewRouter()
-	m := martini.New()
-	m.Use(martini.Logger())
-	m.Use(martini.Recovery())
-	//m.Use(martini.Static(dir))
-	m.MapTo(r, (*martini.Routes)(nil))
-	m.Action(r.Handle)
-	return &martini.ClassicMartini{m, r}
+func cacheFileExists(c *cache.Cache, file string) bool {
+	data_tmp, found := c.Get(file)
+	if found == false {
+		exists := fileExists(file)
+		c.Set(file, exists, cache.DefaultExpiration)
+		return exists
+	} else {
+		return data_tmp.(bool)
+	}
 }
 
-func run(dir string) {
+// FS Helper
+func fileExists(file string) bool {
+	if _, err := os.Stat(file); os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
+func new_server() *gin.Engine {
+	r := gin.New()
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
+	return r
+}
+
+// Routes
+func logic_switcher(dir string) func(*gin.Context) {
+	c := cache.New(5*time.Minute, 30*time.Second) // File-Exists Cache
+	return func(context *gin.Context) {
+		file := context.Params.ByName("file")
+		fe := cacheFileExists(c, file)
+		if fe == true {
+			if strings.HasSuffix(file, ".lua") {
+				luaroute(dir)(context)
+			} else {
+				static.Serve("/", static.LocalFile(dir, false))(context)
+			}
+		} else {
+			context.String(404, "404 page not found")
+		}
+	}
+}
+
+func luaroute(dir string) func(*gin.Context) {
 	c := cache.New(5*time.Minute, 30*time.Second) // Initialize cache with 5 minute lifetime and purge every 30 seconds
-	go preloader()                                // Run the instance starter.
-	srv := new_server(dir)
-	//srv.Use(gzip.All())
-	srv.Get("/**.lua", func(res http.ResponseWriter, req *http.Request) (int, string) {
+	return func(context *gin.Context) {
 		L := getInstance()
-		res.Header().Set("Content-Type", "text/html")
-		file := dir + req.URL.Path
+		file := dir + context.Request.URL.Path
 		luar.Register(L, "", luar.Map{
-			"res": res,
-			"req": req,
+			"context": context,
+			"req":     context.Request,
 		})
 		code, err := cacheRead(c, file)
 		if err != nil {
-			return 404, "404 page not found"
+			context.String(404, "404 page not found")
 		}
 		err = L.DoString(code)
 		if err != nil {
-			return 500, `<html>
-			<head><title>Error in "` + req.URL.Path + `"</title>
+			context.HTMLString(500, `<html>
+			<head><title>Error in "`+context.Request.URL.Path+`"</title>
 			<body>
-				<h1>Error in file "` + req.URL.Path + `"</h1>
-				<code>` + string(err.Error()) + `</code>
+				<h1>Error in file "`+context.Request.URL.Path+`"</h1>
+				<code>`+string(err.Error())+`</code>
 			</body>
-			</html>`
+			</html>`)
 		}
 		L.DoString("return CONTENT_TO_RETURN")
 		v := luar.CopyTableToMap(L, nil, -1)
@@ -100,15 +132,20 @@ func run(dir string) {
 			i = 200
 		}
 		defer L.Close()
-		return i, m["content"].(string)
-	})
-	srv.Get("/:file", martini.Static(dir))
+		context.HTMLString(i, m["content"].(string))
+	}
+}
+
+func run(dir string) {
+	go preloader() // Run the instance starter.
+	srv := new_server()
+	//srv.Use(gzip.Gzip(gzip.DefaultCompression))
+	srv.GET(`/:file`, logic_switcher(dir))
+
 	//srv.Use(martini.Static(dir))
-	srv.Run()
+	srv.Run(":3000")
 }
 
 func main() {
-	//runtime.GOMAXPROCS(runtime.NumCPU())
-	martini.Env = martini.Prod
 	run(".")
 }
