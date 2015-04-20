@@ -3,4 +3,3 @@ content(doctype()(
 		tag"h1"("hi")
 	)
 ))
---content("wat")
