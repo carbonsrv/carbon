@@ -191,7 +191,7 @@ func main() {
 	cbc = cache.New(5*time.Minute, 30*time.Second) // Initialize cache with 5 minute lifetime and purge every 30 seconds
 	cfe = cache.New(5*time.Minute, 30*time.Second) // File-Exists Cache
 
-	var host = flag.String("host", "", "IP of host to run webserver on")
+	var host = flag.String("host", "", "IP of host to bind the webserver on")
 	var port = flag.Int("port", 8080, "Port to run webserver on")
 	jobs = flag.Int("states", 16, "Number of Preinitialized Lua States")
 	var workers = flag.Int("workers", runtime.NumCPU(), "Number of Worker threads.")
