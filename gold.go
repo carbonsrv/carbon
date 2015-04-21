@@ -14,6 +14,7 @@ import (
 	"io/ioutil"
 	//"net/http"
 	//"runtime"
+	"errors"
 	"flag"
 	"log"
 	"net/http"
@@ -44,6 +45,9 @@ func getInstance() *lua.State {
 }
 
 // Cache
+var cfe *cache.Cache
+var cbc *cache.Cache
+
 func cacheRead(c *cache.Cache, file string) (string, error) {
 	res := ""
 	data_tmp, found := c.Get(file)
@@ -60,22 +64,24 @@ func cacheRead(c *cache.Cache, file string) (string, error) {
 	}
 	return res, nil
 }
-func cacheDump(c *cache.Cache, L *lua.State, file string) (string, error) {
-	res := ""
-	data_tmp, found := c.Get(file)
+func cacheDump(cbc *cache.Cache, L *lua.State, file string) (string, error, bool) {
+	data_tmp, found := cbc.Get(file)
 	if found == false {
 		data, err := ioutil.ReadFile(file)
 		if err != nil {
-			return "", err
+			return "", err, false
 		}
-		L.LoadString(string(data))
-		res = L.FDump()
-		c.Set(file, res, cache.DefaultExpiration)
+		if L.LoadString(string(data)) != 0 {
+			return "", errors.New(L.ToString(-1)), true
+		}
+		res := L.FDump()
+		L.Pop(1)
+		cbc.Set(file, res, cache.DefaultExpiration)
+		return res, nil, false
 	} else {
-		log.Printf("Using cache for %s", file)
-		res = data_tmp.(string)
+		log.Printf("Using Bytecode-cache for %s", file)
+		return data_tmp.(string), nil, false
 	}
-	return res, nil
 }
 func cacheFileExists(c *cache.Cache, file string) bool {
 	data_tmp, found := c.Get(file)
@@ -105,10 +111,9 @@ func new_server() *gin.Engine {
 
 // Routes
 func logic_switcher(dir string) func(*gin.Context) {
-	c := cache.New(5*time.Minute, 30*time.Second) // File-Exists Cache
 	return func(context *gin.Context) {
 		file := context.Params.ByName("file")
-		fe := cacheFileExists(c, file)
+		fe := cacheFileExists(cfe, file)
 		if fe == true {
 			if strings.HasSuffix(file, ".lua") {
 				luaroute(dir)(context)
@@ -123,7 +128,6 @@ func logic_switcher(dir string) func(*gin.Context) {
 
 func luaroute(dir string) func(*gin.Context) {
 	LDumper := luar.Init()
-	c := cache.New(5*time.Minute, 30*time.Second) // Initialize cache with 5 minute lifetime and purge every 30 seconds
 	return func(context *gin.Context) {
 		L := getInstance()
 		file := dir + context.Request.URL.Path
@@ -132,30 +136,33 @@ func luaroute(dir string) func(*gin.Context) {
 			"req":     context.Request,
 			//"finish":  context.HTMLString,
 		})
-		code, err := cacheDump(c, LDumper, file)
+		code, err, lerr := cacheDump(cbc, LDumper, file)
 		if err != nil {
-			context.String(404, "404 page not found")
-		}
-		if L.LoadBuffer(code, len(code), file) != 0 {
-			context.HTMLString(http.StatusInternalServerError, `<html>
-			<head><title>Syntax Error in `+context.Request.URL.Path+`</title>
-			<body>
-				<h1>Syntax Error in file `+context.Request.URL.Path+`</h1>
-				<code>`+L.ToString(-1)+`</code>
-			</body>
-			</html>`)
-			context.Abort()
-		} else {
-			if L.Pcall(0, 0, 0) != 0 {
+			if lerr == false {
+				context.String(404, "404 page not found")
+				context.Abort()
+			} else {
 				context.HTMLString(http.StatusInternalServerError, `<html>
-				<head><title>Runtime Error in `+context.Request.URL.Path+`</title>
+				<head><title>Syntax Error in `+context.Request.URL.Path+`</title>
 				<body>
-					<h1>Runtime Error in file `+context.Request.URL.Path+`</h1>
-					<code>`+L.ToString(-1)+`</code>
+					<h1>Syntax Error in file `+context.Request.URL.Path+`</h1>
+					<code>`+string(err.Error())+`</code>
 				</body>
 				</html>`)
 				context.Abort()
 			}
+		}
+		L.LoadBuffer(code, len(code), file)
+
+		if L.Pcall(0, 0, 0) != 0 {
+			context.HTMLString(http.StatusInternalServerError, `<html>
+			<head><title>Runtime Error in `+context.Request.URL.Path+`</title>
+			<body>
+				<h1>Runtime Error in file `+context.Request.URL.Path+`</h1>
+				<code>`+L.ToString(-1)+`</code>
+			</body>
+			</html>`)
+			context.Abort()
 		}
 		/*L.DoString("return CONTENT_TO_RETURN")
 		v := luar.CopyTableToMap(L, nil, -1)
@@ -180,6 +187,9 @@ func run(host string, port int, dir string) {
 }
 
 func main() {
+	cbc = cache.New(5*time.Minute, 30*time.Second) // Initialize cache with 5 minute lifetime and purge every 30 seconds
+	cfe = cache.New(5*time.Minute, 30*time.Second) // File-Exists Cache
+
 	var host = flag.String("host", "", "IP of host to run webserver on")
 	var port = flag.Int("port", 8080, "Port to run webserver on")
 	jobs = *flag.Int("states", 16, "Number of Preinitialized Lua States")
