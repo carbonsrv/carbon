@@ -110,7 +110,7 @@ func new_server() *gin.Engine {
 	r := gin.New()
 	return r
 }
-func bootstrap(srv *gin.Engine, dir string) *gin.Engine {
+func bootstrap(srv *gin.Engine, dir string) *gin.Engine{
 	go preloader()     // Run the instance starter.
 	go scheduler.Run() // Run the scheduler.
 	srv.GET(`/:file`, logic_switcher(dir))
@@ -191,15 +191,18 @@ func main() {
 	cbc = cache.New(5*time.Minute, 30*time.Second) // Initialize cache with 5 minute lifetime and purge every 30 seconds
 	cfe = cache.New(5*time.Minute, 30*time.Second) // File-Exists Cache
 
-	var host = flag.String("host", "", "IP of host to bind the webserver on")
-	var port = flag.Int("port", 8080, "Port to run webserver on")
+	// Use config
+	flag.String("config", "", "Parse Config File"
+
+	var host = flag.String("host", "", "IP of Host to bind the Webserver on")
+	var port = flag.Int("port", 8080, "Port to run Webserver on")
 	jobs = flag.Int("states", 16, "Number of Preinitialized Lua States")
 	var workers = flag.Int("workers", runtime.NumCPU(), "Number of Worker threads.")
-	var webroot = flag.String("root", ".", "Path to web root")
+	var webroot = flag.String("root", ".", "Path to Web Root")
 
 	// Middleware options
-	useRecovery := flag.Bool("recovery", false, "Recover from panics")
-	useLogger := flag.Bool("logger", true, "Log requests")
+	useRecovery := flag.Bool("recovery", false, "Recover from Panics")
+	useLogger := flag.Bool("logger", true, "Log Requests")
 	useGzip := flag.Bool("gzip", false, "Use GZIP")
 
 	flag.Parse()
