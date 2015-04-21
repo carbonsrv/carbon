@@ -112,14 +112,16 @@ func new_server() *gin.Engine {
 
 // Routes
 func logic_switcher(dir string) func(*gin.Context) {
+	st := static.Serve("/", static.LocalFile(dir, false))
+	lr := luaroute(dir)
 	return func(context *gin.Context) {
 		file := context.Params.ByName("file")
 		fe := cacheFileExists(file)
 		if fe == true {
 			if strings.HasSuffix(file, ".lua") {
-				luaroute(dir)(context)
+				lr(context)
 			} else {
-				static.Serve("/", static.LocalFile(dir, false))(context)
+				st(context)
 			}
 		} else {
 			context.String(404, "404 page not found")
