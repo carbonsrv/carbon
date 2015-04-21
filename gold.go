@@ -64,7 +64,7 @@ func cacheRead(c *cache.Cache, file string) (string, error) {
 	}
 	return res, nil
 }
-func cacheDump(cbc *cache.Cache, L *lua.State, file string) (string, error, bool) {
+func cacheDump(L *lua.State, file string) (string, error, bool) {
 	data_tmp, found := cbc.Get(file)
 	if found == false {
 		data, err := ioutil.ReadFile(file)
@@ -83,11 +83,11 @@ func cacheDump(cbc *cache.Cache, L *lua.State, file string) (string, error, bool
 		return data_tmp.(string), nil, false
 	}
 }
-func cacheFileExists(c *cache.Cache, file string) bool {
-	data_tmp, found := c.Get(file)
+func cacheFileExists(file string) bool {
+	data_tmp, found := cfe.Get(file)
 	if found == false {
 		exists := fileExists(file)
-		c.Set(file, exists, cache.DefaultExpiration)
+		cfe.Set(file, exists, cache.DefaultExpiration)
 		return exists
 	} else {
 		return data_tmp.(bool)
@@ -113,7 +113,7 @@ func new_server() *gin.Engine {
 func logic_switcher(dir string) func(*gin.Context) {
 	return func(context *gin.Context) {
 		file := context.Params.ByName("file")
-		fe := cacheFileExists(cfe, file)
+		fe := cacheFileExists(file)
 		if fe == true {
 			if strings.HasSuffix(file, ".lua") {
 				luaroute(dir)(context)
@@ -136,7 +136,7 @@ func luaroute(dir string) func(*gin.Context) {
 			"req":     context.Request,
 			//"finish":  context.HTMLString,
 		})
-		code, err, lerr := cacheDump(cbc, LDumper, file)
+		code, err, lerr := cacheDump(LDumper, file)
 		if err != nil {
 			if lerr == false {
 				context.String(404, "404 page not found")
@@ -153,7 +153,6 @@ func luaroute(dir string) func(*gin.Context) {
 			}
 		}
 		L.LoadBuffer(code, len(code), file)
-
 		if L.Pcall(0, 0, 0) != 0 {
 			context.HTMLString(http.StatusInternalServerError, `<html>
 			<head><title>Runtime Error in `+context.Request.URL.Path+`</title>
