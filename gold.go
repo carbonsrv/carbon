@@ -14,6 +14,7 @@ import (
 	"io/ioutil"
 	//"net/http"
 	//"runtime"
+	"./scheduler"
 	"errors"
 	"flag"
 	"log"
@@ -169,13 +170,16 @@ func luaroute(dir string) func(*gin.Context) {
 		if err != nil {
 			i = http.StatusOK
 		}*/
-		defer L.Close()
+		scheduler.Add(func() {
+			L.Close()
+		})
 		//context.HTMLString(i, m["content"].(string))
 	}
 }
 
 func run(host string, port int, dir string) {
-	go preloader() // Run the instance starter.
+	go preloader()     // Run the instance starter.
+	go scheduler.Run() // Run the scheduler.
 	srv := new_server()
 	//srv.Use(gzip.Gzip(gzip.DefaultCompression))
 	srv.GET(`/:file`, logic_switcher(dir))
