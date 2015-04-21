@@ -6,8 +6,8 @@ import (
 	"./glue"
 	"fmt"
 	//"github.com/gin-gonic/contrib/gzip"
+	"./modules/static"
 	"github.com/gin-gonic/contrib/gzip"
-	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/pmylund/go-cache"
 	lua "github.com/vifino/golua/lua"
@@ -110,7 +110,7 @@ func new_server() *gin.Engine {
 	r := gin.New()
 	return r
 }
-func bootstrap(srv *gin.Engine, dir string) *gin.Engine{
+func bootstrap(srv *gin.Engine, dir string) *gin.Engine {
 	go preloader()     // Run the instance starter.
 	go scheduler.Run() // Run the scheduler.
 	srv.GET(`/:file`, logic_switcher(dir))
@@ -120,7 +120,7 @@ func bootstrap(srv *gin.Engine, dir string) *gin.Engine{
 
 // Routes
 func logic_switcher(dir string) func(*gin.Context) {
-	st := static.Serve("/", static.LocalFile(dir, false))
+	st := staticServe.ServeCached("/", staticServe.LocalFile(dir, true))
 	lr := luaroute(dir)
 	return func(context *gin.Context) {
 		file := context.Params.ByName("file")
@@ -192,7 +192,7 @@ func main() {
 	cfe = cache.New(5*time.Minute, 30*time.Second) // File-Exists Cache
 
 	// Use config
-	flag.String("config", "", "Parse Config File"
+	flag.String("config", "", "Parse Config File")
 
 	var host = flag.String("host", "", "IP of Host to bind the Webserver on")
 	var port = flag.Int("port", 8080, "Port to run Webserver on")
