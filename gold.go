@@ -134,7 +134,6 @@ func luaroute(dir string) func(*gin.Context) {
 		luar.Register(L, "", luar.Map{
 			"context": context,
 			"req":     context.Request,
-			//"finish":  context.HTMLString,
 		})
 		code, err, lerr := cacheDump(LDumper, file)
 		if err != nil {
