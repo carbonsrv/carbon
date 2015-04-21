@@ -6,6 +6,7 @@ import (
 	"./glue"
 	"fmt"
 	//"github.com/gin-gonic/contrib/gzip"
+	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/pmylund/go-cache"
@@ -27,11 +28,11 @@ import (
 )
 
 // Preloader/Starter
-var jobs int = 32
+var jobs *int
 var preloaded chan *lua.State
 
 func preloader() {
-	preloaded = make(chan *lua.State, jobs)
+	preloaded = make(chan *lua.State, *jobs)
 	for {
 		state := luar.Init()
 		err := state.DoString(glue.Glue())
@@ -102,6 +103,8 @@ func fileExists(file string) bool {
 	}
 	return true
 }
+
+// Server
 
 func new_server() *gin.Engine {
 	r := gin.New()
@@ -179,11 +182,13 @@ func luaroute(dir string) func(*gin.Context) {
 	}
 }
 
-func run(host string, port int, dir string) {
+func run(host string, port int, dir string, useGzip bool) {
 	go preloader()     // Run the instance starter.
 	go scheduler.Run() // Run the scheduler.
 	srv := new_server()
-	//srv.Use(gzip.Gzip(gzip.DefaultCompression))
+	if useGzip == true {
+		srv.Use(gzip.Gzip(gzip.DefaultCompression))
+	}
 	srv.GET(`/:file`, logic_switcher(dir))
 
 	//srv.Use(martini.Static(dir))
@@ -196,12 +201,15 @@ func main() {
 
 	var host = flag.String("host", "", "IP of host to run webserver on")
 	var port = flag.Int("port", 8080, "Port to run webserver on")
-	jobs = *flag.Int("states", 16, "Number of Preinitialized Lua States")
+	jobs = flag.Int("states", 16, "Number of Preinitialized Lua States")
 	var workers = flag.Int("workers", runtime.NumCPU(), "Number of Worker threads.")
 	var webroot = flag.String("root", ".", "Path to web root")
+
+	useGzip := flag.Bool("gzip", false, "Use GZIP")
+
 	flag.Parse()
 
 	runtime.GOMAXPROCS(*workers)
 
-	run(*host, *port, *webroot)
+	run(*host, *port, *webroot, *useGzip)
 }
