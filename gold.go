@@ -17,7 +17,7 @@ import (
 	//"runtime"
 	"./scheduler"
 	"errors"
-	"flag"
+	"github.com/namsral/flag"
 	"log"
 	"net/http"
 	"os"
