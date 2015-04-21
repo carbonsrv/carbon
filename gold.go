@@ -108,9 +108,14 @@ func fileExists(file string) bool {
 
 func new_server() *gin.Engine {
 	r := gin.New()
-	r.Use(gin.Logger())
-	r.Use(gin.Recovery())
 	return r
+}
+func bootstrap(srv *gin.Engine, dir string) *gin.Engine {
+	go preloader()     // Run the instance starter.
+	go scheduler.Run() // Run the scheduler.
+	srv.GET(`/:file`, logic_switcher(dir))
+	//srv.Use(martini.Static(dir))
+	return srv
 }
 
 // Routes
@@ -182,19 +187,6 @@ func luaroute(dir string) func(*gin.Context) {
 	}
 }
 
-func run(host string, port int, dir string, useGzip bool) {
-	go preloader()     // Run the instance starter.
-	go scheduler.Run() // Run the scheduler.
-	srv := new_server()
-	if useGzip == true {
-		srv.Use(gzip.Gzip(gzip.DefaultCompression))
-	}
-	srv.GET(`/:file`, logic_switcher(dir))
-
-	//srv.Use(martini.Static(dir))
-	srv.Run(host + ":" + strconv.Itoa(port))
-}
-
 func main() {
 	cbc = cache.New(5*time.Minute, 30*time.Second) // Initialize cache with 5 minute lifetime and purge every 30 seconds
 	cfe = cache.New(5*time.Minute, 30*time.Second) // File-Exists Cache
@@ -205,11 +197,26 @@ func main() {
 	var workers = flag.Int("workers", runtime.NumCPU(), "Number of Worker threads.")
 	var webroot = flag.String("root", ".", "Path to web root")
 
+	// Middleware options
+	useRecovery := flag.Bool("recovery", false, "Recover from panics")
+	useLogger := flag.Bool("logger", true, "Log requests")
 	useGzip := flag.Bool("gzip", false, "Use GZIP")
 
 	flag.Parse()
 
 	runtime.GOMAXPROCS(*workers)
 
-	run(*host, *port, *webroot, *useGzip)
+	srv := new_server()
+	if *useLogger {
+		srv.Use(gin.Logger())
+	}
+	if *useRecovery {
+		srv.Use(gin.Recovery())
+	}
+	if *useGzip {
+		srv.Use(gzip.Gzip(gzip.DefaultCompression))
+	}
+	bootstrap(srv, *webroot)
+
+	srv.Run(*host + ":" + strconv.Itoa(*port))
 }
