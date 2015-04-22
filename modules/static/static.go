@@ -1,6 +1,6 @@
 package staticServe
 
-// Based off of github.com/gin-gonic/contrib/static
+// Based off of github.com/gin-gonic/contrib/static, just with a little file-exists caching shenanigans
 
 import (
 	"github.com/gin-gonic/gin"

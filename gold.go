@@ -61,7 +61,7 @@ func cacheRead(c *cache.Cache, file string) (string, error) {
 		res = string(data)
 		c.Set(file, res, cache.DefaultExpiration)
 	} else {
-		log.Printf("Using cache for %s", file)
+		debug("Using cache for %s" + file)
 		res = data_tmp.(string)
 	}
 	return res, nil
@@ -81,7 +81,7 @@ func cacheDump(L *lua.State, file string) (string, error, bool) {
 		cbc.Set(file, res, cache.DefaultExpiration)
 		return res, nil, false
 	} else {
-		log.Printf("Using Bytecode-cache for %s", file)
+		debug("Using Bytecode-cache for " + file)
 		return data_tmp.(string), nil, false
 	}
 }
@@ -96,7 +96,7 @@ func cacheFileExists(file string) bool {
 	}
 }
 
-// FS Helper
+// Helper functions
 func fileExists(file string) bool {
 	if _, err := os.Stat(file); os.IsNotExist(err) {
 		return false
@@ -104,8 +104,16 @@ func fileExists(file string) bool {
 	return true
 }
 
-// Server
+// Logging
+var doLog bool = false
 
+func debug(str string) {
+	if doLog {
+		log.Print(str)
+	}
+}
+
+// Server
 func new_server() *gin.Engine {
 	r := gin.New()
 	return r
@@ -113,13 +121,13 @@ func new_server() *gin.Engine {
 func bootstrap(srv *gin.Engine, dir string) *gin.Engine {
 	go preloader()     // Run the instance starter.
 	go scheduler.Run() // Run the scheduler.
-	srv.GET(`/:file`, logic_switcher(dir))
+	srv.GET(`/:file`, logic_switcheroo(dir))
 	//srv.Use(martini.Static(dir))
 	return srv
 }
 
 // Routes
-func logic_switcher(dir string) func(*gin.Context) {
+func logic_switcheroo(dir string) func(*gin.Context) {
 	st := staticServe.ServeCached("/", staticServe.LocalFile(dir, true))
 	lr := luaroute(dir)
 	return func(context *gin.Context) {
@@ -141,6 +149,9 @@ func luaroute(dir string) func(*gin.Context) {
 	LDumper := luar.Init()
 	return func(context *gin.Context) {
 		L := getInstance()
+		defer scheduler.Add(func() {
+			L.Close()
+		})
 		file := dir + context.Request.URL.Path
 		luar.Register(L, "", luar.Map{
 			"context": context,
@@ -162,8 +173,8 @@ func luaroute(dir string) func(*gin.Context) {
 				context.Abort()
 			}
 		}
-		L.LoadBuffer(code, len(code), file)
-		if L.Pcall(0, 0, 0) != 0 {
+		L.LoadBuffer(code, len(code), file) // This shouldn't error, was checked earlier.
+		if L.Pcall(0, 0, 0) != 0 {          // != 0 means error in execution
 			context.HTMLString(http.StatusInternalServerError, `<html>
 			<head><title>Runtime Error in `+context.Request.URL.Path+`</title>
 			<body>
@@ -180,9 +191,6 @@ func luaroute(dir string) func(*gin.Context) {
 		if err != nil {
 			i = http.StatusOK
 		}*/
-		scheduler.Add(func() {
-			L.Close()
-		})
 		//context.HTMLString(i, m["content"].(string))
 	}
 }
@@ -202,7 +210,7 @@ func main() {
 
 	// Middleware options
 	useRecovery := flag.Bool("recovery", false, "Recover from Panics")
-	useLogger := flag.Bool("logger", true, "Log Requests")
+	useLogger := flag.Bool("logger", true, "Log Requests and Cache information")
 	useGzip := flag.Bool("gzip", false, "Use GZIP")
 
 	flag.Parse()
@@ -211,6 +219,7 @@ func main() {
 
 	srv := new_server()
 	if *useLogger {
+		doLog = true
 		srv.Use(gin.Logger())
 	}
 	if *useRecovery {

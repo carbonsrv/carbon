@@ -1,7 +1,3 @@
-CONTENT_TO_RETURN = {
-	code=200,
-	content=""
-}
 local html_escape={["<"]="&lt;",[">"]="&gt;",["&"]="&amp;"}
 local uri_escape=function(a)
 	return ("%%%02x"):format(a:byte())
