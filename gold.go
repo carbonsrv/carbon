@@ -149,19 +149,23 @@ func debug(str string) {
 func new_server() *gin.Engine {
 	return gin.New()
 }
-func bootstrap(srv *gin.Engine, dir string) *gin.Engine {
+func bootstrap(srv *gin.Engine, dir string, cfe *cache.Cache) *gin.Engine {
 	go preloader()     // Run the instance starter.
 	go scheduler.Run() // Run the scheduler.
-	switcher := logic_switcheroo(dir)
+	switcher := logic_switcheroo(dir, cfe)
 	/*srv.GET(`/:file`, switcher)
 	srv.POST(`/:file`, switcher)*/
 	srv.Use(switcher)
+	/*st := staticServe.ServeCached("", staticServe.PhysFS("", true, true), cfe)
+	lr := luaroute(dir)
+	srv.Use(lr)
+	srv.Use(st)*/
 	return srv
 }
 
 // Routes
-func logic_switcheroo(dir string) func(*gin.Context) {
-	st := staticServe.ServeCached("", staticServe.PhysFS("", true, true))
+func logic_switcheroo(dir string, cfe *cache.Cache) func(*gin.Context) {
+	st := staticServe.ServeCached("", staticServe.PhysFS("", true, true), cfe)
 	lr := luaroute(dir)
 	return func(context *gin.Context) {
 		file := dir + context.Request.URL.Path
@@ -173,7 +177,7 @@ func logic_switcheroo(dir string) func(*gin.Context) {
 				st(context)
 			}
 		} else {
-			context.String(404, "404 page not found")
+			context.Next()
 		}
 	}
 }
@@ -193,8 +197,8 @@ func luaroute(dir string) func(*gin.Context) {
 		code, err, lerr := cacheDump(LDumper, file)
 		if err != nil {
 			if lerr == false {
-				context.String(404, "404 page not found")
-				context.Abort()
+				context.Next()
+				return
 			} else {
 				context.HTMLString(http.StatusInternalServerError, `<html>
 				<head><title>Syntax Error in `+context.Request.URL.Path+`</title>
@@ -203,7 +207,8 @@ func luaroute(dir string) func(*gin.Context) {
 					<code>`+string(err.Error())+`</code>
 				</body>
 				</html>`)
-				context.Abort()
+				context.Next()
+				return
 			}
 		}
 		L.LoadBuffer(code, len(code), file) // This shouldn't error, was checked earlier.
@@ -265,7 +270,7 @@ func main() {
 	debug(root)
 	filesystem = initPhysFS(root)
 	defer physfs.Deinit()
-	bootstrap(srv, "")
+	bootstrap(srv, "", cfe)
 
 	srv.Run(*host + ":" + strconv.Itoa(*port))
 }

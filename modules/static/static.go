@@ -10,7 +10,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 type ServeFileSystem interface {
@@ -86,14 +85,18 @@ func PhysFS(root string, indexes bool, alreadyinitialized bool) *localFileSystem
 }
 
 func (l *localFileSystem) Open(name string) (http.File, error) {
-	f, err := l.fs.Open(name)
-	if err != nil {
-		return nil, err
-	}
-	if l.indexes {
-		return f, err
+	if !l.physfs {
+		f, err := l.fs.Open(name)
+		if err != nil {
+			return nil, err
+		}
+		if l.indexes {
+			return f, err
+		} else {
+			return neuteredReaddirFile{f}, nil
+		}
 	} else {
-		return neuteredReaddirFile{f}, nil
+		return physfs.Open(name)
 	}
 }
 
@@ -128,8 +131,8 @@ func (f neuteredReaddirFile) Readdir(count int) ([]os.FileInfo, error) {
 	return nil, nil
 }
 
-func ServeCached(prefix string, fs *localFileSystem) gin.HandlerFunc {
-	cfe := cache.New(5*time.Minute, 30*time.Second) // File-Exists Cache
+func ServeCached(prefix string, fs *localFileSystem, cfe *cache.Cache) gin.HandlerFunc {
+	//cfe := cache.New(5*time.Minute, 30*time.Second) // File-Exists Cache
 	var fileserver http.Handler
 
 	if prefix != "" {
