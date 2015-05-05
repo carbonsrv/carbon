@@ -1,8 +1,8 @@
 package staticServe
 
-// Based off of github.com/gin-gonic/contrib/static, just with a little file-exists caching shenanigans
-
 import (
+	"fmt"
+	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/gin-gonic/gin"
 	"github.com/pmylund/go-cache"
 	"net/http"
@@ -31,11 +31,35 @@ func existsFile(name string) bool {
 
 func LocalFile(root string, indexes bool) *localFileSystem {
 	root, err := filepath.Abs(root)
+	fmt.Println(root)
 	if err != nil {
 		panic(err)
 	}
 
 	fs := http.Dir(root)
+	return &localFileSystem{
+		fs,
+		root,
+		indexes,
+	}
+}
+
+func PhysFS(root string, indexes bool) *localFileSystem {
+	root, err := filepath.Abs(root)
+	fmt.Println(root)
+	if err != nil {
+		panic(err)
+	}
+	err = physfs.Init()
+	if err != nil {
+		panic(err)
+	}
+	defer physfs.Deinit()
+	err = physfs.Mount(root, "/", true)
+	if err != nil {
+		panic(err)
+	}
+	fs := physfs.FileSystem()
 	return &localFileSystem{
 		fs,
 		root,

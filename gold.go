@@ -21,6 +21,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -121,7 +122,9 @@ func new_server() *gin.Engine {
 func bootstrap(srv *gin.Engine, dir string) *gin.Engine {
 	go preloader()     // Run the instance starter.
 	go scheduler.Run() // Run the scheduler.
-	srv.GET(`/:file`, logic_switcheroo(dir))
+	switcher := logic_switcheroo(dir)
+	srv.GET(`/:file`, switcher)
+	srv.POST(`/:file`, switcher)
 	//srv.Use(martini.Static(dir))
 	return srv
 }
@@ -131,7 +134,7 @@ func logic_switcheroo(dir string) func(*gin.Context) {
 	st := staticServe.ServeCached("/", staticServe.LocalFile(dir, true))
 	lr := luaroute(dir)
 	return func(context *gin.Context) {
-		file := context.Params.ByName("file")
+		file := dir + context.Params.ByName("file")
 		fe := cacheFileExists(file)
 		if fe == true {
 			if strings.HasSuffix(file, ".lua") {
@@ -228,7 +231,8 @@ func main() {
 	if *useGzip {
 		srv.Use(gzip.Gzip(gzip.DefaultCompression))
 	}
-	bootstrap(srv, *webroot)
+	root, _ := filepath.Abs(*webroot)
+	bootstrap(srv, root)
 
 	srv.Run(*host + ":" + strconv.Itoa(*port))
 }
