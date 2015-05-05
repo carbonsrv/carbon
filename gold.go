@@ -4,12 +4,11 @@ package main
 
 import (
 	"./glue"
-	"fmt"
-	//"github.com/gin-gonic/contrib/gzip"
 	"./modules/static"
 	"./scheduler"
 	"bufio"
 	"errors"
+	"fmt"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
@@ -162,7 +161,7 @@ func bootstrap(srv *gin.Engine, dir string) *gin.Engine {
 
 // Routes
 func logic_switcheroo(dir string) func(*gin.Context) {
-	st := staticServe.ServeCached("/", staticServe.PhysFS("", true, true))
+	st := staticServe.ServeCached("", staticServe.PhysFS("", true, true))
 	lr := luaroute(dir)
 	return func(context *gin.Context) {
 		file := dir + context.Params.ByName("file")
@@ -263,6 +262,7 @@ func main() {
 		srv.Use(gzip.Gzip(gzip.DefaultCompression))
 	}
 	root, _ := filepath.Abs(*webroot)
+	debug(root)
 	filesystem = initPhysFS(root)
 	defer physfs.Deinit()
 	bootstrap(srv, "/")
