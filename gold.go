@@ -14,8 +14,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/namsral/flag"
 	"github.com/pmylund/go-cache"
-	lua "github.com/vifino/golua/lua"
-	luar "github.com/vifino/luar"
+	"github.com/vifino/golua/lua"
+	"github.com/vifino/luar"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -147,15 +147,15 @@ func debug(str string) {
 
 // Server
 func new_server() *gin.Engine {
-	r := gin.New()
-	return r
+	return gin.New()
 }
 func bootstrap(srv *gin.Engine, dir string) *gin.Engine {
 	go preloader()     // Run the instance starter.
 	go scheduler.Run() // Run the scheduler.
 	switcher := logic_switcheroo(dir)
-	srv.GET(`/:file`, switcher)
-	srv.POST(`/:file`, switcher)
+	/*srv.GET(`/:file`, switcher)
+	srv.POST(`/:file`, switcher)*/
+	srv.Use(switcher)
 	return srv
 }
 
@@ -164,7 +164,7 @@ func logic_switcheroo(dir string) func(*gin.Context) {
 	st := staticServe.ServeCached("", staticServe.PhysFS("", true, true))
 	lr := luaroute(dir)
 	return func(context *gin.Context) {
-		file := dir + context.Params.ByName("file")
+		file := dir + context.Request.URL.Path
 		fe := cacheFileExists(file)
 		if fe == true {
 			if strings.HasSuffix(file, ".lua") {
@@ -265,7 +265,7 @@ func main() {
 	debug(root)
 	filesystem = initPhysFS(root)
 	defer physfs.Deinit()
-	bootstrap(srv, "/")
+	bootstrap(srv, "")
 
 	srv.Run(*host + ":" + strconv.Itoa(*port))
 }

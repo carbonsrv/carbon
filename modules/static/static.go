@@ -25,9 +25,13 @@ type localFileSystem struct {
 	physfs  bool
 }
 
-func existsFile(name string) bool {
-	_, err := os.Stat(name)
-	return !os.IsNotExist(err)
+func existsFile(lfs *localFileSystem, name string) bool {
+	if !lfs.physfs {
+		_, err := os.Stat(name)
+		return !os.IsNotExist(err)
+	} else {
+		return physfs.Exists(name)
+	}
 }
 
 func LocalFile(root string, indexes bool) *localFileSystem {
@@ -94,11 +98,10 @@ func (l *localFileSystem) Open(name string) (http.File, error) {
 }
 
 func (l *localFileSystem) Exists(prefix string, filepath string) bool {
-
 	if p := strings.TrimPrefix(filepath, prefix); len(p) < len(filepath) {
 		p = path.Join(l.root, p)
 		if !l.physfs {
-			return existsFile(p)
+			return existsFile(l, p)
 		} else {
 			return physfs.Exists(p)
 		}
