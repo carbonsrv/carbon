@@ -7,20 +7,18 @@ import (
 	"fmt"
 	//"github.com/gin-gonic/contrib/gzip"
 	"./modules/static"
+	"./scheduler"
+	"bufio"
+	"errors"
+	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
+	"github.com/namsral/flag"
 	"github.com/pmylund/go-cache"
 	lua "github.com/vifino/golua/lua"
 	luar "github.com/vifino/luar"
-	"io/ioutil"
-	//"net/http"
-	//"runtime"
-	"./scheduler"
-	"errors"
-	"github.com/namsral/flag"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -55,12 +53,11 @@ func cacheRead(c *cache.Cache, file string) (string, error) {
 	res := ""
 	data_tmp, found := c.Get(file)
 	if found == false {
-		data, err := ioutil.ReadFile(file)
+		data, err := fileRead(file)
 		if err != nil {
 			return "", err
 		}
-		res = string(data)
-		c.Set(file, res, cache.DefaultExpiration)
+		c.Set(file, data, cache.DefaultExpiration)
 	} else {
 		debug("Using cache for %s" + file)
 		res = data_tmp.(string)
@@ -70,11 +67,11 @@ func cacheRead(c *cache.Cache, file string) (string, error) {
 func cacheDump(L *lua.State, file string) (string, error, bool) {
 	data_tmp, found := cbc.Get(file)
 	if found == false {
-		data, err := ioutil.ReadFile(file)
+		data, err := fileRead(file)
 		if err != nil {
 			return "", err, false
 		}
-		if L.LoadString(string(data)) != 0 {
+		if L.LoadString(data) != 0 {
 			return "", errors.New(L.ToString(-1)), true
 		}
 		res := L.FDump()
@@ -86,6 +83,49 @@ func cacheDump(L *lua.State, file string) (string, error, bool) {
 		return data_tmp.(string), nil, false
 	}
 }
+
+// File sytem functions
+var filesystem http.FileSystem
+
+func initPhysFS(path string) http.FileSystem {
+	err := physfs.Init()
+	if err != nil {
+		panic(err)
+	}
+	err = physfs.Mount(path, "/", true)
+	if err != nil {
+		panic(err)
+	}
+	return physfs.FileSystem()
+}
+
+/*func fileExists(file string) bool {
+	if _, err := os.Stat(file); os.IsNotExist(err) {
+		return false
+	}
+	return true
+}*/
+func fileRead(file string) (string, error) {
+	f, err := filesystem.Open(file)
+	defer f.Close()
+	if err != nil {
+		return "", err
+	}
+	fi, err := f.Stat()
+	if err != nil {
+		return "", err
+	}
+	r := bufio.NewReader(f)
+	buf := make([]byte, fi.Size())
+	_, err = r.Read(buf)
+	if err != nil {
+		return "", err
+	}
+	return string(buf), err
+}
+func fileExists(file string) bool {
+	return physfs.Exists(file)
+}
 func cacheFileExists(file string) bool {
 	data_tmp, found := cfe.Get(file)
 	if found == false {
@@ -95,14 +135,6 @@ func cacheFileExists(file string) bool {
 	} else {
 		return data_tmp.(bool)
 	}
-}
-
-// Helper functions
-func fileExists(file string) bool {
-	if _, err := os.Stat(file); os.IsNotExist(err) {
-		return false
-	}
-	return true
 }
 
 // Logging
@@ -125,13 +157,12 @@ func bootstrap(srv *gin.Engine, dir string) *gin.Engine {
 	switcher := logic_switcheroo(dir)
 	srv.GET(`/:file`, switcher)
 	srv.POST(`/:file`, switcher)
-	//srv.Use(martini.Static(dir))
 	return srv
 }
 
 // Routes
 func logic_switcheroo(dir string) func(*gin.Context) {
-	st := staticServe.ServeCached("/", staticServe.LocalFile(dir, true))
+	st := staticServe.ServeCached("/", staticServe.PhysFS("", true, true))
 	lr := luaroute(dir)
 	return func(context *gin.Context) {
 		file := dir + context.Params.ByName("file")
@@ -232,7 +263,9 @@ func main() {
 		srv.Use(gzip.Gzip(gzip.DefaultCompression))
 	}
 	root, _ := filepath.Abs(*webroot)
-	bootstrap(srv, root)
+	filesystem = initPhysFS(root)
+	defer physfs.Deinit()
+	bootstrap(srv, "/")
 
 	srv.Run(*host + ":" + strconv.Itoa(*port))
 }
