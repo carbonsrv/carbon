@@ -12,41 +12,11 @@ import (
 	"strings"
 )
 
-type ServeFileSystem interface {
-	http.FileSystem
-	Exists(prefix string, path string) bool
-}
-
 type localFileSystem struct {
 	fs      http.FileSystem
 	root    string
 	indexes bool
 	physfs  bool
-}
-
-func existsFile(lfs *localFileSystem, name string) bool {
-	if !lfs.physfs {
-		_, err := os.Stat(name)
-		return !os.IsNotExist(err)
-	} else {
-		return physfs.Exists(name)
-	}
-}
-
-func LocalFile(root string, indexes bool) *localFileSystem {
-	root, err := filepath.Abs(root)
-	fmt.Println(root)
-	if err != nil {
-		panic(err)
-	}
-
-	fs := http.Dir(root)
-	return &localFileSystem{
-		fs,
-		root,
-		indexes,
-		false,
-	}
 }
 
 func OwnFS(fs http.FileSystem, root string, indexes bool) *localFileSystem {
@@ -85,29 +55,29 @@ func PhysFS(root string, indexes bool, alreadyinitialized bool) *localFileSystem
 }
 
 func (l *localFileSystem) Open(name string) (http.File, error) {
-	if !l.physfs {
-		f, err := l.fs.Open(name)
-		if err != nil {
-			return nil, err
-		}
-		if l.indexes {
-			return f, err
-		} else {
-			return neuteredReaddirFile{f}, nil
-		}
-	} else {
-		return physfs.Open(name)
+	//if !l.physfs {
+	f, err := l.fs.Open(name)
+	if err != nil {
+		return nil, err
 	}
+	if l.indexes {
+		return f, err
+	} else {
+		return neuteredReaddirFile{f}, nil
+	}
+	/*} else {
+		return physfs.Open(name)
+	}*/
 }
 
 func (l *localFileSystem) Exists(prefix string, filepath string) bool {
 	if p := strings.TrimPrefix(filepath, prefix); len(p) < len(filepath) {
 		p = path.Join(l.root, p)
-		if !l.physfs {
+		/*if !l.physfs {
 			return existsFile(l, p)
-		} else {
-			return physfs.Exists(p)
-		}
+		} else {*/
+		return physfs.Exists(p)
+		//}
 	}
 	return false
 }

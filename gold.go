@@ -1,11 +1,11 @@
 package main
 
-//go:generate go-bindata -o glue/generated_lua.go -pkg=glue -prefix "./lua" ./lua
+//go:generate go-bindata -o modules/glue/generated_lua.go -pkg=glue -prefix "./lua" ./lua
 
 import (
-	"./glue"
+	"./modules/glue"
+	"./modules/scheduler"
 	"./modules/static"
-	"./scheduler"
 	"bufio"
 	"errors"
 	"fmt"
