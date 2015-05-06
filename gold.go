@@ -147,8 +147,8 @@ func main() {
 
 	runtime.GOMAXPROCS(*workers)
 
-	srv := new_server()
 	if *script == "" {
+		srv := new_server()
 		if *useLogger {
 			doLog = true
 			srv.Use(gin.Logger())
@@ -165,12 +165,12 @@ func main() {
 		defer physfs.Deinit()
 		go scheduler.Run() // Run the scheduler.
 		bootstrap(srv, "", cfe)
+		srv.Run(*host + ":" + strconv.Itoa(*port))
 	} else {
-		err := luaconf.Configure(srv, *script, cfe, *webroot)
+		srv, err := luaconf.Configure(*script, cfe, *webroot)
 		if err != nil {
 			panic(err)
 		}
+		srv.Run(*host + ":" + strconv.Itoa(*port))
 	}
-
-	srv.Run(*host + ":" + strconv.Itoa(*port))
 }

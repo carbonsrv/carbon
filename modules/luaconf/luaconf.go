@@ -7,15 +7,14 @@ import (
 	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
 	//"github.com/vifino/golua/lua"
-	"fmt"
 	"github.com/pmylund/go-cache"
 	"github.com/vifino/luar"
 )
 
 // Configure the server based on a lua script.
-func Configure(srv *gin.Engine, script string, cfe *cache.Cache, webroot string) error {
+func Configure(script string, cfe *cache.Cache, webroot string) (*gin.Engine, error) {
+	srv := gin.New()
 	L := luar.Init()
-	defer L.Close()
 	luar.Register(L, "", luar.Map{ // Global
 		"srv":   srv,
 		"state": L,
@@ -45,7 +44,6 @@ func Configure(srv *gin.Engine, script string, cfe *cache.Cache, webroot string)
 			for k, v := range plan {
 				newplan[k] = v.(func(*gin.Context))
 			}
-			fmt.Println(newplan)
 			return routes.ExtRoute(newplan)
 		}),
 		"Logger":   gin.Logger,
@@ -59,5 +57,5 @@ func Configure(srv *gin.Engine, script string, cfe *cache.Cache, webroot string)
 			return staticServe.ServeCached(prefix, staticServe.PhysFS("", true, true), cfe)
 		}),
 	})
-	return L.DoFile(script)
+	return srv, L.DoFile(script)
 }
