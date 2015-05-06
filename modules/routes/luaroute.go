@@ -87,14 +87,14 @@ func Init(j *int) {
 	go preloader()                                 // Run the instance starter.
 }
 
-func Lua(dir string) func(*gin.Context) {
+func Lua() func(*gin.Context) {
 	LDumper := luar.Init()
 	return func(context *gin.Context) {
 		L := getInstance()
 		defer scheduler.Add(func() {
 			L.Close()
 		})
-		file := dir + context.Request.URL.Path
+		file := context.Request.URL.Path
 		luar.Register(L, "", luar.Map{
 			"context": context,
 			"req":     context.Request,

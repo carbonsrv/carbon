@@ -8,7 +8,7 @@ import (
 type Plan map[string]func(*gin.Context)
 
 // Dynamic routing based on file extension given by a map.
-func ExtRoute(plan map[string]func(*gin.Context)) func(*gin.Context) {
+func ExtRoute(plan Plan) func(*gin.Context) {
 	return func(c *gin.Context) {
 		path := c.Request.URL.Path
 		ext := filepath.Ext(path)

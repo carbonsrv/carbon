@@ -3,6 +3,7 @@ package main
 //go:generate go-bindata -o modules/glue/generated_lua.go -pkg=glue -prefix "./lua" ./lua
 
 import (
+	"./modules/luaconf"
 	"./modules/routes"
 	"./modules/scheduler"
 	"./modules/static"
@@ -111,7 +112,7 @@ func new_server() *gin.Engine {
 func bootstrap(srv *gin.Engine, dir string, cfe *cache.Cache) *gin.Engine {
 	routes.Init(jobs)
 	switcher := routes.ExtRoute(routes.Plan{
-		".lua": routes.Lua(dir),
+		".lua": routes.Lua(),
 		"***":  staticServe.ServeCached("", staticServe.PhysFS("", true, true), cfe),
 	})
 	/*srv.GET(`/:file`, switcher)
@@ -129,10 +130,11 @@ func main() {
 
 	// Use config
 	flag.String("config", "", "Parse Config File")
+	var script = flag.String("script", "", "Parse Lua Script as initialization")
 
 	var host = flag.String("host", "", "IP of Host to bind the Webserver on")
-	var port = flag.Int("port", 8080, "Port to run Webserver on")
-	jobs = flag.Int("states", 16, "Number of Preinitialized Lua States")
+	var port = flag.Int("port", 8080, "Port to run Webserver on (HTTP)")
+	jobs = flag.Int("states", runtime.NumCPU()*2, "Number of Preinitialized Lua States")
 	var workers = flag.Int("workers", runtime.NumCPU(), "Number of Worker threads.")
 	var webroot = flag.String("root", ".", "Path to Web Root")
 
@@ -146,22 +148,29 @@ func main() {
 	runtime.GOMAXPROCS(*workers)
 
 	srv := new_server()
-	if *useLogger {
-		doLog = true
-		srv.Use(gin.Logger())
+	if *script == "" {
+		if *useLogger {
+			doLog = true
+			srv.Use(gin.Logger())
+		}
+		if *useRecovery {
+			srv.Use(gin.Recovery())
+		}
+		if *useGzip {
+			srv.Use(gzip.Gzip(gzip.DefaultCompression))
+		}
+		root, _ := filepath.Abs(*webroot)
+		debug(root)
+		filesystem = initPhysFS(root)
+		defer physfs.Deinit()
+		go scheduler.Run() // Run the scheduler.
+		bootstrap(srv, "", cfe)
+	} else {
+		err := luaconf.Configure(srv, *script, cfe, *webroot)
+		if err != nil {
+			panic(err)
+		}
 	}
-	if *useRecovery {
-		srv.Use(gin.Recovery())
-	}
-	if *useGzip {
-		srv.Use(gzip.Gzip(gzip.DefaultCompression))
-	}
-	root, _ := filepath.Abs(*webroot)
-	debug(root)
-	filesystem = initPhysFS(root)
-	defer physfs.Deinit()
-	go scheduler.Run() // Run the scheduler.
-	bootstrap(srv, "", cfe)
 
 	srv.Run(*host + ":" + strconv.Itoa(*port))
 }
