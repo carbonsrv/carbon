@@ -17,7 +17,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -111,7 +110,10 @@ func new_server() *gin.Engine {
 }
 func bootstrap(srv *gin.Engine, dir string, cfe *cache.Cache) *gin.Engine {
 	routes.Init(jobs)
-	switcher := logic_switcheroo(dir, cfe)
+	switcher := routes.ExtRoute(routes.Plan{
+		".lua": routes.Lua(dir),
+		"***":  staticServe.ServeCached("", staticServe.PhysFS("", true, true), cfe),
+	})
 	/*srv.GET(`/:file`, switcher)
 	srv.POST(`/:file`, switcher)*/
 	srv.Use(switcher)
@@ -120,25 +122,6 @@ func bootstrap(srv *gin.Engine, dir string, cfe *cache.Cache) *gin.Engine {
 	srv.Use(lr)
 	srv.Use(st)*/
 	return srv
-}
-
-// Routes
-func logic_switcheroo(dir string, cfe *cache.Cache) func(*gin.Context) {
-	st := staticServe.ServeCached("", staticServe.PhysFS("", true, true), cfe)
-	lr := routes.Lua(dir)
-	return func(context *gin.Context) {
-		file := dir + context.Request.URL.Path
-		fe := cacheFileExists(file)
-		if fe == true {
-			if strings.HasSuffix(file, ".lua") {
-				lr(context)
-			} else {
-				st(context)
-			}
-		} else {
-			context.Next()
-		}
-	}
 }
 
 func main() {

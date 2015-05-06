@@ -112,7 +112,7 @@ func Lua(dir string) func(*gin.Context) {
 					<code>`+string(err.Error())+`</code>
 				</body>
 				</html>`)
-				context.Next()
+				context.Abort()
 				return
 			}
 		}
@@ -126,6 +126,7 @@ func Lua(dir string) func(*gin.Context) {
 			</body>
 			</html>`)
 			context.Abort()
+			return
 		}
 		/*L.DoString("return CONTENT_TO_RETURN")
 		v := luar.CopyTableToMap(L, nil, -1)
