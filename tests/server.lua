@@ -1,6 +1,6 @@
 print("hai")
-Use(mw.Logger())
-Use(mw.ExtRoute({
+srv.Use(mw.Logger())
+srv.Use(mw.ExtRoute({
 	[".lua"]=mw.Lua(),
 	["***"]=static.serve("")
 }))

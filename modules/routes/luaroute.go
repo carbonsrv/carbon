@@ -61,45 +61,53 @@ func fileRead(file string) (string, error) {
 }
 
 // Preloader/Starter
-var jobs *int
-var preloaded chan *lua.State
+var jobs int
+var Preloaded chan *lua.State
 
-func preloader() {
-	preloaded = make(chan *lua.State, *jobs)
+func Preloader() {
+	Preloaded = make(chan *lua.State, jobs)
 	for {
+		//fmt.Println("preloading")
 		state := luar.Init()
 		err := state.DoString(glue.Glue())
 		if err != nil {
 			fmt.Println(err)
 		}
-		preloaded <- state
+		Preloaded <- state
 	}
 }
-func getInstance() *lua.State {
-	return <-preloaded
+func GetInstance() *lua.State {
+	//fmt.Println("grabbing instance")
+	L := <-Preloaded
+	//fmt.Println("Done")
+	return L
 }
 
 // Init
-func Init(j *int) {
+func Init(j int) {
 	jobs = j
 	filesystem = physfs.FileSystem()
 	cbc = cache.New(5*time.Minute, 30*time.Second) // Initialize cache with 5 minute lifetime and purge every 30 seconds
-	go preloader()                                 // Run the instance starter.
 }
 
 func Lua() func(*gin.Context) {
 	LDumper := luar.Init()
 	return func(context *gin.Context) {
-		L := getInstance()
+		//fmt.Println("start")
+		L := GetInstance()
+		//fmt.Println("after start")
 		defer scheduler.Add(func() {
 			L.Close()
 		})
 		file := context.Request.URL.Path
+		//fmt.Println("after after start")
 		luar.Register(L, "", luar.Map{
 			"context": context,
 			"req":     context.Request,
 		})
+		//fmt.Println("before cache")
 		code, err, lerr := cacheDump(LDumper, file)
+		//fmt.Println("after cache")
 		if err != nil {
 			if lerr == false {
 				context.Next()
@@ -116,6 +124,7 @@ func Lua() func(*gin.Context) {
 				return
 			}
 		}
+		//fmt.Println("before loadbuffer")
 		L.LoadBuffer(code, len(code), file) // This shouldn't error, was checked earlier.
 		if L.Pcall(0, 0, 0) != 0 {          // != 0 means error in execution
 			context.HTMLString(http.StatusInternalServerError, `<html>

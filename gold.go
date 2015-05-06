@@ -109,8 +109,7 @@ func debug(str string) {
 func new_server() *gin.Engine {
 	return gin.New()
 }
-func bootstrap(srv *gin.Engine, dir string, cfe *cache.Cache) *gin.Engine {
-	routes.Init(jobs)
+func bootstrap(srv *gin.Engine, dir string, cfe *cache.Cache) {
 	switcher := routes.ExtRoute(routes.Plan{
 		".lua": routes.Lua(),
 		"***":  staticServe.ServeCached("", staticServe.PhysFS("", true, true), cfe),
@@ -122,7 +121,6 @@ func bootstrap(srv *gin.Engine, dir string, cfe *cache.Cache) *gin.Engine {
 	lr := luaroute(dir)
 	srv.Use(lr)
 	srv.Use(st)*/
-	return srv
 }
 
 func main() {
@@ -147,6 +145,13 @@ func main() {
 
 	runtime.GOMAXPROCS(*workers)
 
+	root, _ := filepath.Abs(*webroot)
+	filesystem = initPhysFS(root)
+	defer physfs.Deinit()
+	go scheduler.Run()    // Run the scheduler.
+	go routes.Preloader() // Run the Preloader.
+	routes.Init(*jobs)    // Run init sequence.
+
 	if *script == "" {
 		srv := new_server()
 		if *useLogger {
@@ -159,11 +164,6 @@ func main() {
 		if *useGzip {
 			srv.Use(gzip.Gzip(gzip.DefaultCompression))
 		}
-		root, _ := filepath.Abs(*webroot)
-		debug(root)
-		filesystem = initPhysFS(root)
-		defer physfs.Deinit()
-		go scheduler.Run() // Run the scheduler.
 		bootstrap(srv, "", cfe)
 		srv.Run(*host + ":" + strconv.Itoa(*port))
 	} else {

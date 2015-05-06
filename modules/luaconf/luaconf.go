@@ -16,13 +16,8 @@ func Configure(script string, cfe *cache.Cache, webroot string) (*gin.Engine, er
 	srv := gin.New()
 	L := luar.Init()
 	luar.Register(L, "", luar.Map{ // Global
-		"srv":   srv,
-		"state": L,
-		"Use": func(mw func(*gin.Context)) {
-			srv.Use(func(c *gin.Context) {
-				mw(c)
-			})
-		},
+		"srv": srv,
+		"L":   L,
 	})
 	luar.Register(L, "var", luar.Map{ // Vars
 		"root": webroot,
