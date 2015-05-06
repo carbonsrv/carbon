@@ -3,19 +3,15 @@ package main
 //go:generate go-bindata -o modules/glue/generated_lua.go -pkg=glue -prefix "./lua" ./lua
 
 import (
-	"./modules/glue"
+	"./modules/routes"
 	"./modules/scheduler"
 	"./modules/static"
 	"bufio"
-	"errors"
-	"fmt"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/namsral/flag"
 	"github.com/pmylund/go-cache"
-	"github.com/vifino/golua/lua"
-	"github.com/vifino/luar"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -25,28 +21,11 @@ import (
 	"time"
 )
 
-// Preloader/Starter
+// General
 var jobs *int
-var preloaded chan *lua.State
-
-func preloader() {
-	preloaded = make(chan *lua.State, *jobs)
-	for {
-		state := luar.Init()
-		err := state.DoString(glue.Glue())
-		if err != nil {
-			fmt.Println(err)
-		}
-		preloaded <- state
-	}
-}
-func getInstance() *lua.State {
-	return <-preloaded
-}
 
 // Cache
 var cfe *cache.Cache
-var cbc *cache.Cache
 
 func cacheRead(c *cache.Cache, file string) (string, error) {
 	res := ""
@@ -62,25 +41,6 @@ func cacheRead(c *cache.Cache, file string) (string, error) {
 		res = data_tmp.(string)
 	}
 	return res, nil
-}
-func cacheDump(L *lua.State, file string) (string, error, bool) {
-	data_tmp, found := cbc.Get(file)
-	if found == false {
-		data, err := fileRead(file)
-		if err != nil {
-			return "", err, false
-		}
-		if L.LoadString(data) != 0 {
-			return "", errors.New(L.ToString(-1)), true
-		}
-		res := L.FDump()
-		L.Pop(1)
-		cbc.Set(file, res, cache.DefaultExpiration)
-		return res, nil, false
-	} else {
-		debug("Using Bytecode-cache for " + file)
-		return data_tmp.(string), nil, false
-	}
 }
 
 // File sytem functions
@@ -150,8 +110,7 @@ func new_server() *gin.Engine {
 	return gin.New()
 }
 func bootstrap(srv *gin.Engine, dir string, cfe *cache.Cache) *gin.Engine {
-	go preloader()     // Run the instance starter.
-	go scheduler.Run() // Run the scheduler.
+	routes.Init(jobs)
 	switcher := logic_switcheroo(dir, cfe)
 	/*srv.GET(`/:file`, switcher)
 	srv.POST(`/:file`, switcher)*/
@@ -166,7 +125,7 @@ func bootstrap(srv *gin.Engine, dir string, cfe *cache.Cache) *gin.Engine {
 // Routes
 func logic_switcheroo(dir string, cfe *cache.Cache) func(*gin.Context) {
 	st := staticServe.ServeCached("", staticServe.PhysFS("", true, true), cfe)
-	lr := luaroute(dir)
+	lr := routes.Lua(dir)
 	return func(context *gin.Context) {
 		file := dir + context.Request.URL.Path
 		fe := cacheFileExists(file)
@@ -182,59 +141,7 @@ func logic_switcheroo(dir string, cfe *cache.Cache) func(*gin.Context) {
 	}
 }
 
-func luaroute(dir string) func(*gin.Context) {
-	LDumper := luar.Init()
-	return func(context *gin.Context) {
-		L := getInstance()
-		defer scheduler.Add(func() {
-			L.Close()
-		})
-		file := dir + context.Request.URL.Path
-		luar.Register(L, "", luar.Map{
-			"context": context,
-			"req":     context.Request,
-		})
-		code, err, lerr := cacheDump(LDumper, file)
-		if err != nil {
-			if lerr == false {
-				context.Next()
-				return
-			} else {
-				context.HTMLString(http.StatusInternalServerError, `<html>
-				<head><title>Syntax Error in `+context.Request.URL.Path+`</title>
-				<body>
-					<h1>Syntax Error in file `+context.Request.URL.Path+`</h1>
-					<code>`+string(err.Error())+`</code>
-				</body>
-				</html>`)
-				context.Next()
-				return
-			}
-		}
-		L.LoadBuffer(code, len(code), file) // This shouldn't error, was checked earlier.
-		if L.Pcall(0, 0, 0) != 0 {          // != 0 means error in execution
-			context.HTMLString(http.StatusInternalServerError, `<html>
-			<head><title>Runtime Error in `+context.Request.URL.Path+`</title>
-			<body>
-				<h1>Runtime Error in file `+context.Request.URL.Path+`</h1>
-				<code>`+L.ToString(-1)+`</code>
-			</body>
-			</html>`)
-			context.Abort()
-		}
-		/*L.DoString("return CONTENT_TO_RETURN")
-		v := luar.CopyTableToMap(L, nil, -1)
-		m := v.(map[string]interface{})
-		i := int(m["code"].(float64))
-		if err != nil {
-			i = http.StatusOK
-		}*/
-		//context.HTMLString(i, m["content"].(string))
-	}
-}
-
 func main() {
-	cbc = cache.New(5*time.Minute, 30*time.Second) // Initialize cache with 5 minute lifetime and purge every 30 seconds
 	cfe = cache.New(5*time.Minute, 30*time.Second) // File-Exists Cache
 
 	// Use config
@@ -270,6 +177,7 @@ func main() {
 	debug(root)
 	filesystem = initPhysFS(root)
 	defer physfs.Deinit()
+	go scheduler.Run() // Run the scheduler.
 	bootstrap(srv, "", cfe)
 
 	srv.Run(*host + ":" + strconv.Itoa(*port))
