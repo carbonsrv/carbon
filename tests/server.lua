@@ -5,6 +5,10 @@ srv.Use(mw.ExtRoute({
 	["***"]=static.serve("")
 }))
 srv.GET("/woot", mw.new(function()
-context.String(200,"woot")
+	content(doctype()(
+		tag"body"(
+			tag"h1"("woot")
+		)
+	))
 end))
 print("bai")

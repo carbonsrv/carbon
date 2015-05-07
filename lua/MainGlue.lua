@@ -176,8 +176,8 @@ function content(data, code)
 		code = 200
 	end
 	if type(data) == "string" then
-		finish(code, data)
-	elseif type(data) == "table" then
+		context.String(code, data)
+	elseif type(data) == "table" and data.render ~= nil then
 		context.HTMLString(code, data:render())
 	else
 		context.HTMLString(code, tostring(data))
