@@ -197,7 +197,7 @@ func New(bcode string) (func(*gin.Context), error) {
 			"New": New,
 		})*/
 		//fmt.Println("before loadbuffer")
-		if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
+		/*if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
 			context.HTMLString(http.StatusInternalServerError, `<html>
 			<head><title>Syntax Error in `+context.Request.URL.Path+`</title>
 			<body>
@@ -207,7 +207,8 @@ func New(bcode string) (func(*gin.Context), error) {
 			</html>`)
 			context.Abort()
 			return
-		}
+		}*/
+		L.LoadBuffer(bcode, len(bcode), "route")
 		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
 			context.HTMLString(http.StatusInternalServerError, `<html>
 			<head><title>Runtime Error on `+context.Request.URL.Path+`</title>
