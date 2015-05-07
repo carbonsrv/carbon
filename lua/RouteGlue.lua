@@ -4,7 +4,12 @@ function mw.new(fn)
 	if type(fn) == "function" then
 		code = string.dump(fn)
 	elseif type(fn) == "string" then
-		code = fn
+		fn, err = loadstring(code)
+		if not err then
+			code = string.dump(fn)
+		else
+			error(err)
+		end
 	end
 	r, err = mw.New(code)
 	if err ~= nil then

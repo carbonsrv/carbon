@@ -126,7 +126,7 @@ func Lua() func(*gin.Context) {
 				context.HTMLString(http.StatusInternalServerError, `<html>
 				<head><title>Syntax Error in `+context.Request.URL.Path+`</title>
 				<body>
-					<h1>Syntax Error in file `+context.Request.URL.Path+`</h1>
+					<h1>Syntax Error in file `+context.Request.URL.Path+`:</h1>
 					<code>`+string(err.Error())+`</code>
 				</body>
 				</html>`)
@@ -159,15 +159,14 @@ func Lua() func(*gin.Context) {
 }
 
 // Route creation by lua
-func New(code string) (func(*gin.Context), error) {
-	code, err := bcdump(code)
+func New(bcode string) (func(*gin.Context), error) {
+	/*code, err := bcdump(code)
 	if err != nil {
 		return func(*gin.Context) {}, err
-	}
+	}*/
 	return func(context *gin.Context) {
 		L := GetInstance()
 		L.DoString(glue.RouteGlue())
-		//L.DoString(glue.RouteGlue())
 		luar.Register(L, "", luar.Map{
 			"context": context,
 			"req":     context.Request,
@@ -199,8 +198,18 @@ func New(code string) (func(*gin.Context), error) {
 			"New": New,
 		})
 		//fmt.Println("before loadbuffer")
-		L.LoadBuffer(code, len(code), "route") // This shouldn't error, was checked earlier.
-		if L.Pcall(0, 0, 0) != 0 {             // != 0 means error in execution
+		if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
+			context.HTMLString(http.StatusInternalServerError, `<html>
+			<head><title>Syntax Error in `+context.Request.URL.Path+`</title>
+			<body>
+				<h1>Syntax Error in Lua Route on `+context.Request.URL.Path+`:</h1>
+				<code>`+L.ToString(-1)+`</code>
+			</body>
+			</html>`)
+			context.Abort()
+			return
+		}
+		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
 			context.HTMLString(http.StatusInternalServerError, `<html>
 			<head><title>Runtime Error on `+context.Request.URL.Path+`</title>
 			<body>
