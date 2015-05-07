@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
 	//"github.com/vifino/golua/lua"
+	"../glue"
 	"github.com/pmylund/go-cache"
 	"github.com/vifino/luar"
 )
@@ -46,11 +47,14 @@ func Configure(script string, cfe *cache.Cache, webroot string) (*gin.Engine, er
 		"GZip": func() func(*gin.Context) {
 			return gzip.Gzip(gzip.DefaultCompression)
 		},
+		"New": routes.New,
 	})
 	luar.Register(L, "static", luar.Map{
 		"serve": (func(prefix string) func(*gin.Context) {
 			return staticServe.ServeCached(prefix, staticServe.PhysFS("", true, true), cfe)
 		}),
 	})
+	L.DoString(glue.MainGlue())
+	L.DoString(glue.RouteGlue())
 	return srv, L.DoFile(script)
 }
