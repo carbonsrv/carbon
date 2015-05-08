@@ -4,7 +4,7 @@ package main
 
 import (
 	"./modules/luaconf"
-	"./modules/routes"
+	"./modules/middleware"
 	"./modules/scheduler"
 	"./modules/static"
 	"bufio"
@@ -110,8 +110,8 @@ func new_server() *gin.Engine {
 	return gin.New()
 }
 func bootstrap(srv *gin.Engine, dir string, cfe *cache.Cache) {
-	switcher := routes.ExtRoute(routes.Plan{
-		".lua": routes.Lua(),
+	switcher := middleware.ExtRoute(middleware.Plan{
+		".lua": middleware.Lua(),
 		"***":  staticServe.ServeCached("", staticServe.PhysFS("", true, true), cfe),
 	})
 	/*srv.GET(`/:file`, switcher)
@@ -148,9 +148,9 @@ func main() {
 	root, _ := filepath.Abs(*webroot)
 	filesystem = initPhysFS(root)
 	defer physfs.Deinit()
-	go scheduler.Run()    // Run the scheduler.
-	go routes.Preloader() // Run the Preloader.
-	routes.Init(*jobs)    // Run init sequence.
+	go scheduler.Run()        // Run the scheduler.
+	go middleware.Preloader() // Run the Preloader.
+	middleware.Init(*jobs)    // Run init sequence.
 
 	if *script == "" {
 		srv := new_server()

@@ -1,10 +1,7 @@
 package luaconf
 
 import (
-	"../routes"
-	"../static"
-	"github.com/DeedleFake/Go-PhysicsFS/physfs"
-	"github.com/gin-gonic/contrib/gzip"
+	"../middleware"
 	"github.com/gin-gonic/gin"
 	//"github.com/vifino/golua/lua"
 	"../glue"
@@ -23,38 +20,9 @@ func Configure(script string, cfe *cache.Cache, webroot string) (*gin.Engine, er
 	luar.Register(L, "var", luar.Map{ // Vars
 		"root": webroot,
 	})
-	luar.Register(L, "fs", luar.Map{ // PhysFS
-		"mount":       physfs.Mount,
-		"exits":       physfs.Exists,
-		"getFS":       physfs.FileSystem,
-		"mkdir":       physfs.Mkdir,
-		"umount":      physfs.RemoveFromSearchPath,
-		"delete":      physfs.Delete,
-		"setWriteDir": physfs.SetWriteDir,
-		"getWriteDir": physfs.GetWriteDir,
-	})
-	luar.Register(L, "mw", luar.Map{
-		"Lua": routes.Lua,
-		"ExtRoute": (func(plan map[string]interface{}) func(*gin.Context) {
-			newplan := make(routes.Plan, len(plan))
-			for k, v := range plan {
-				newplan[k] = v.(func(*gin.Context))
-			}
-			return routes.ExtRoute(newplan)
-		}),
-		"Logger":   gin.Logger,
-		"Recovery": gin.Recovery,
-		"GZip": func() func(*gin.Context) {
-			return gzip.Gzip(gzip.DefaultCompression)
-		},
-		"DLR_NS":  routes.DLR_NS,
-		"DLR_RUS": routes.DLR_RUS,
-	})
-	luar.Register(L, "static", luar.Map{
-		"serve": (func(prefix string) func(*gin.Context) {
-			return staticServe.ServeCached(prefix, staticServe.PhysFS("", true, true), cfe)
-		}),
-	})
+	middleware.BindMiddleware(L)
+	middleware.BindPhysFS(L)
+	middleware.BindStatic(L, cfe)
 	L.DoString(glue.MainGlue())
 	L.DoString(glue.RouteGlue())
 	return srv, L.DoFile(script)

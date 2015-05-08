@@ -6,7 +6,6 @@ import (
 	"bufio"
 	"errors"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
-	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/pmylund/go-cache"
 	"github.com/vifino/golua/lua"
@@ -76,35 +75,9 @@ func Preloader() {
 	for {
 		//fmt.Println("preloading")
 		L := luar.Init()
-		luar.Register(L, "fs", luar.Map{ // PhysFS
-			"mount":       physfs.Mount,
-			"exits":       physfs.Exists,
-			"getFS":       physfs.FileSystem,
-			"mkdir":       physfs.Mkdir,
-			"umount":      physfs.RemoveFromSearchPath,
-			"delete":      physfs.Delete,
-			"setWriteDir": physfs.SetWriteDir,
-			"getWriteDir": physfs.GetWriteDir,
-		})
-		luar.Register(L, "mw", luar.Map{
-			"Lua": Lua,
-			"ExtRoute": (func(plan map[string]interface{}) func(*gin.Context) {
-				newplan := make(Plan, len(plan))
-				for k, v := range plan {
-					newplan[k] = v.(func(*gin.Context))
-				}
-				return ExtRoute(newplan)
-			}),
-			"Logger":   gin.Logger,
-			"Recovery": gin.Recovery,
-			"GZip": func() func(*gin.Context) {
-				return gzip.Gzip(gzip.DefaultCompression)
-			},
-			"DLR_NS":  DLR_NS,
-			"DLR_RUS": DLR_RUS,
-		})
+		BindMiddleware(L)
+		BindPhysFS(L)
 		err := L.DoString(glue.MainGlue())
-		L.DoString(glue.RouteGlue())
 		if err != nil {
 			panic(err)
 		}
