@@ -13,8 +13,6 @@ func ExtRoute(plan Plan) func(*gin.Context) {
 	return func(c *gin.Context) {
 		path := c.Request.URL.Path
 		ext := filepath.Ext(path)
-		fmt.Println(path)
-		fmt.Println(ext)
 		//found := false
 		/*for ext, fn := range plan {
 			if filepath.Ext(path) == ext {
