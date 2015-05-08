@@ -1,6 +1,6 @@
 -- Middleware helpers, not really useful with anything but the server init script
-function mw.new(fn)
-	code = ""
+function mw.new(fn, safemode)
+	local code = ""
 	if type(fn) == "function" then
 		code = string.dump(fn)
 	elseif type(fn) == "string" then
@@ -11,7 +11,13 @@ function mw.new(fn)
 			error(err)
 		end
 	end
-	r, err = mw.New(code)
+	local r
+	local err
+	if safemode then
+		r, err = mw.DLR_NS(code)
+	else
+		r, err = mw.DLR_RUS(code)
+	end
 	if err ~= nil then
 		error(err)
 	end

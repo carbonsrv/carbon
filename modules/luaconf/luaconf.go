@@ -47,7 +47,8 @@ func Configure(script string, cfe *cache.Cache, webroot string) (*gin.Engine, er
 		"GZip": func() func(*gin.Context) {
 			return gzip.Gzip(gzip.DefaultCompression)
 		},
-		"New": routes.New,
+		"DLR_NS":  routes.DLR_NS,
+		"DLR_RUS": routes.DLR_RUS,
 	})
 	luar.Register(L, "static", luar.Map{
 		"serve": (func(prefix string) func(*gin.Context) {

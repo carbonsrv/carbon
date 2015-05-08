@@ -159,7 +159,7 @@ func Lua() func(*gin.Context) {
 }
 
 // Route creation by lua
-func New(bcode string) (func(*gin.Context), error) {
+func DLR_NS(bcode string) (func(*gin.Context), error) {
 	/*code, err := bcdump(code)
 	if err != nil {
 		return func(*gin.Context) {}, err
@@ -198,7 +198,8 @@ func New(bcode string) (func(*gin.Context), error) {
 			"GZip": func() func(*gin.Context) {
 				return gzip.Gzip(gzip.DefaultCompression)
 			},
-			"New": New,
+			"DLR_NS":  DLR_NS,
+			"DLR_RUS": DLR_RUS,
 		})
 		//fmt.Println("before loadbuffer")
 		/*if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
@@ -224,5 +225,56 @@ func New(bcode string) (func(*gin.Context), error) {
 			context.Abort()
 			return
 		}
+	}, nil
+}
+func DLR_RUS(bcode string) (func(*gin.Context), error) { // Same as above, but a little unsafe. Probably more than I think. Default, because it's fine for most things.
+	L := GetInstance()
+	L.DoString(glue.RouteGlue())
+	luar.Register(L, "fs", luar.Map{ // PhysFS
+		"mount":       physfs.Mount,
+		"exits":       physfs.Exists,
+		"getFS":       physfs.FileSystem,
+		"mkdir":       physfs.Mkdir,
+		"umount":      physfs.RemoveFromSearchPath,
+		"delete":      physfs.Delete,
+		"setWriteDir": physfs.SetWriteDir,
+		"getWriteDir": physfs.GetWriteDir,
+	})
+	luar.Register(L, "mw", luar.Map{
+		"Lua": Lua,
+		"ExtRoute": (func(plan map[string]interface{}) func(*gin.Context) {
+			newplan := make(Plan, len(plan))
+			for k, v := range plan {
+				newplan[k] = v.(func(*gin.Context))
+			}
+			return ExtRoute(newplan)
+		}),
+		"Logger":   gin.Logger,
+		"Recovery": gin.Recovery,
+		"GZip": func() func(*gin.Context) {
+			return gzip.Gzip(gzip.DefaultCompression)
+		},
+		"DLR_NS":  DLR_NS,
+		"DLR_RUS": DLR_RUS,
+	})
+	L.LoadBuffer(bcode, len(bcode), "route")
+	L.PushValue(-1)
+	return func(context *gin.Context) {
+		luar.Register(L, "", luar.Map{
+			"context": context,
+			"req":     context.Request,
+		})
+		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
+			context.HTMLString(http.StatusInternalServerError, `<html>
+			<head><title>Runtime Error on `+context.Request.URL.Path+`</title>
+			<body>
+				<h1>Runtime Error in Lua Route on `+context.Request.URL.Path+`:</h1>
+				<code>`+L.ToString(-1)+`</code>
+			</body>
+			</html>`)
+			context.Abort()
+			return
+		}
+		L.PushValue(-1)
 	}, nil
 }
