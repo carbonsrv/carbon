@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
+	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/pmylund/go-cache"
 	"github.com/vifino/golua/lua"
@@ -165,12 +166,15 @@ func New(bcode string) (func(*gin.Context), error) {
 	}*/
 	return func(context *gin.Context) {
 		L := GetInstance()
+		defer scheduler.Add(func() {
+			L.Close()
+		})
 		L.DoString(glue.RouteGlue())
 		luar.Register(L, "", luar.Map{
 			"context": context,
 			"req":     context.Request,
 		})
-		/*luar.Register(L, "fs", luar.Map{ // PhysFS
+		luar.Register(L, "fs", luar.Map{ // PhysFS
 			"mount":       physfs.Mount,
 			"exits":       physfs.Exists,
 			"getFS":       physfs.FileSystem,
@@ -195,7 +199,7 @@ func New(bcode string) (func(*gin.Context), error) {
 				return gzip.Gzip(gzip.DefaultCompression)
 			},
 			"New": New,
-		})*/
+		})
 		//fmt.Println("before loadbuffer")
 		/*if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
 			context.HTMLString(http.StatusInternalServerError, `<html>
