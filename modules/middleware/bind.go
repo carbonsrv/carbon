@@ -26,8 +26,10 @@ func BindMiddleware(L *lua.State) {
 		"GZip": func() func(*gin.Context) {
 			return gzip.Gzip(gzip.DefaultCompression)
 		},
-		"DLR_NS":  DLR_NS,
-		"DLR_RUS": DLR_RUS,
+		"DLR_NS":   DLR_NS,
+		"DLR_RUS":  DLR_RUS,
+		"Echo":     Echo,
+		"EchoHTML": EchoHTML,
 	})
 	L.DoString(glue.RouteGlue())
 }
