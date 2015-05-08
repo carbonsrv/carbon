@@ -132,7 +132,7 @@ func main() {
 
 	var host = flag.String("host", "", "IP of Host to bind the Webserver on")
 	var port = flag.Int("port", 8080, "Port to run Webserver on (HTTP)")
-	jobs = flag.Int("states", runtime.NumCPU()*2, "Number of Preinitialized Lua States")
+	jobs = flag.Int("states", runtime.NumCPU(), "Number of Preinitialized Lua States")
 	var workers = flag.Int("workers", runtime.NumCPU(), "Number of Worker threads.")
 	var webroot = flag.String("root", ".", "Path to Web Root")
 

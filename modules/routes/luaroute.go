@@ -5,7 +5,6 @@ import (
 	"../scheduler"
 	"bufio"
 	"errors"
-	"fmt"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
@@ -76,12 +75,44 @@ func Preloader() {
 	Preloaded = make(chan *lua.State, jobs)
 	for {
 		//fmt.Println("preloading")
-		state := luar.Init()
-		err := state.DoString(glue.MainGlue())
+		L := luar.Init()
+		luar.Register(L, "fs", luar.Map{ // PhysFS
+			"mount":       physfs.Mount,
+			"exits":       physfs.Exists,
+			"getFS":       physfs.FileSystem,
+			"mkdir":       physfs.Mkdir,
+			"umount":      physfs.RemoveFromSearchPath,
+			"delete":      physfs.Delete,
+			"setWriteDir": physfs.SetWriteDir,
+			"getWriteDir": physfs.GetWriteDir,
+		})
+		luar.Register(L, "mw", luar.Map{
+			"Lua": Lua,
+			"ExtRoute": (func(plan map[string]interface{}) func(*gin.Context) {
+				newplan := make(Plan, len(plan))
+				for k, v := range plan {
+					newplan[k] = v.(func(*gin.Context))
+				}
+				return ExtRoute(newplan)
+			}),
+			"Logger":   gin.Logger,
+			"Recovery": gin.Recovery,
+			"GZip": func() func(*gin.Context) {
+				return gzip.Gzip(gzip.DefaultCompression)
+			},
+			"DLR_NS":  DLR_NS,
+			"DLR_RUS": DLR_RUS,
+		})
+		err := L.DoString(glue.MainGlue())
+		L.DoString(glue.RouteGlue())
 		if err != nil {
-			fmt.Println(err)
+			panic(err)
 		}
-		Preloaded <- state
+		err = L.DoString(glue.RouteGlue())
+		if err != nil {
+			panic(err)
+		}
+		Preloaded <- L
 	}
 }
 func GetInstance() *lua.State {
@@ -169,37 +200,9 @@ func DLR_NS(bcode string) (func(*gin.Context), error) {
 		defer scheduler.Add(func() {
 			L.Close()
 		})
-		L.DoString(glue.RouteGlue())
 		luar.Register(L, "", luar.Map{
 			"context": context,
 			"req":     context.Request,
-		})
-		luar.Register(L, "fs", luar.Map{ // PhysFS
-			"mount":       physfs.Mount,
-			"exits":       physfs.Exists,
-			"getFS":       physfs.FileSystem,
-			"mkdir":       physfs.Mkdir,
-			"umount":      physfs.RemoveFromSearchPath,
-			"delete":      physfs.Delete,
-			"setWriteDir": physfs.SetWriteDir,
-			"getWriteDir": physfs.GetWriteDir,
-		})
-		luar.Register(L, "mw", luar.Map{
-			"Lua": Lua,
-			"ExtRoute": (func(plan map[string]interface{}) func(*gin.Context) {
-				newplan := make(Plan, len(plan))
-				for k, v := range plan {
-					newplan[k] = v.(func(*gin.Context))
-				}
-				return ExtRoute(newplan)
-			}),
-			"Logger":   gin.Logger,
-			"Recovery": gin.Recovery,
-			"GZip": func() func(*gin.Context) {
-				return gzip.Gzip(gzip.DefaultCompression)
-			},
-			"DLR_NS":  DLR_NS,
-			"DLR_RUS": DLR_RUS,
 		})
 		//fmt.Println("before loadbuffer")
 		/*if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
@@ -227,39 +230,16 @@ func DLR_NS(bcode string) (func(*gin.Context), error) {
 		}
 	}, nil
 }
-func DLR_RUS(bcode string) (func(*gin.Context), error) { // Same as above, but a little unsafe. Probably more than I think. Default, because it's fine for most things.
-	L := GetInstance()
-	L.DoString(glue.RouteGlue())
-	luar.Register(L, "fs", luar.Map{ // PhysFS
-		"mount":       physfs.Mount,
-		"exits":       physfs.Exists,
-		"getFS":       physfs.FileSystem,
-		"mkdir":       physfs.Mkdir,
-		"umount":      physfs.RemoveFromSearchPath,
-		"delete":      physfs.Delete,
-		"setWriteDir": physfs.SetWriteDir,
-		"getWriteDir": physfs.GetWriteDir,
-	})
-	luar.Register(L, "mw", luar.Map{
-		"Lua": Lua,
-		"ExtRoute": (func(plan map[string]interface{}) func(*gin.Context) {
-			newplan := make(Plan, len(plan))
-			for k, v := range plan {
-				newplan[k] = v.(func(*gin.Context))
-			}
-			return ExtRoute(newplan)
-		}),
-		"Logger":   gin.Logger,
-		"Recovery": gin.Recovery,
-		"GZip": func() func(*gin.Context) {
-			return gzip.Gzip(gzip.DefaultCompression)
-		},
-		"DLR_NS":  DLR_NS,
-		"DLR_RUS": DLR_RUS,
-	})
-	L.LoadBuffer(bcode, len(bcode), "route")
-	L.PushValue(-1)
+func DLR_RUS(bcode string) (func(*gin.Context), error) { // Same as above, but reuses states. Much faster. Higher memory use though, because more states.
+	schan := make(chan *lua.State, jobs/2)
+	for i := 0; i < jobs/2; i++ {
+		L := GetInstance()
+		L.LoadBuffer(bcode, len(bcode), "route")
+		L.PushValue(-1)
+		schan <- L
+	}
 	return func(context *gin.Context) {
+		L := <-schan
 		luar.Register(L, "", luar.Map{
 			"context": context,
 			"req":     context.Request,
@@ -276,5 +256,6 @@ func DLR_RUS(bcode string) (func(*gin.Context), error) { // Same as above, but a
 			return
 		}
 		L.PushValue(-1)
+		schan <- L
 	}, nil
 }

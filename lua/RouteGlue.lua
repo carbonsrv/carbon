@@ -1,5 +1,5 @@
 -- Middleware helpers, not really useful with anything but the server init script
-function mw.new(fn, safemode)
+function mw.new(fn, newstate)
 	local code = ""
 	if type(fn) == "function" then
 		code = string.dump(fn)
@@ -13,7 +13,7 @@ function mw.new(fn, safemode)
 	end
 	local r
 	local err
-	if safemode then
+	if newstate then
 		r, err = mw.DLR_NS(code)
 	else
 		r, err = mw.DLR_RUS(code)
