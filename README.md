@@ -4,6 +4,7 @@ gold is a Webserver written in [Go](https://golang.org) that uses the [Lua Scrip
 # Usage
 
 ## Flags
+Note: Prefix all of these flags with "-". To get this list, just type `gold -h`.
     Usage of ./gold:
       -cert="": Certificate File for HTTPS
       -config="": Parse Config File
