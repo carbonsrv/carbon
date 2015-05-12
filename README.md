@@ -9,17 +9,22 @@ serve-pwd-config, running every .lua that gets accessed, configured using a lua 
 
 ## Flags
     Usage of ./gold:
+      -cert="": Certificate File for HTTPS
       -config="": Parse Config File
       -gzip=false: Use GZIP
       -host="": IP of Host to bind the Webserver on
+      -http=true: Listen HTTP
+      -https=false: Listen HTTPS
+      -key="": Key File for HTTPS
       -logger=true: Log Requests and Cache information
       -port=8080: Port to run Webserver on (HTTP)
+      -ports=8443: Port to run Webserver on (HTTPS)
       -recovery=false: Recover from Panics
       -root=".": Path to Web Root
       -script="": Parse Lua Script as initialization
       -states=8: Number of Preinitialized Lua States
       -workers=8: Number of Worker threads.
-
+  
 ## Script configuration
 There is also the script configuration, which uses a Lua Script to do the initialization.
 ``` lua
