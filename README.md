@@ -77,7 +77,7 @@ Now in a little more detail.
 
 `mw.Logger()` is a fancy logger. 'Nuff said.
 
-`mw.Recovery()` is an panic catcher, normally not used.
+`mw.Recovery()` is a panic catcher, normally not used.
 
 `mw.GZip()` GZips everything that goes through it.
 
