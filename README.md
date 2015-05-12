@@ -55,23 +55,24 @@ end))
 
 ## Lua API:
 
-`static.serve(prefix)` Starts a static webserver. If you want to work in the directory root (`/`), use an empty string as prefix. (`""`).
-
 `srv.Use(middleware)` adds a middleware to the server.
 
 `srv.GET("path", middleware)` dispatches (GET) requests for `path` to the middleware `middleware`. (This works similar for all HTTP methods that [gin](https://github.com/gin-gonic/gin) supports.)
 
 ### Available middlewares
+These return middlewares that you add to the server using `srv.Use(middleware)`.
 
-`mw.new(code||function)` makes a new lua route. Look above for an example on how to use it.
+`static.serve(prefix)` returns a static webserver. If you want to work in the directory root (`/`), use an empty string as prefix. (`""`).
 
-`mw.Lua()` will execute all Lua code in a given file and renders the template statements.
+`mw.new(code||function)` makes a new Lua Route. Look above for an example on how to use it.
+
+`mw.Lua()` will execute all Lua code at the requests path allowing you to render the template statements and generally make dynamic sites.
 
 `mw.Logger()` is a simple Logger, logging requests and responses.
 
 `mw.Recovery()` catches panics, you usually won't have to use it.
 
-`mw.GZip()` enables HTTP compression.
+`mw.GZip()` enables GZip compression.
 
 `mw.Echo(response_code, content)` echo's content as string.
 
