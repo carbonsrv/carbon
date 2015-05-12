@@ -2,7 +2,7 @@
 Go webserver using Lua for dynamic content.
 
 # About
-This is a go Webserver that is using Lua for dynamic content, either with no configuration in a plain 
+This is a Go Webserver that is using Lua for dynamic content, either with no configuration in a plain 
 serve-pwd-config, running every .lua that gets accessed, configured using a lua script or just command line flags.
 
 # Usage
@@ -21,7 +21,17 @@ serve-pwd-config, running every .lua that gets accessed, configured using a lua 
       -workers=8: Number of Worker threads.
 
 ## Script configuration
-There is also the script configuration, which uses a lua script to do the initialization.
+There is also the script configuration, which uses a Lua Script to do the initialization.
+``` lua
+srv.Use(mw.Logger())
+srv.GET("/woot", mw.new(function()
+        content(doctype()(
+                tag"body"(
+                        tag"h1"("woot")
+                )
+        ))
+end))
+```
 More on that later.
 
 # HTML Generation system
@@ -42,12 +52,12 @@ doctype( -- Always start with the doctype
   )
 )
 ```
-Where is that thing used?
-Well, either in the Lua files run by a non-script configured server, or in the Lua Dynamic Routes and Lua Script configuration file.
+Where is **that thing** used?
+Well, either in the Lua files run by a non-script configured server or in the Lua Dynamic Routes and Lua Script configuration file.
 
 # Lua Script Configuration
 Mainly used to configure the middleware used and to generate dynamic routes.
-Example:
+Example (Same as above):
 ``` lua
 srv.Use(mw.Logger())
 srv.GET("/woot", mw.new(function()
