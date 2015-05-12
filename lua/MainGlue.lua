@@ -162,7 +162,7 @@ function tag(name)
 	return setmetatable({name=name},tagmt)
 end
 function link(url, opt)
-	return tag"link"[{href=url, unpack(opt)}]()
+	return tag"a"[{href=url, unpack(opt)}]
 end
 function script(code)
 	return tag"script"(code)
