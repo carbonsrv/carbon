@@ -41,7 +41,7 @@ This template language can be used both in static and dynamic configuration.
 
 # Lua Script Configuration
 Mainly used to configure the middleware used and to generate dynamic routes.
-Example (Same as above):
+Example:
 ``` lua
 srv.Use(mw.Logger())
 srv.GET("/woot", mw.new(function()
