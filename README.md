@@ -44,13 +44,12 @@ Mainly used to configure the middleware used and to generate dynamic routes.
 Example:
 ``` lua
 srv.Use(mw.Logger())
-srv.GET("/woot", mw.new(function()
-        content(doctype()(
-                tag"body"(
-                        tag"h1"("woot")
-                )
-        ))
-end))
+srv.GET("/woot", mw.echo(doctype()(
+        tag"body"(
+            tag"h1"("woot")
+        )
+    ))
+)
 ```
 
 ## Lua API:
@@ -66,7 +65,7 @@ These return middlewares that you add to the server using `srv.Use(middleware)` 
 
 `static.serve(prefix)` returns a static webserver. If you want to work in the directory root (`/`), use an empty string as prefix. (`""`).
 
-`mw.new(code||function)` makes a new Lua Route. Look above for an example on how to use it.
+`mw.new(code||function)` makes a new Lua Route: You pass a function and it gets run when a request hits. Use `content(html_content_or_template, response_code` to send the data to the client.
 
 `mw.Lua()` will execute all Lua code at the requests path allowing you to render the template statements and generally make dynamic sites.
 
