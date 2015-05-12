@@ -105,7 +105,7 @@ func ServeCached(prefix string, fs *localFileSystem, cfe *cache.Cache) gin.Handl
 	//cfe := cache.New(5*time.Minute, 30*time.Second) // File-Exists Cache
 	var fileserver http.Handler
 
-	if prefix != "" {
+	if prefix != "" && prefix != "/" {
 		fileserver = http.StripPrefix(prefix, http.FileServer(fs.fs))
 	} else {
 		fileserver = http.FileServer(fs.fs)
