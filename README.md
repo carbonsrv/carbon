@@ -59,8 +59,10 @@ end))
 
 `srv.GET("path", middleware)` dispatches (GET) requests for `path` to the middleware `middleware`. (This works similar for all HTTP methods that [gin](https://github.com/gin-gonic/gin) supports.)
 
-### Available middlewares
-These return middlewares that you add to the server using `srv.Use(middleware)`.
+### Available middlewares/routes
+The terms route and middleware are interchangeable here, since middlewares are basically just routes that call `context.Next()` when they are done/404., both work fine in `srv.GET` anyways.
+
+These return middlewares that you add to the server using `srv.Use(middleware)` or `srv.GET(middleware)` for example.
 
 `static.serve(prefix)` returns a static webserver. If you want to work in the directory root (`/`), use an empty string as prefix. (`""`).
 
@@ -74,9 +76,9 @@ These return middlewares that you add to the server using `srv.Use(middleware)`.
 
 `mw.GZip()` enables GZip compression.
 
-`mw.Echo(response_code, content)` echo's content as string.
+`mw.echo(content[, response_code])` echo's content as HTML. Also accepts templates, just use `mw.echo()` inplace of `content()`.
 
-`mw.EchoHTML(response_code, content)` also echo's, but renders the content to HTML first.
+`mw.echoText(content[, response_code])` also echo's, but text only and doesn't accept the templates.
 
 `mw.ExtRoute(table)` routes to different middlewares depending on file extension.
 
