@@ -28,8 +28,8 @@ func BindMiddleware(L *lua.State) {
 		},
 		"DLR_NS":   DLR_NS,
 		"DLR_RUS":  DLR_RUS,
-		"Echo":     Echo,
-		"EchoHTML": EchoHTML,
+		"Echo":     EchoHTML,
+		"EchoText": Echo,
 	})
 	L.DoString(glue.RouteGlue())
 }

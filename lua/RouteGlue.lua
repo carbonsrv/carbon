@@ -23,3 +23,14 @@ function mw.new(fn, newstate)
 	end
 	return r
 end
+function mw.echo(code, resp)
+	local resp = tonumber(resp) or 200
+	if type(code) == "string" then
+		return mw.Echo(code, resp)
+	elseif type(code) == "table" then
+		return mw.Echo(code:render(), resp)
+	end
+end
+function mw.echoText(text, resp)
+	return mw.EchoText((tonumber(resp) or 200), text)
+end
