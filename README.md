@@ -1,9 +1,5 @@
 # gold
-Go webserver using Lua for dynamic content.
-
-# About
-This is a Go Webserver that is using Lua for dynamic content, either with no configuration in a plain 
-serve-pwd-config, running every .lua that gets accessed, configured using a lua script or just command line flags.
+gold is a Webserver written in [Go](https://golang.org) that uses the [Lua Scripting Language](http://www.lua.org/) for dynamic content and as a HTML template language.
 
 # Usage
 
@@ -24,27 +20,11 @@ serve-pwd-config, running every .lua that gets accessed, configured using a lua 
       -script="": Parse Lua Script as initialization
       -states=8: Number of Preinitialized Lua States
       -workers=8: Number of Worker threads.
-  
-## Script configuration
-There is also the script configuration, which uses a Lua Script to do the initialization.
-``` lua
-srv.Use(mw.Logger())
-srv.GET("/woot", mw.new(function()
-        content(doctype()(
-                tag"body"(
-                        tag"h1"("woot")
-                )
-        ))
-end))
-```
-More on that later.
+
 
 # HTML Generation system
-As you could spy in that script config example, there is a very interesting alternative to writing plain html.
 
-`content(cont[, response_code])` sets the content in the http request, but it takes more than just strings, it also takes a tag object.
-
-To start with the basics:
+Let's start with an example:
 ```lua
 doctype( -- Always start with the doctype
   tag"head"( -- Put your tags here.
@@ -57,8 +37,7 @@ doctype( -- Always start with the doctype
   )
 )
 ```
-Where is **that thing** used?
-Well, either in the Lua files run by a non-script configured server or in the Lua Dynamic Routes and Lua Script configuration file.
+This template language can be used both in static and dynamic configuration.
 
 # Lua Script Configuration
 Mainly used to configure the middleware used and to generate dynamic routes.
@@ -73,28 +52,33 @@ srv.GET("/woot", mw.new(function()
         ))
 end))
 ```
-Now in a little more detail.
 
-`srv.Use(middlware)` adds a middleware to the server.
+## Lua API:
+
+`static.serve(prefix)` Starts a static webserver. If you want to work in the directory root (`/`), use an empty string as prefix. (`""`).
+
+`srv.Use(middleware)` adds a middleware to the server.
+
+`srv.GET("path", middleware)` dispatches (GET) requests for `path` to the middleware `middleware`. (This works similar for all HTTP methods that [gin](https://github.com/gin-gonic/gin) supports.)
 
 ### Available middlewares
-`mw.Lua()` behaves a little like PHP, it runs every file it gets, using the same `content(...)` you can make dynamic sites!
-
-`mw.Logger()` is a fancy logger. 'Nuff said.
-
-`mw.Recovery()` is a panic catcher, normally not used.
-
-`mw.GZip()` GZips everything that goes through it.
 
 `mw.new(code||function)` makes a new lua route. Look above for an example on how to use it.
 
-`mw.Echo(response_code, content)` echo's a string. Simple as that.
+`mw.Lua()` will execute all Lua code in a given file and renders the template statements.
 
-`mw.EchoHTML(response_code, content)` is the same as above, but don't uses plaintext and uses HTML instead.
+`mw.Logger()` is a simple Logger, logging requests and responses.
 
-`static.serve(prefix)` is the most basic webserver. Static. Use `""` as prefix for `/`, please.
+`mw.Recovery()` catches panics, you usually won't have to use it.
 
-`mw.ExtRoute(table)` is one of the more interesting middlewares. It routes to different middlewares depending on file extension.
+`mw.GZip()` enables HTTP compression.
+
+`mw.Echo(response_code, content)` echo's content as string.
+
+`mw.EchoHTML(response_code, content)` also echo's, but renders the content to HTML first.
+
+`mw.ExtRoute(table)` routes to different middlewares depending on file extension.
+
 Example:
 ```lua
 srv.Use(mw.ExtRoute({ -- Add the ExtRoute middleware.
