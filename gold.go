@@ -123,6 +123,29 @@ func bootstrap(srv *gin.Engine, dir string, cfe *cache.Cache) {
 	srv.Use(st)*/
 }
 
+func serve(srv *gin.Engine, en_http bool, en_https bool, bind string, binds string, cert string, key string) {
+	end := make(chan bool)
+	if en_http {
+		go serveHTTP(srv, bind)
+	}
+	if en_https {
+		go serveHTTPS(srv, binds, cert, key)
+	}
+	<-end
+}
+func serveHTTP(srv *gin.Engine, bind string) {
+	err := http.ListenAndServe(bind, srv)
+	if err != nil {
+		panic(err)
+	}
+}
+func serveHTTPS(srv *gin.Engine, bind string, cert string, key string) {
+	err := http.ListenAndServeTLS(bind, cert, key, srv)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func main() {
 	cfe = cache.New(5*time.Minute, 30*time.Second) // File-Exists Cache
 
@@ -132,6 +155,12 @@ func main() {
 
 	var host = flag.String("host", "", "IP of Host to bind the Webserver on")
 	var port = flag.Int("port", 8080, "Port to run Webserver on (HTTP)")
+	var ports = flag.Int("ports", 8443, "Port to run Webserver on (HTTPS)")
+	var cert = flag.String("cert", "", "Certificate File for HTTPS")
+	var key = flag.String("key", "", "Key File for HTTPS")
+	var en_http = flag.Bool("http", true, "Listen HTTP")
+	var en_https = flag.Bool("https", false, "Listen HTTPS")
+
 	jobs = flag.Int("states", runtime.NumCPU(), "Number of Preinitialized Lua States")
 	var workers = flag.Int("workers", runtime.NumCPU(), "Number of Worker threads.")
 	var webroot = flag.String("root", ".", "Path to Web Root")
@@ -143,6 +172,12 @@ func main() {
 
 	flag.Parse()
 
+	if *en_https {
+		if *key == "" || *cert == "" {
+			panic("Need to have a Key and a Cert defined.")
+		}
+	}
+
 	runtime.GOMAXPROCS(*workers)
 
 	root, _ := filepath.Abs(*webroot)
@@ -151,7 +186,6 @@ func main() {
 	go scheduler.Run()        // Run the scheduler.
 	go middleware.Preloader() // Run the Preloader.
 	middleware.Init(*jobs)    // Run init sequence.
-
 	if *script == "" {
 		srv := new_server()
 		if *useLogger {
@@ -165,12 +199,12 @@ func main() {
 			srv.Use(gzip.Gzip(gzip.DefaultCompression))
 		}
 		bootstrap(srv, "", cfe)
-		srv.Run(*host + ":" + strconv.Itoa(*port))
+		serve(srv, *en_http, *en_https, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 	} else {
 		srv, err := luaconf.Configure(*script, cfe, *webroot)
 		if err != nil {
 			panic(err)
 		}
-		srv.Run(*host + ":" + strconv.Itoa(*port))
+		serve(srv, *en_http, *en_https, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 	}
 }
