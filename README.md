@@ -3,7 +3,7 @@ Go webserver using Lua for dynamic content.
 
 # About
 This is a go Webserver that is using Lua for dynamic content, either with no configuration in a plain 
-serve-pwd-config, running every .lua that gets accessed.
+serve-pwd-config, running every .lua that gets accessed, configured using a lua script or just command line flags.
 
 # Usage
 
