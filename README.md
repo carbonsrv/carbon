@@ -79,6 +79,15 @@ Now in a little more detail.
 
 `static.serve(prefix)` is the most basic webserver. Static. Use `""` as prefix for `/`, please.
 
+`mw.ExtRoute(table)` is one of the more interesting middlewares. It routes to different middlewares depending on file extension.
+Example:
+```lua
+srv.Use(mw.ExtRoute({ -- Add the ExtRoute middleware.
+        [".lua"]=mw.Lua(), -- Route every .lua file to mw.Lua
+        ["***"]=static.serve("") -- Route every not routed request to static.serve
+}))
+```
+
 # License
 MIT
 Copyright (c) 2015 Adrian Pistol
