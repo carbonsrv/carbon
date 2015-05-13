@@ -5,23 +5,24 @@ gold is a Webserver written in [Go](https://golang.org) that uses the [Lua Scrip
 
 ## Flags
 Note: Prefix all of these flags with "-". To get this list, just type `gold -h`.
+
     Usage of ./gold:
-    -cert="": Certificate File for HTTPS
-    -config="": Parse Config File
-    -gzip=false: Use GZIP
-    -host="": IP of Host to bind the Webserver on
-    -http=true: Listen HTTP
-    -http2=false: Enable HTTP/2
-    -https=false: Listen HTTPS
-    -key="": Key File for HTTPS
-    -logger=true: Log Requests and Cache information
-    -port=8080: Port to run Webserver on (HTTP)
-    -ports=8443: Port to run Webserver on (HTTPS)
-    -recovery=false: Recover from Panics
-    -root=".": Path to Web Root
-    -script="": Parse Lua Script as initialization
-    -states=8: Number of Preinitialized Lua States
-    -workers=8: Number of Worker threads.
+      -cert="": Certificate File for HTTPS
+      -config="": Parse Config File
+      -gzip=false: Use GZIP
+      -host="": IP of Host to bind the Webserver on
+      -http=true: Listen HTTP
+      -http2=false: Enable HTTP/2
+      -https=false: Listen HTTPS
+      -key="": Key File for HTTPS
+      -logger=true: Log Requests and Cache information
+      -port=8080: Port to run Webserver on (HTTP)
+      -ports=8443: Port to run Webserver on (HTTPS)
+      -recovery=false: Recover from Panics
+      -root=".": Path to Web Root
+      -script="": Parse Lua Script as initialization
+      -states=8: Number of Preinitialized Lua States
+      -workers=8: Number of Worker threads.
 
 
 # HTML Generation system
