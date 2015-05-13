@@ -11,6 +11,7 @@ Note: Prefix all of these flags with "-". To get this list, just type `gold -h`.
       -gzip=false: Use GZIP
       -host="": IP of Host to bind the Webserver on
       -http=true: Listen HTTP
+      -http2=false: Enable HTTP/2
       -https=false: Listen HTTPS
       -key="": Key File for HTTPS
       -logger=true: Log Requests and Cache information
