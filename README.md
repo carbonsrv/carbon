@@ -1,12 +1,12 @@
-# gold
-gold is a Webserver written in [Go](https://golang.org) that uses the [Lua Scripting Language](http://www.lua.org/) for dynamic content and as a HTML template language.
+# carbon
+carbon is a Webserver written in [Go](https://golang.org) that uses the [Lua Scripting Language](http://www.lua.org/) for dynamic content and as a HTML template language.
 
 # Usage
 
 ## Flags
-Note: Prefix all of these flags with "-". To get this list, just type `gold -h`.
+Note: Prefix all of these flags with "-". To get this list, just type `carbon -h`.
 
-    Usage of ./gold:
+    Usage of ./carbon:
       -cert="": Certificate File for HTTPS
       -config="": Parse Config File
       -gzip=false: Use GZIP
