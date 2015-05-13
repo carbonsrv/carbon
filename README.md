@@ -66,6 +66,8 @@ The terms route and middleware are interchangeable here, since middlewares are b
 
 These return middlewares that you add to the server using `srv.Use(middleware)` or `srv.GET(middleware)` for example.
 
+___
+
 `static.serve(prefix)` returns a static webserver. If you want to work in the directory root (`/`), use an empty string as prefix. (`""`).
 
 `mw.new(code||function)` makes a new Lua Route: You pass a function and it gets run when a request hits. Use `content(html_content_or_template, response_code` to send the data to the client.
