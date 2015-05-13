@@ -9,6 +9,7 @@ import (
 	"./modules/static"
 	"bufio"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
+	http2 "github.com/bradfitz/http2"
 	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/namsral/flag"
@@ -123,24 +124,44 @@ func bootstrap(srv *gin.Engine, dir string, cfe *cache.Cache) {
 	srv.Use(st)*/
 }
 
-func serve(srv *gin.Engine, en_http bool, en_https bool, bind string, binds string, cert string, key string) {
+func serve(srv *gin.Engine, en_http bool, en_https bool, en_http2 bool, bind string, binds string, cert string, key string) {
 	end := make(chan bool)
 	if en_http {
-		go serveHTTP(srv, bind)
+		go serveHTTP(srv, bind, en_http2)
 	}
 	if en_https {
-		go serveHTTPS(srv, binds, cert, key)
+		go serveHTTPS(srv, binds, en_http2, cert, key)
 	}
 	<-end
 }
-func serveHTTP(srv *gin.Engine, bind string) {
-	err := http.ListenAndServe(bind, srv)
+func serveHTTP(srv *gin.Engine, bind string, en_http2 bool) {
+	s := &http.Server{
+		Addr:           bind,
+		Handler:        srv,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
+	if en_http2 {
+		http2.ConfigureServer(s, nil)
+	}
+	err := s.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}
 }
-func serveHTTPS(srv *gin.Engine, bind string, cert string, key string) {
-	err := http.ListenAndServeTLS(bind, cert, key, srv)
+func serveHTTPS(srv *gin.Engine, bind string, en_http2 bool, cert string, key string) {
+	s := &http.Server{
+		Addr:           bind,
+		Handler:        srv,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
+	if en_http2 {
+		http2.ConfigureServer(s, nil)
+	}
+	err := s.ListenAndServeTLS(cert, key)
 	if err != nil {
 		panic(err)
 	}
@@ -160,6 +181,7 @@ func main() {
 	var key = flag.String("key", "", "Key File for HTTPS")
 	var en_http = flag.Bool("http", true, "Listen HTTP")
 	var en_https = flag.Bool("https", false, "Listen HTTPS")
+	var en_http2 = flag.Bool("http2", false, "Enable HTTP/2")
 
 	jobs = flag.Int("states", runtime.NumCPU(), "Number of Preinitialized Lua States")
 	var workers = flag.Int("workers", runtime.NumCPU(), "Number of Worker threads.")
@@ -199,12 +221,12 @@ func main() {
 			srv.Use(gzip.Gzip(gzip.DefaultCompression))
 		}
 		bootstrap(srv, "", cfe)
-		serve(srv, *en_http, *en_https, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
+		serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 	} else {
 		srv, err := luaconf.Configure(*script, cfe, *webroot)
 		if err != nil {
 			panic(err)
 		}
-		serve(srv, *en_http, *en_https, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
+		serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 	}
 }
