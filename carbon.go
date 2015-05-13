@@ -205,9 +205,9 @@ func main() {
 	root, _ := filepath.Abs(*webroot)
 	filesystem = initPhysFS(root)
 	defer physfs.Deinit()
-	go scheduler.Run()        // Run the scheduler.
-	go middleware.Preloader() // Run the Preloader.
-	middleware.Init(*jobs)    // Run init sequence.
+	go scheduler.Run()          // Run the scheduler.
+	go middleware.Preloader()   // Run the Preloader.
+	middleware.Init(*jobs, cfe) // Run init sequence.
 	if *script == "" {
 		srv := new_server()
 		if *useLogger {

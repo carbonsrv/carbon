@@ -16,6 +16,7 @@ import (
 
 // Cache
 var cbc *cache.Cache
+var cfe *cache.Cache
 var LDumper *lua.State
 
 func cacheDump(file string) (string, error, bool) {
@@ -46,6 +47,17 @@ func bcdump(data string) (string, error) {
 
 // FS
 var filesystem http.FileSystem
+
+func fileExists(file string) bool {
+	data_tmp, found := cfe.Get(file)
+	if found == false {
+		exists := physfs.Exists(file)
+		cfe.Set(file, exists, cache.DefaultExpiration)
+		return exists
+	} else {
+		return data_tmp.(bool)
+	}
+}
 
 func fileRead(file string) (string, error) {
 	f, err := filesystem.Open(file)
@@ -96,7 +108,8 @@ func GetInstance() *lua.State {
 }
 
 // Init
-func Init(j int) {
+func Init(j int, cfe_new *cache.Cache) {
+	cfe = cfe_new
 	jobs = j
 	filesystem = physfs.FileSystem()
 	cbc = cache.New(5*time.Minute, 30*time.Second) // Initialize cache with 5 minute lifetime and purge every 30 seconds
@@ -107,58 +120,62 @@ func Init(j int) {
 func Lua() func(*gin.Context) {
 	//LDumper := luar.Init()
 	return func(context *gin.Context) {
-		//fmt.Println("start")
-		L := GetInstance()
-		//fmt.Println("after start")
-		defer scheduler.Add(func() {
-			L.Close()
-		})
 		file := context.Request.URL.Path
-		//fmt.Println("after after start")
-		luar.Register(L, "", luar.Map{
-			"context": context,
-			"req":     context.Request,
-		})
-		//fmt.Println("before cache")
-		code, err, lerr := cacheDump(file)
-		//fmt.Println("after cache")
-		if err != nil {
-			if lerr == false {
-				context.Next()
-				return
-			} else {
+		if fileExists(file) {
+			//fmt.Println("start")
+			L := GetInstance()
+			//fmt.Println("after start")
+			defer scheduler.Add(func() {
+				L.Close()
+			})
+			//fmt.Println("after after start")
+			luar.Register(L, "", luar.Map{
+				"context": context,
+				"req":     context.Request,
+			})
+			//fmt.Println("before cache")
+			code, err, lerr := cacheDump(file)
+			//fmt.Println("after cache")
+			if err != nil {
+				if lerr == false {
+					context.Next()
+					return
+				} else {
+					context.HTMLString(http.StatusInternalServerError, `<html>
+					<head><title>Syntax Error in `+context.Request.URL.Path+`</title>
+					<body>
+						<h1>Syntax Error in file `+context.Request.URL.Path+`:</h1>
+						<code>`+string(err.Error())+`</code>
+					</body>
+					</html>`)
+					context.Abort()
+					return
+				}
+			}
+			//fmt.Println("before loadbuffer")
+			L.LoadBuffer(code, len(code), file) // This shouldn't error, was checked earlier.
+			if L.Pcall(0, 0, 0) != 0 {          // != 0 means error in execution
 				context.HTMLString(http.StatusInternalServerError, `<html>
-				<head><title>Syntax Error in `+context.Request.URL.Path+`</title>
+				<head><title>Runtime Error in `+context.Request.URL.Path+`</title>
 				<body>
-					<h1>Syntax Error in file `+context.Request.URL.Path+`:</h1>
-					<code>`+string(err.Error())+`</code>
+					<h1>Runtime Error in file `+context.Request.URL.Path+`:</h1>
+					<code>`+L.ToString(-1)+`</code>
 				</body>
 				</html>`)
 				context.Abort()
 				return
 			}
+			/*L.DoString("return CONTENT_TO_RETURN")
+			v := luar.CopyTableToMap(L, nil, -1)
+			m := v.(map[string]interface{})
+			i := int(m["code"].(float64))
+			if err != nil {
+				i = http.StatusOK
+			}*/
+			//context.HTMLString(i, m["content"].(string))
+		} else {
+			context.Next()
 		}
-		//fmt.Println("before loadbuffer")
-		L.LoadBuffer(code, len(code), file) // This shouldn't error, was checked earlier.
-		if L.Pcall(0, 0, 0) != 0 {          // != 0 means error in execution
-			context.HTMLString(http.StatusInternalServerError, `<html>
-			<head><title>Runtime Error in `+context.Request.URL.Path+`</title>
-			<body>
-				<h1>Runtime Error in file `+context.Request.URL.Path+`:</h1>
-				<code>`+L.ToString(-1)+`</code>
-			</body>
-			</html>`)
-			context.Abort()
-			return
-		}
-		/*L.DoString("return CONTENT_TO_RETURN")
-		v := luar.CopyTableToMap(L, nil, -1)
-		m := v.(map[string]interface{})
-		i := int(m["code"].(float64))
-		if err != nil {
-			i = http.StatusOK
-		}*/
-		//context.HTMLString(i, m["content"].(string))
 	}
 }
 
