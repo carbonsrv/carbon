@@ -26,9 +26,11 @@ end
 function mw.echo(code, resp)
 	local resp = tonumber(resp) or 200
 	if type(code) == "string" then
-		return mw.Echo(code, resp)
+		return mw.Echo(resp, code)
 	elseif type(code) == "table" then
-		return mw.Echo(code:render(), resp)
+		return mw.Echo(resp, code:render())
+	else
+		return mw.echoText(resp, tostring(code))
 	end
 end
 function mw.echoText(text, resp)

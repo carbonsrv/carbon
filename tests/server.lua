@@ -4,12 +4,10 @@ srv.Use(mw.ExtRoute({
 	[".lua"]=mw.Lua(),
 	["***"]=static.serve("")
 }))
-srv.GET("/woot", mw.new(function()
-	content(doctype()(
+srv.GET("/woot", mw.echo(doctype()(
 		tag"body"(
 			tag"h1"("woot")
 		)
-	))
-end))
+), 200))
 srv.GET("/wat", mw.echoText("u wut m8?!?!"))
 print("bai")
