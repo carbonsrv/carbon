@@ -224,7 +224,9 @@ func DLR_RUS(bcode string) (func(*gin.Context), error) { // Same as above, but r
 	schan := make(chan *lua.State, jobs/2)
 	for i := 0; i < jobs/2; i++ {
 		L := GetInstance()
-		L.LoadBuffer(bcode, len(bcode), "route")
+		if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
+			return func(context *gin.Context) {}, errors.New(L.ToString(-1))
+		}
 		L.PushValue(-1)
 		schan <- L
 	}
