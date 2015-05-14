@@ -70,7 +70,7 @@ ___
 
 `static.serve(prefix)` returns a static webserver. If you want to work in the directory root (`/`), use an empty string as prefix. (`""`).
 
-`mw.new(code||function)` makes a new Lua Route: You pass a function and it gets run when a request hits. Use `content(html_content_or_template, response_code` to send the data to the client.
+`mw.new(code||function[, variables])` makes a new Lua Route: You pass a function and it gets run when a request hits. Use `content(html_content_or_template, response_code)` to send the data to the client. `variables` is a Lua Table you can use to bind variables to allow them to be accessed in the route. `{test="Testy"}` would bind the variable `test` with the content "Testy".
 
 `mw.Lua()` will execute all Lua code at the requests path allowing you to render the template statements and generally make dynamic sites.
 
