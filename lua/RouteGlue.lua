@@ -1,5 +1,5 @@
 -- Middleware helpers, not really useful with anything but the server init script
-function mw.new(fn, newstate, bindings)
+function mw.new(fn, bindings, newstate)
 	local code = ""
 	if type(fn) == "function" then
 		code = string.dump(fn)
