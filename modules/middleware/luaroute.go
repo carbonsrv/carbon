@@ -180,13 +180,16 @@ func Lua() func(*gin.Context) {
 }
 
 // Route creation by lua
-func DLR_NS(bcode string) (func(*gin.Context), error) {
+func DLR_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) {
 	/*code, err := bcdump(code)
 	if err != nil {
 		return func(*gin.Context) {}, err
 	}*/
 	return func(context *gin.Context) {
 		L := GetInstance()
+		if dobind {
+			luar.Register(L, "", vals)
+		}
 		defer scheduler.Add(func() {
 			L.Close()
 		})
@@ -220,10 +223,13 @@ func DLR_NS(bcode string) (func(*gin.Context), error) {
 		}
 	}, nil
 }
-func DLR_RUS(bcode string) (func(*gin.Context), error) { // Same as above, but reuses states. Much faster. Higher memory use though, because more states.
+func DLR_RUS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but reuses states. Much faster. Higher memory use though, because more states.
 	schan := make(chan *lua.State, jobs/2)
 	for i := 0; i < jobs/2; i++ {
 		L := GetInstance()
+		if dobind {
+			luar.Register(L, "", vals)
+		}
 		if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
 			return func(context *gin.Context) {}, errors.New(L.ToString(-1))
 		}

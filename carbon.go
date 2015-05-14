@@ -9,7 +9,7 @@ import (
 	"./modules/static"
 	"bufio"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
-	http2 "github.com/bradfitz/http2"
+	"github.com/bradfitz/http2"
 	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/namsral/flag"

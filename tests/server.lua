@@ -10,4 +10,7 @@ srv.GET("/woot", mw.echo(doctype()(
 		)
 ), 200))
 srv.GET("/wat", mw.echoText("u wut m8?!?!"))
+srv.GET("/test", mw.new(function()
+	content(test, 200)
+end, 200, {test="wat"}))
 print("bai")
