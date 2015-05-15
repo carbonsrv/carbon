@@ -4,11 +4,13 @@ import (
 	"../glue"
 	"../static"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
+	"github.com/fzzy/radix/redis"
 	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/pmylund/go-cache"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
+	"time"
 )
 
 func BindMiddleware(L *lua.State) {
@@ -43,6 +45,16 @@ func BindPhysFS(L *lua.State) {
 		"delete":      physfs.Delete,
 		"setWriteDir": physfs.SetWriteDir,
 		"getWriteDir": physfs.GetWriteDir,
+	})
+}
+func BindRedis(L *lua.State) {
+	luar.Register(L, "redis", luar.Map{
+		"connectTimeout": (func(host string, timeout int) (*redis.Client, error) {
+			return redis.DialTimeout("tcp", host, time.Duration(timeout)*time.Second)
+		}),
+		"connect": (func(host string) (*redis.Client, error) {
+			return redis.Dial("tcp", host)
+		}),
 	})
 }
 func BindStatic(L *lua.State, cfe *cache.Cache) {
