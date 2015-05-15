@@ -225,7 +225,11 @@ func DLR_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.C
 	}, nil
 }
 func DLR_RUS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but reuses states. Much faster. Higher memory use though, because more states.
-	schan := make(chan *lua.State, jobs/2)
+	insts := 2
+	if jobs/2 > 2 {
+		insts = jobs
+	}
+	schan := make(chan *lua.State, insts)
 	for i := 0; i < jobs/2; i++ {
 		L := GetInstance()
 		if dobind {
