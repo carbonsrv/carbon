@@ -57,6 +57,14 @@ func BindRedis(L *lua.State) {
 		}),
 	})
 }
+func BindContext(L *lua.State, context *gin.Context) {
+	luar.Register(L, "", luar.Map{
+		"context": context,
+		"req":     context.Request,
+		"params":  context.Params.ByName,
+		"form":    context.Request.FormValue,
+	})
+}
 func BindStatic(L *lua.State, cfe *cache.Cache) {
 	luar.Register(L, "static", luar.Map{
 		"serve": (func(prefix string) func(*gin.Context) {

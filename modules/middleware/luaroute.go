@@ -130,11 +130,7 @@ func Lua() func(*gin.Context) {
 				L.Close()
 			})
 			//fmt.Println("after after start")
-			luar.Register(L, "", luar.Map{
-				"context": context,
-				"req":     context.Request,
-				"params":  context.Params,
-			})
+			BindContext(L, context)
 			//fmt.Println("before cache")
 			code, err, lerr := cacheDump(file)
 			//fmt.Println("after cache")
@@ -195,11 +191,7 @@ func DLR_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.C
 		defer scheduler.Add(func() {
 			L.Close()
 		})
-		luar.Register(L, "", luar.Map{
-			"context": context,
-			"req":     context.Request,
-			"params":  context.Params,
-		})
+		BindContext(L, context)
 		//fmt.Println("before loadbuffer")
 		/*if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
 			context.HTMLString(http.StatusInternalServerError, `<html>
@@ -245,11 +237,7 @@ func DLR_RUS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.
 	}
 	return func(context *gin.Context) {
 		L := <-schan
-		luar.Register(L, "", luar.Map{
-			"context": context,
-			"req":     context.Request,
-			"params":  context.Params,
-		})
+		BindContext(L, context)
 		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
 			context.HTMLString(http.StatusInternalServerError, `<html>
 			<head><title>Runtime Error on `+context.Request.URL.Path+`</title>
