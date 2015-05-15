@@ -21,6 +21,7 @@ func Configure(script string, cfe *cache.Cache, webroot string) (*gin.Engine, er
 		"root": webroot,
 	})
 	middleware.BindMiddleware(L)
+	middleware.BindRedis(L)
 	middleware.BindPhysFS(L)
 	middleware.BindStatic(L, cfe)
 	L.DoString(glue.MainGlue())

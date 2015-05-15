@@ -88,6 +88,7 @@ func Preloader() {
 		//fmt.Println("preloading")
 		L := luar.Init()
 		BindMiddleware(L)
+		BindRedis(L)
 		BindPhysFS(L)
 		err := L.DoString(glue.MainGlue())
 		if err != nil {

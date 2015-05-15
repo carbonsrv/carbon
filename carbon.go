@@ -183,8 +183,12 @@ func main() {
 	var en_https = flag.Bool("https", false, "Listen HTTPS")
 	var en_http2 = flag.Bool("http2", false, "Enable HTTP/2")
 
-	jobs = flag.Int("states", runtime.NumCPU(), "Number of Preinitialized Lua States")
-	var workers = flag.Int("workers", runtime.NumCPU(), "Number of Worker threads.")
+	var wrkrs := 2
+	if runtime.NumCPU() > 2 {
+		wrkrs = runtime.NumCPU()
+	}
+	jobs = flag.Int("states", wrkrs, "Number of Preinitialized Lua States")
+	var workers = flag.Int("workers", wrkrs, "Number of Worker threads.")
 	var webroot = flag.String("root", ".", "Path to Web Root")
 
 	// Middleware options
