@@ -90,6 +90,7 @@ func Preloader() {
 		BindMiddleware(L)
 		BindRedis(L)
 		BindPhysFS(L)
+		BindOther(L)
 		err := L.DoString(glue.MainGlue())
 		if err != nil {
 			panic(err)

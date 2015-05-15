@@ -57,6 +57,13 @@ func BindRedis(L *lua.State) {
 		}),
 	})
 }
+func BindOther(L *lua.State) {
+	luar.Register(L, "", luar.Map{
+		"unixtime": (func() int {
+			return int(time.Now().UnixNano())
+		}),
+	})
+}
 func BindContext(L *lua.State, context *gin.Context) {
 	luar.Register(L, "", luar.Map{
 		"context": context,
