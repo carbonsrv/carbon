@@ -96,7 +96,7 @@ func routeglue_lua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindata_file_info{name: "RouteGlue.lua", size: 1065, mode: os.FileMode(420), modTime: time.Unix(1431647331, 0)}
+	info := bindata_file_info{name: "RouteGlue.lua", size: 1065, mode: os.FileMode(420), modTime: time.Unix(1431700968, 0)}
 	a := &asset{bytes: bytes, info:  info}
 	return a, nil
 }

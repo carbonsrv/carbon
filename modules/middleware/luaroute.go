@@ -133,6 +133,7 @@ func Lua() func(*gin.Context) {
 			luar.Register(L, "", luar.Map{
 				"context": context,
 				"req":     context.Request,
+				"params":  context.Params,
 			})
 			//fmt.Println("before cache")
 			code, err, lerr := cacheDump(file)
@@ -197,6 +198,7 @@ func DLR_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.C
 		luar.Register(L, "", luar.Map{
 			"context": context,
 			"req":     context.Request,
+			"params":  context.Params,
 		})
 		//fmt.Println("before loadbuffer")
 		/*if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
@@ -246,6 +248,7 @@ func DLR_RUS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.
 		luar.Register(L, "", luar.Map{
 			"context": context,
 			"req":     context.Request,
+			"params":  context.Params,
 		})
 		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
 			context.HTMLString(http.StatusInternalServerError, `<html>
