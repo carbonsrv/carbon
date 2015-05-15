@@ -162,7 +162,11 @@ function tag(name)
 	return setmetatable({name=name},tagmt)
 end
 function link(url, opt)
-	return tag"a"[{href=url, unpack(opt)}]
+	if opt then
+		return tag"a"[{href=url, unpack(opt)}]
+	else
+		return tag"a"[{href=url}]
+	end
 end
 function script(code)
 	return tag"script"(code)
