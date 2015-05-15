@@ -183,7 +183,7 @@ func main() {
 	var en_https = flag.Bool("https", false, "Listen HTTPS")
 	var en_http2 = flag.Bool("http2", false, "Enable HTTP/2")
 
-	var wrkrs := 2
+	wrkrs := 2
 	if runtime.NumCPU() > 2 {
 		wrkrs = runtime.NumCPU()
 	}
