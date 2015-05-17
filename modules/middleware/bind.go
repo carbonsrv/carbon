@@ -13,6 +13,13 @@ import (
 	"time"
 )
 
+func Bind(L *lua.State) {
+	BindMiddleware(L)
+	BindRedis(L)
+	BindPhysFS(L)
+	BindOther(L)
+}
+
 func BindMiddleware(L *lua.State) {
 	luar.Register(L, "mw", luar.Map{
 		"Lua": Lua,

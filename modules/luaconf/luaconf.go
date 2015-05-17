@@ -20,10 +20,7 @@ func Configure(script string, cfe *cache.Cache, webroot string) (*gin.Engine, er
 	luar.Register(L, "var", luar.Map{ // Vars
 		"root": webroot,
 	})
-	middleware.BindMiddleware(L)
-	middleware.BindRedis(L)
-	middleware.BindPhysFS(L)
-	middleware.BindOther(L)
+	middleware.Bind(L)
 	middleware.BindStatic(L, cfe)
 	L.DoString(glue.MainGlue())
 	L.DoString(glue.RouteGlue())
