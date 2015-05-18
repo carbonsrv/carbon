@@ -3,10 +3,6 @@ package main
 //go:generate go-bindata -o modules/glue/generated_lua.go -pkg=glue -prefix "./lua" ./lua
 
 import (
-	"./modules/luaconf"
-	"./modules/middleware"
-	"./modules/scheduler"
-	"./modules/static"
 	"bufio"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/bradfitz/http2"
@@ -14,6 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/namsral/flag"
 	"github.com/pmylund/go-cache"
+	"github.com/vifino/carbon/modules/luaconf"
+	"github.com/vifino/carbon/modules/middleware"
+	"github.com/vifino/carbon/modules/scheduler"
+	"github.com/vifino/carbon/modules/static"
 	"log"
 	"net/http"
 	"path/filepath"

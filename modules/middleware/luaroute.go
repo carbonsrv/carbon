@@ -1,13 +1,13 @@
 package middleware
 
 import (
-	"../glue"
-	"../scheduler"
 	"bufio"
 	"errors"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/gin-gonic/gin"
 	"github.com/pmylund/go-cache"
+	"github.com/vifino/carbon/modules/glue"
+	"github.com/vifino/carbon/modules/scheduler"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
 	"net/http"
