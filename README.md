@@ -1,8 +1,10 @@
 # carbon
 Carbon is a Webserver written in [Go](https://golang.org) that uses the [Lua Scripting Language](http://www.lua.org/) for dynamic content and as a HTML template language.
 
-# Usage
+# Installing
+`go get -u github.com/vifino/carbon`
 
+# Usage
 ## Flags
 Note: Prefix all of these flags with "-". To get this list, just type `carbon -h`.
 
