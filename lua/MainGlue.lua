@@ -187,3 +187,13 @@ function content(data, code)
 		context.HTMLString(code, tostring(data))
 	end
 end
+
+function form(name)
+	if name ~= nil then
+		f = _formfunc(tostring(name))
+		if f == "" then
+			return nil
+		end
+		return f
+	end
+end

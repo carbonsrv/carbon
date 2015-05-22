@@ -73,10 +73,10 @@ func BindOther(L *lua.State) {
 }
 func BindContext(L *lua.State, context *gin.Context) {
 	luar.Register(L, "", luar.Map{
-		"context": context,
-		"req":     context.Request,
-		"params":  context.Params.ByName,
-		"form":    context.Request.FormValue,
+		"context":   context,
+		"req":       context.Request,
+		"params":    context.Params.ByName,
+		"_formfunc": context.Request.FormValue,
 	})
 }
 func BindStatic(L *lua.State, cfe *cache.Cache) {
