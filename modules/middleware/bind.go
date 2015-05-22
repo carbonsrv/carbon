@@ -3,11 +3,11 @@ package middleware
 import (
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/fzzy/radix/redis"
-	"github.com/gin-gonic/contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/pmylund/go-cache"
 	"github.com/vifino/carbon/modules/glue"
 	"github.com/vifino/carbon/modules/static"
+	"github.com/vifino/contrib/gzip"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
 	"time"
