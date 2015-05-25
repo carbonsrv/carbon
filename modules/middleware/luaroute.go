@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pmylund/go-cache"
 	"github.com/vifino/carbon/modules/glue"
+	"github.com/vifino/carbon/modules/helpers"
 	"github.com/vifino/carbon/modules/scheduler"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
@@ -137,7 +138,7 @@ func Lua() func(*gin.Context) {
 					context.Next()
 					return
 				} else {
-					context.HTMLString(http.StatusInternalServerError, `<html>
+					helpers.HTMLString(context, http.StatusInternalServerError, `<html>
 					<head><title>Syntax Error in `+context.Request.URL.Path+`</title>
 					<body>
 						<h1>Syntax Error in file `+context.Request.URL.Path+`:</h1>
@@ -151,7 +152,7 @@ func Lua() func(*gin.Context) {
 			//fmt.Println("before loadbuffer")
 			L.LoadBuffer(code, len(code), file) // This shouldn't error, was checked earlier.
 			if L.Pcall(0, 0, 0) != 0 {          // != 0 means error in execution
-				context.HTMLString(http.StatusInternalServerError, `<html>
+				helpers.HTMLString(context, http.StatusInternalServerError, `<html>
 				<head><title>Runtime Error in `+context.Request.URL.Path+`</title>
 				<body>
 					<h1>Runtime Error in file `+context.Request.URL.Path+`:</h1>
@@ -168,7 +169,7 @@ func Lua() func(*gin.Context) {
 			if err != nil {
 				i = http.StatusOK
 			}*/
-			//context.HTMLString(i, m["content"].(string))
+			//helpers.HTMLString(context, i, m["content"].(string))
 		} else {
 			context.Next()
 		}
@@ -192,7 +193,7 @@ func DLR_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.C
 		BindContext(L, context)
 		//fmt.Println("before loadbuffer")
 		/*if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
-			context.HTMLString(http.StatusInternalServerError, `<html>
+			helpers.HTMLString(context, http.StatusInternalServerError, `<html>
 			<head><title>Syntax Error in `+context.Request.URL.Path+`</title>
 			<body>
 				<h1>Syntax Error in Lua Route on `+context.Request.URL.Path+`:</h1>
@@ -204,7 +205,7 @@ func DLR_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.C
 		}*/
 		L.LoadBuffer(bcode, len(bcode), "route")
 		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
-			context.HTMLString(http.StatusInternalServerError, `<html>
+			helpers.HTMLString(context, http.StatusInternalServerError, `<html>
 			<head><title>Runtime Error on `+context.Request.URL.Path+`</title>
 			<body>
 				<h1>Runtime Error in Lua Route on `+context.Request.URL.Path+`:</h1>
@@ -237,7 +238,7 @@ func DLR_RUS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.
 		L := <-schan
 		BindContext(L, context)
 		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
-			context.HTMLString(http.StatusInternalServerError, `<html>
+			helpers.HTMLString(context, http.StatusInternalServerError, `<html>
 			<head><title>Runtime Error on `+context.Request.URL.Path+`</title>
 			<body>
 				<h1>Runtime Error in Lua Route on `+context.Request.URL.Path+`:</h1>

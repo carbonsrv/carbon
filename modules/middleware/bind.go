@@ -77,7 +77,7 @@ func BindConversions(L *lua.State) {
 		"stringtocharslice": (func(x string) []byte {
 			return []byte(x)
 		}),
-		"charslicetostring": (func(x interface{}) string {
+		"charslicetostring": (func(x []byte) string {
 			return string(x)
 		}),
 	})
