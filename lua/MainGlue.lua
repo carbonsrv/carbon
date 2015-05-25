@@ -1,10 +1,13 @@
 local html_escape={["<"]="&lt;",[">"]="&gt;",["&"]="&amp;"}
+
 local uri_escape=function(a)
 	return ("%%%02x"):format(a:byte())
 end
+
 local uri_unescape=function(a)
 	return string.char(tonumber(a,16))
 end
+
 escape={
 	html=function(str)
 		return (str:gsub("[<>&]",html_escape))
@@ -16,11 +19,13 @@ escape={
 		return (str:gsub("[%s`~!#$&*()|\\'\";<>?{}[%]^]","\\%1"))
 	end
 }
+
 unescape={
 	url=function(str)
 		return (str:gsub("+"," "):gsub("%%(%x%x)",uri_unescape))
 	end
 }
+
 -- tag metatable
 local tagmeth={
 	render=function(self)
@@ -147,6 +152,7 @@ local tagmeth={
 		return true
 	end
 }
+
 local tagmt={
 	__index=function(self,k)
 		if type(k)=="table" then
@@ -157,10 +163,12 @@ local tagmt={
 	end,
 	__call=tagmeth.add_content
 }
+
 -- Specific Tags
 function tag(name)
 	return setmetatable({name=name},tagmt)
 end
+
 function link(url, opt)
 	if opt then
 		return tag"a"[{href=url, unpack(opt)}]
@@ -168,24 +176,27 @@ function link(url, opt)
 		return tag"a"[{href=url}]
 	end
 end
+
 function script(code)
 	return tag"script"(code)
 end
+
 function doctype()
 	return tag"!DOCTYPE"[{"html"}]:force_open()
 end
 -- Return function
-function content(data, code)
-	if code == nil then
-		code = 200
-	end
+function content(data, code, ctype)
+	local code = code or 200
+	local ctype = ctype or "text/html"
+	local content = ""
 	if type(data) == "string" then
-		context.String(code, data)
+		content = data
 	elseif type(data) == "table" and data.render ~= nil then
-		context.HTMLString(code, data:render())
+		content = data:render()
 	else
-		context.HTMLString(code, tostring(data))
+		content = tostring(data)
 	end
+	context.Data(code, ctype, convert.tocharslice(content))
 end
 
 function form(name)

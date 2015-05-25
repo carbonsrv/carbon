@@ -18,6 +18,7 @@ func Bind(L *lua.State) {
 	BindRedis(L)
 	BindPhysFS(L)
 	BindOther(L)
+	BindConversions(L)
 }
 
 func BindMiddleware(L *lua.State) {
@@ -68,6 +69,16 @@ func BindOther(L *lua.State) {
 	luar.Register(L, "", luar.Map{
 		"unixtime": (func() int {
 			return int(time.Now().UnixNano())
+		}),
+	})
+}
+func BindConversions(L *lua.State) {
+	luar.Register(L, "convert", luar.Map{
+		"tocharslice", (func(x interface{}) {
+			return []slice(x)
+		}),
+		"tostring", (func(x interface{}) {
+			return string(x)
 		}),
 	})
 }
