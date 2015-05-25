@@ -74,10 +74,10 @@ func BindOther(L *lua.State) {
 }
 func BindConversions(L *lua.State) {
 	luar.Register(L, "convert", luar.Map{
-		"tocharslice", (func(x interface{}) {
-			return []slice(x)
+		"stringtocharslice": (func(x string) []byte {
+			return []byte(x)
 		}),
-		"tostring", (func(x interface{}) {
+		"charslicetostring": (func(x interface{}) string {
 			return string(x)
 		}),
 	})

@@ -196,7 +196,7 @@ function content(data, code, ctype)
 	else
 		content = tostring(data)
 	end
-	context.Data(code, ctype, convert.tocharslice(content))
+	context.Data(code, ctype, convert.stringtocharslice(content))
 end
 
 function form(name)
