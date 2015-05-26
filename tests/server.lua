@@ -17,5 +17,8 @@ end))
 srv.POST("/", mw.new(function()
 	print(form("f"))
 	content(form("f"))
+	if form("f") == nil then
+		print("is nil")
+	end
 end))
 print("bai")
