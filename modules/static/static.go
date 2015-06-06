@@ -2,14 +2,15 @@ package staticServe
 
 import (
 	"fmt"
-	"github.com/DeedleFake/Go-PhysicsFS/physfs"
-	"github.com/gin-gonic/gin"
-	"github.com/pmylund/go-cache"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/DeedleFake/Go-PhysicsFS/physfs"
+	"github.com/gin-gonic/gin"
+	"github.com/pmylund/go-cache"
 )
 
 type localFileSystem struct {
@@ -112,10 +113,7 @@ func ServeCached(prefix string, fs *localFileSystem, cfe *cache.Cache) gin.Handl
 	}
 
 	return func(c *gin.Context) {
-		if cachedFileExists(fs, cfe, prefix, c.Request.URL.Path) {
-			fileserver.ServeHTTP(c.Writer, c.Request)
-		} else {
-			c.Next()
-		}
+		fileserver.ServeHTTP(c.Writer, c.Request)
+		c.Next()
 	}
 }
