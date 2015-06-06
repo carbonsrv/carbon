@@ -77,7 +77,6 @@ func (l *localFileSystem) Exists(prefix string, filepath string) bool {
 		/*if !l.physfs {
 			return existsFile(l, p)
 		} else {*/
-		fmt.Println(p)
 		return physfs.Exists(p)
 		//}
 	}
