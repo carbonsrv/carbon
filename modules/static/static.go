@@ -2,14 +2,15 @@ package staticServe
 
 import (
 	"fmt"
-	"github.com/DeedleFake/Go-PhysicsFS/physfs"
-	"github.com/gin-gonic/gin"
-	"github.com/pmylund/go-cache"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/DeedleFake/Go-PhysicsFS/physfs"
+	"github.com/gin-gonic/gin"
+	"github.com/pmylund/go-cache"
 )
 
 type localFileSystem struct {
@@ -71,7 +72,7 @@ func (l *localFileSystem) Open(name string) (http.File, error) {
 }
 
 func (l *localFileSystem) Exists(prefix string, filepath string) bool {
-	if p := strings.TrimPrefix(filepath, prefix); len(p) < len(filepath) {
+	if p := strings.TrimPrefix(filepath, prefix); len(p) <= len(filepath) {
 		p = path.Join(l.root, p)
 		/*if !l.physfs {
 			return existsFile(l, p)
