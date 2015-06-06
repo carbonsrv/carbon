@@ -72,11 +72,12 @@ func (l *localFileSystem) Open(name string) (http.File, error) {
 }
 
 func (l *localFileSystem) Exists(prefix string, filepath string) bool {
-	if p := strings.TrimPrefix(filepath, prefix); len(p) < len(filepath) {
+	if p := strings.TrimPrefix(filepath, prefix); len(p) <= len(filepath) {
 		p = path.Join(l.root, p)
 		/*if !l.physfs {
 			return existsFile(l, p)
 		} else {*/
+		fmt.Println(p)
 		return physfs.Exists(p)
 		//}
 	}
@@ -113,7 +114,10 @@ func ServeCached(prefix string, fs *localFileSystem, cfe *cache.Cache) gin.Handl
 	}
 
 	return func(c *gin.Context) {
-		fileserver.ServeHTTP(c.Writer, c.Request)
-		c.Next()
+		if cachedFileExists(fs, cfe, prefix, c.Request.URL.Path) {
+			fileserver.ServeHTTP(c.Writer, c.Request)
+		} else {
+			c.Next()
+		}
 	}
 }
