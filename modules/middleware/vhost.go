@@ -16,7 +16,7 @@ func VHOST(plan Plan) func(*gin.Context) {
 		}
 		hostwithoutport := portmatch.ReplaceAllLiteralString(host, "")
 		if plan[hostwithoutport] != nil {
-			plan[host](c)
+			plan[hostwithoutport](c)
 			return
 		}
 		if plan["***"] != nil {
