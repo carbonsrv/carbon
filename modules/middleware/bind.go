@@ -31,6 +31,13 @@ func BindMiddleware(L *lua.State) {
 			}
 			return ExtRoute(newplan)
 		}),
+		"VHOST": (func(plan map[string]interface{}) func(*gin.Context) {
+			newplan := make(Plan, len(plan))
+			for k, v := range plan {
+				newplan[k] = v.(func(*gin.Context))
+			}
+			return VHOST(newplan)
+		}),
 		"Logger":   gin.Logger,
 		"Recovery": gin.Recovery,
 		"GZip": func() func(*gin.Context) {
