@@ -76,7 +76,7 @@ func mainglue_lua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindata_file_info{name: "MainGlue.lua", size: 4434, mode: os.FileMode(420), modTime: time.Unix(1438809755, 0)}
+	info := bindata_file_info{name: "MainGlue.lua", size: 4434, mode: os.FileMode(420), modTime: time.Unix(1438810789, 0)}
 	a := &asset{bytes: bytes, info:  info}
 	return a, nil
 }
