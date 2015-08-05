@@ -209,16 +209,7 @@ end
 
 function form(name)
 	if name ~= nil then
-		local f = _formfunc(tostring(name))
-		if f == "" then
-			return nil
-		end
-		return f
-	end
-end
-function queryvar(name)
-	if name ~= nil then
-		local f = _queryfunc(tostring(name))
+		f = _formfunc(tostring(name))
 		if f == "" then
 			return nil
 		end
