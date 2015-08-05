@@ -164,11 +164,11 @@ local tagmt={
 	__call=tagmeth.add_content
 }
 
--- Specific Tags
 function tag(name)
 	return setmetatable({name=name},tagmt)
 end
 
+-- Specific Tags and Aliases
 function link(url, opt)
 	if opt then
 		return tag"a"[{href=url, unpack(opt)}]
@@ -177,8 +177,16 @@ function link(url, opt)
 	end
 end
 
-function script(code)
-	return tag"script"(code)
+script = tag"script"
+
+function css(args)
+	local a = {type="text/css"}
+	if type(args) == "table" then
+		for k,v in pairs(args) do
+			a[k] = v
+		end
+	end
+	return tag"style"[a]
 end
 
 function doctype()
