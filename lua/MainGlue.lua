@@ -177,7 +177,9 @@ function link(url, opt)
 	end
 end
 
-script = tag"script"
+function script(...)
+	return tag"script"(...)
+end
 
 function css(args)
 	local a = {type="text/css"}
