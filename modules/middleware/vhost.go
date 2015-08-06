@@ -3,6 +3,7 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 	"regexp"
+	"fmt"
 )
 
 // Dynamic routing based on host given by a map.
@@ -11,12 +12,21 @@ func VHOST(plan Plan) func(*gin.Context) {
 	return func(c *gin.Context) {
 		host := c.Request.Host
 		hostwithoutport := portmatch.ReplaceAllLiteralString(host, "")
+		fmt.Println(hostwithoutport)
 		if plan[host] != nil {
+			fmt.Println("Found with port")
 			plan[host](c)
-		} else if plan[hostwithoutport] != nil {
+			return
+		}
+		if plan[hostwithoutport] != nil {
+			fmt.Println("Found without port")
 			plan[hostwithoutport](c)
-		} else if plan["***"] != nil {
+			return
+		}
+		if plan["***"] != nil {
+			fmt.Println("Found nothing")
 			plan["***"](c)
+			return
 		}
 	}
 }
