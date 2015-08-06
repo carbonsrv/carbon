@@ -93,7 +93,7 @@ func BindContext(L *lua.State, context *gin.Context) {
 	luar.Register(L, "", luar.Map{
 		"context":    context,
 		"req":        context.Request,
-		"params":     context.Params.ByName,
+		"params":     context.Param,
 		"_formfunc":  context.PostForm,
 		"_queryfunc": context.Query,
 	})
