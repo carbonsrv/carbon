@@ -17,8 +17,6 @@ func VHOST(plan Plan) func(*gin.Context) {
 			plan[hostwithoutport](c)
 		} else if plan["***"] != nil {
 			plan["***"](c)
-		} else {
-			c.Next()
 		}
 	}
 }
