@@ -194,7 +194,7 @@ function css(args)
 			a[k] = v
 		end
 	else
-		return tag"style"[a](tostring(args)
+		return tag"style"[a](tostring(args))
 	end
 	return tag"style"[a]
 end
