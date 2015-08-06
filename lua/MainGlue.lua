@@ -180,8 +180,8 @@ end
 function script(args)
 	if type(args) == "table" then
 		return tag"script"[args]
-	elseif args != nil then
-		return tag"script"(tostring(args)
+	elseif args ~= nil then
+		return tag"script"(tostring(args))
 	else
 		return tag"script"
 	end
