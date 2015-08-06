@@ -177,8 +177,14 @@ function link(url, opt)
 	end
 end
 
-function script(...)
-	return tag"script"(...)
+function script(args)
+	if type(args) == "table" then
+		return tag"script"[args]
+	elseif args != nil then
+		return tag"script"(tostring(args)
+	else
+		return tag"script"
+	end
 end
 
 function css(args)
@@ -187,6 +193,8 @@ function css(args)
 		for k,v in pairs(args) do
 			a[k] = v
 		end
+	else
+		return tag"style"[a](tostring(args)
 	end
 	return tag"style"[a]
 end
