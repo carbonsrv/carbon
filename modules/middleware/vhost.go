@@ -10,12 +10,12 @@ import (
 func VHOST(plan Plan) func(*gin.Context) {
 	portmatch := regexp.MustCompile(":.*$")
 	return func(c *gin.Context) {
-		c_cp = c.Copy()
-		host := c_cp.Request.Host
+		host := c.Request.Host
 		hostwithoutport := portmatch.ReplaceAllLiteralString(host, "")
 		fmt.Println(hostwithoutport)
+
 		if plan[host] != nil {
-			fmt.Println("Found with port")
+			fmt.Println("Found")
 			plan[host](c)
 			return
 		}
@@ -25,9 +25,11 @@ func VHOST(plan Plan) func(*gin.Context) {
 			return
 		}
 		if plan["***"] != nil {
-			fmt.Println("Found nothing")
+			fmt.Println("Found catchall")
 			plan["***"](c)
 			return
 		}
+		fmt.Println("Found nothing")
+		c.Next()
 	}
 }

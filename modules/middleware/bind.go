@@ -47,6 +47,7 @@ func BindMiddleware(L *lua.State) {
 		"DLR_RUS":  DLR_RUS,
 		"Echo":     EchoHTML,
 		"EchoText": Echo,
+		"SyntaxHL": SyntaxHL,
 	})
 	L.DoString(glue.RouteGlue())
 }

@@ -202,6 +202,7 @@ end
 function doctype()
 	return tag"!DOCTYPE"[{"html"}]:force_open()
 end
+
 -- Return function
 function content(data, code, ctype)
 	local code = code or 200
@@ -217,6 +218,7 @@ function content(data, code, ctype)
 	context.Data(code, ctype, convert.stringtocharslice(content))
 end
 
+-- Post vars and Query vars.
 function form(name)
 	if name ~= nil then
 		local f = _formfunc(tostring(name))
