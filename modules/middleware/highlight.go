@@ -67,7 +67,7 @@ func SyntaxHL(status int, s string) func(*gin.Context) {
 	return func(c *gin.Context) {
 		highlighted, err := syntaxhighlight.AsHTML(src)
 		if err != nil {
-			helpers.String(c, 500, err)
+			helpers.String(c, 500, err.Error())
 		} else {
 			content := `<style>` + css + `</style><pre><code>` + string(highlighted) + `</code></pre>`
 			helpers.String(c, status, content)
