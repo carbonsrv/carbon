@@ -69,7 +69,7 @@ func SyntaxHL(status int, s string) func(*gin.Context) {
 		if err != nil {
 			helpers.String(500, err)
 		} else {
-			content = `<style>` + css + `</style><pre><code>` + string(highlighted) `</code></pre>`
+			content := `<style>` + css + `</style><pre><code>` + string(highlighted) + `</code></pre>`
 			helpers.String(status, content)
 		}
 	}

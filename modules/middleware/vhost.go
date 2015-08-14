@@ -1,9 +1,9 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"regexp"
-	"fmt"
 )
 
 // Dynamic routing based on host given by a map.
