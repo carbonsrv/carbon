@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pmylund/go-cache"
 	"github.com/vifino/carbon/modules/glue"
+	"github.com/vifino/carbon/modules/helpers"
 	"github.com/vifino/carbon/modules/static"
 	"github.com/vifino/contrib/gzip"
 	"github.com/vifino/golua/lua"
@@ -47,7 +48,6 @@ func BindMiddleware(L *lua.State) {
 		"DLR_RUS":  DLR_RUS,
 		"Echo":     EchoHTML,
 		"EchoText": Echo,
-		"SyntaxHL": SyntaxHL,
 	})
 	L.DoString(glue.RouteGlue())
 }
@@ -78,6 +78,7 @@ func BindOther(L *lua.State) {
 		"unixtime": (func() int {
 			return int(time.Now().UnixNano())
 		}),
+		"syntaxhl", helpers.SyntaxHL,
 	})
 }
 func BindConversions(L *lua.State) {

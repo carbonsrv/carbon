@@ -1,9 +1,6 @@
-package middleware
+package helpers
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/vifino/carbon/modules/helpers"
-
 	"github.com/sourcegraph/syntaxhighlight"
 )
 
@@ -62,15 +59,12 @@ li.L7,
 li.L9 { background: #eee }
 `
 
-func SyntaxHL(status int, s string) func(*gin.Context) {
+func SyntaxHL(s string) (string, error) {
 	src := []byte(s)
-	return func(c *gin.Context) {
-		highlighted, err := syntaxhighlight.AsHTML(src)
-		if err != nil {
-			helpers.String(c, 500, err.Error())
-		} else {
-			content := `<style>` + css + `</style><pre><code>` + string(highlighted) + `</code></pre>`
-			helpers.String(c, status, content)
-		}
+	highlighted, err := syntaxhighlight.AsHTML(src)
+	if err != nil {
+		return "", err
+	} else {
+		return `<style>` + css + `</style><pre><code>` + string(highlighted) + `</code></pre>`
 	}
 }
