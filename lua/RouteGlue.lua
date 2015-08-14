@@ -45,5 +45,5 @@ function mw.echoText(text, resp)
 	return mw.EchoText((tonumber(resp) or 200), text)
 end
 function mw.syntaxhl(text, resp)
-	return mw.SyntaxHL((tonumber(resp) or 200), text)
+	return mw.echo((tonumber(resp) or 200), syntaxhl(text))
 end
