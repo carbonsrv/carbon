@@ -203,6 +203,15 @@ function doctype()
 	return tag"!DOCTYPE"[{"html"}]:force_open()
 end
 
+-- helpers
+function syntaxhl(text, defaultcss)
+	if defaultcss then
+		return _syntaxhlfunc(text, true)
+	else
+		return _syntaxhlfunc(text, false)
+	end
+end
+
 -- Return function
 function content(data, code, ctype)
 	local code = code or 200
@@ -218,7 +227,17 @@ function content(data, code, ctype)
 	context.Data(code, ctype, convert.stringtocharslice(content))
 end
 
--- Post vars and Query vars.
+-- Vars and stuff from context.
+function param(name)
+	if name ~= nil then
+		local f = _paramfunc(tostring(name))
+		if f == "" then
+			return nil
+		end
+		return f
+	end
+end
+params = param
 function form(name)
 	if name ~= nil then
 		local f = _formfunc(tostring(name))
@@ -228,7 +247,7 @@ function form(name)
 		return f
 	end
 end
-function queryvar(name)
+function query(name)
 	if name ~= nil then
 		local f = _queryfunc(tostring(name))
 		if f == "" then

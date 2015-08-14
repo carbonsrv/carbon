@@ -78,7 +78,7 @@ func BindOther(L *lua.State) {
 		"unixtime": (func() int {
 			return int(time.Now().UnixNano())
 		}),
-		"syntaxhl": helpers.SyntaxHL,
+		"_syntaxhlfunc": helpers.SyntaxHL,
 	})
 }
 func BindConversions(L *lua.State) {
@@ -95,7 +95,7 @@ func BindContext(L *lua.State, context *gin.Context) {
 	luar.Register(L, "", luar.Map{
 		"context":    context,
 		"req":        context.Request,
-		"params":     context.Param,
+		"_paramfunc": context.Param,
 		"_formfunc":  context.PostForm,
 		"_queryfunc": context.Query,
 	})
