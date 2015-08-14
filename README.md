@@ -6,7 +6,7 @@ Carbon is a Webserver written in [Go](https://golang.org) that uses the [Lua Scr
 
 # Usage
 ## Flags
-Note: Prefix all of these flags with "-". To get this list, just type `carbon -h`.
+To get this list, just type `carbon -h`.
 
     Usage of ./carbon:
       -cert="": Certificate File for HTTPS
