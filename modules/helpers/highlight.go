@@ -65,6 +65,6 @@ func SyntaxHL(s string) (string, error) {
 	if err != nil {
 		return "", err
 	} else {
-		return `<style>` + css + `</style><pre><code>` + string(highlighted) + `</code></pre>`
+		return `<style>` + css + `</style><pre><code>` + string(highlighted) + `</code></pre>`, nil
 	}
 }
