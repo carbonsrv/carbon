@@ -204,11 +204,11 @@ function doctype()
 end
 
 -- helpers
-function syntaxhl(text, defaultcss)
-	if defaultcss then
-		return _syntaxhlfunc(text, true)
-	else
+function syntaxhl(text, nodefaultcss)
+	if nodefaultcss then
 		return _syntaxhlfunc(text, false)
+	else
+		return _syntaxhlfunc(text, true)
 	end
 end
 
