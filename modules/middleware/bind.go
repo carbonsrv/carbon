@@ -78,7 +78,7 @@ func BindOther(L *lua.State) {
 		"unixtime": (func() int {
 			return int(time.Now().UnixNano())
 		}),
-		"syntaxhl", helpers.SyntaxHL,
+		"syntaxhl": helpers.SyntaxHL,
 	})
 }
 func BindConversions(L *lua.State) {
