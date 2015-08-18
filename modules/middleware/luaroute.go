@@ -291,7 +291,7 @@ func DLRWS_RUS(bcode string, dobind bool, vals map[string]interface{}) (func(*gi
 			"read":          (func() (int, string, error) {
 				messageType, p, err := conn.ReadMessage()
 				if err != nil {
-					return ()-1, "", err)
+					return (-1, "", err)
 				}
 				return (messageType, string(p), nil)
 			}),
