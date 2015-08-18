@@ -288,12 +288,12 @@ func DLRWS_RUS(bcode string, dobind bool, vals map[string]interface{}) (func(*gi
 			"TextMessage":   websocket.TextMessage,
 			//"read":          conn.ReadMessage,
 			//"send":          conn.SendMessage,
-			"read":          (func() int, string, error {
+			"read":          (func() (int, string, error) {
 				messageType, p, err := conn.ReadMessage()
 				if err != nil {
-					return -1, "", err
+					return ()-1, "", err)
 				}
-				return messageType, string(p), nil
+				return (messageType, string(p), nil)
 			}),
 			"send":          (func(t int, cnt string) error {
 				return conn.WriteMessage(t, []byte(cnt))
