@@ -7,8 +7,8 @@ func MainGlue() string {
 	}
 	return string(data)
 }
-func RouteGlue() string {
-	data, err := Asset("RouteGlue.lua")
+func ConfGlue() string {
+	data, err := Asset("ConfGlue.lua")
 	if err != nil {
 		panic(err)
 	}

@@ -23,6 +23,6 @@ func Configure(script string, cfe *cache.Cache, webroot string) (*gin.Engine, er
 	middleware.Bind(L)
 	middleware.BindStatic(L, cfe)
 	L.DoString(glue.MainGlue())
-	L.DoString(glue.RouteGlue())
+	L.DoString(glue.ConfGlue())
 	return srv, L.DoFile(script)
 }

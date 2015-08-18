@@ -1,49 +1,44 @@
--- Middleware helpers, not really useful with anything but the server init script
-function mw.new(fn, bindings, newstate)
-	local code = ""
-	if type(fn) == "function" then
-		code = string.dump(fn)
-	elseif type(fn) == "string" then
-		fn, err = loadstring(code)
-		if not err then
-			code = string.dump(fn)
-		else
-			error(err)
-		end
-	end
-	local r
-	local err
-	if newstate then
-		if type(bindings) == "table" then
-			r, err = mw.DLR_NS(code, true, bindings)
-		else
-			r, err = mw.DLR_NS(code, false, {["s"]="v"})
-		end
+-- Return function
+function content(data, code, ctype)
+	local code = code or 200
+	local ctype = ctype or "text/html"
+	local content = ""
+	if type(data) == "string" then
+		content = data
+	elseif type(data) == "table" and data.render ~= nil then
+		content = data:render()
 	else
-		if type(bindings) == "table" then
-			r, err = mw.DLR_RUS(code, true, bindings)
-		else
-			r, err = mw.DLR_RUS(code, false, {["s"]="v"})
+		content = tostring(data)
+	end
+	context.Data(code, ctype, convert.stringtocharslice(content))
+end
+
+-- Vars and stuff from context.
+function param(name)
+	if name ~= nil then
+		local f = _paramfunc(tostring(name))
+		if f == "" then
+			return nil
 		end
-	end
-	if err ~= nil then
-		error(err)
-	end
-	return r
-end
-function mw.echo(code, resp)
-	local resp = tonumber(resp) or 200
-	if type(code) == "string" then
-		return mw.Echo(resp, code)
-	elseif type(code) == "table" then
-		return mw.Echo(resp, code:render())
-	else
-		return mw.echoText(resp, tostring(code))
+		return f
 	end
 end
-function mw.echoText(text, resp)
-	return mw.EchoText((tonumber(resp) or 200), text)
+params = param
+function form(name)
+	if name ~= nil then
+		local f = _formfunc(tostring(name))
+		if f == "" then
+			return nil
+		end
+		return f
+	end
 end
-function mw.syntaxhl(text, resp)
-	return mw.echo((tonumber(resp) or 200), syntaxhl(text))
+function query(name)
+	if name ~= nil then
+		local f = _queryfunc(tostring(name))
+		if f == "" then
+			return nil
+		end
+		return f
+	end
 end
