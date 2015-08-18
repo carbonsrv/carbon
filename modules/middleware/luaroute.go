@@ -13,6 +13,7 @@ import (
 	"github.com/vifino/luar"
 	"net/http"
 	"time"
+	"github.com/gorilla/websocket"
 )
 
 // Cache
@@ -237,6 +238,67 @@ func DLR_RUS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.
 	return func(context *gin.Context) {
 		L := <-schan
 		BindContext(L, context)
+		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
+			helpers.HTMLString(context, http.StatusInternalServerError, `<html>
+			<head><title>Runtime Error on `+context.Request.URL.Path+`</title>
+			<body>
+				<h1>Runtime Error in Lua Route on `+context.Request.URL.Path+`:</h1>
+				<code>`+L.ToString(-1)+`</code>
+			</body>
+			</html>`)
+			context.Abort()
+			return
+		}
+		L.PushValue(-1)
+		schan <- L
+	}, nil
+}
+
+func DLRWS_RUS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but for websockets.
+	insts := 2
+	if jobs/2 > 2 {
+		insts = jobs
+	}
+	var upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+	schan := make(chan *lua.State, insts)
+	for i := 0; i < jobs/2; i++ {
+		L := GetInstance()
+
+		if dobind {
+			luar.Register(L, "", vals)
+		}
+		if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
+			return func(context *gin.Context) {}, errors.New(L.ToString(-1))
+		}
+		L.PushValue(-1)
+		schan <- L
+	}
+	return func(context *gin.Context) {
+		conn, err := upgrader.Upgrade(context.Writer, context.Request, nil)
+		if err != nil {
+			return // silent error.
+		}
+		L := <-schan
+		BindContext(L, context)
+		luar.Register(L, "ws", luar.Map{
+			"BinaryMessage": websocket.BinaryMessage,
+			"TextMessage":   websocket.TextMessage,
+			//"read":          conn.ReadMessage,
+			//"send":          conn.SendMessage,
+			"read":          (func(){
+				messageType, p, err := conn.ReadMessage()
+				if err != nil {
+					return -1, "", err
+				}
+				return messageType, string(p), nil
+			}),
+			"send":          (func(t int, cnt string){
+				return conn.SendMessage(t, []byte(cnt))
+			}),
+		})
 		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
 			helpers.HTMLString(context, http.StatusInternalServerError, `<html>
 			<head><title>Runtime Error on `+context.Request.URL.Path+`</title>

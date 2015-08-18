@@ -24,30 +24,31 @@ func Bind(L *lua.State) {
 
 func BindMiddleware(L *lua.State) {
 	luar.Register(L, "mw", luar.Map{
-		"Lua": Lua,
-		"ExtRoute": (func(plan map[string]interface{}) func(*gin.Context) {
+		"Lua":        Lua,
+		"ExtRoute":   (func(plan map[string]interface{}) func(*gin.Context) {
 			newplan := make(Plan, len(plan))
 			for k, v := range plan {
 				newplan[k] = v.(func(*gin.Context))
 			}
 			return ExtRoute(newplan)
 		}),
-		"VHOST": (func(plan map[string]interface{}) func(*gin.Context) {
+		"VHOST":     (func(plan map[string]interface{}) func(*gin.Context) {
 			newplan := make(Plan, len(plan))
 			for k, v := range plan {
 				newplan[k] = v.(func(*gin.Context))
 			}
 			return VHOST(newplan)
 		}),
-		"Logger":   gin.Logger,
-		"Recovery": gin.Recovery,
-		"GZip": func() func(*gin.Context) {
+		"Logger":    gin.Logger,
+		"Recovery":  gin.Recovery,
+		"GZip":      func() func(*gin.Context) {
 			return gzip.Gzip(gzip.DefaultCompression)
 		},
-		"DLR_NS":   DLR_NS,
-		"DLR_RUS":  DLR_RUS,
-		"Echo":     EchoHTML,
-		"EchoText": Echo,
+		"DLR_NS":    DLR_NS,
+		"DLR_RUS":   DLR_RUS,
+		"DLRWS_RUS": DLRWS_RUS,
+		"Echo":      EchoHTML,
+		"EchoText":  Echo,
 	})
 	L.DoString(glue.RouteGlue())
 }

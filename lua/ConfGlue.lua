@@ -31,6 +31,30 @@ function mw.new(fn, bindings, newstate)
 	end
 	return r
 end
+function mw.ws(fn, bindings)
+	local code = ""
+	if type(fn) == "function" then
+		code = string.dump(fn)
+	elseif type(fn) == "string" then
+		fn, err = loadstring(code)
+		if not err then
+			code = string.dump(fn)
+		else
+			error(err)
+		end
+	end
+	local r
+	local err
+	if type(bindings) == "table" then
+		r, err = mw.DLRWS_RUS(code, true, bindings)
+	else
+		r, err = mw.DLRWS_RUS(code, false, {["s"]="v"})
+	end
+	if err ~= nil then
+		error(err)
+	end
+	return r
+end
 function mw.echo(code, resp)
 	local resp = tonumber(resp) or 200
 	if type(code) == "string" then
