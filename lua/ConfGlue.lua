@@ -22,9 +22,9 @@ function mw.new(fn, bindings, instances, newstate)
 		end
 	else
 		if type(bindings) == "table" then
-			r, err = mw.DLR_RUS(code, true, bindings)
+			r, err = mw.DLR_RUS(code, instances, true, bindings)
 		else
-			r, err = mw.DLR_RUS(code, false, {["s"]="v"})
+			r, err = mw.DLR_RUS(code, instances, false, {["s"]="v"})
 		end
 	end
 	if err ~= nil then
