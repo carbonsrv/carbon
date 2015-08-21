@@ -91,7 +91,7 @@ func BindComs(L *lua.State) {
 		"createBuffered": (func(buffer int) chan interface{} {
 			return make(chan interface{}, buffer)
 		}),
-		"receive": (func(c chan interface{}) {
+		"receive": (func(c chan interface{}) interface{} {
 			return <-c
 		}),
 		"send": (func(c chan interface{}, val interface{}) {
