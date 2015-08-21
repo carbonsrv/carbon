@@ -20,28 +20,29 @@ func Bind(L *lua.State) {
 	BindPhysFS(L)
 	BindOther(L)
 	BindConversions(L)
+	BindComs(L)
 }
 
 func BindMiddleware(L *lua.State) {
 	luar.Register(L, "mw", luar.Map{
-		"Lua":        Lua,
-		"ExtRoute":   (func(plan map[string]interface{}) func(*gin.Context) {
+		"Lua": Lua,
+		"ExtRoute": (func(plan map[string]interface{}) func(*gin.Context) {
 			newplan := make(Plan, len(plan))
 			for k, v := range plan {
 				newplan[k] = v.(func(*gin.Context))
 			}
 			return ExtRoute(newplan)
 		}),
-		"VHOST":     (func(plan map[string]interface{}) func(*gin.Context) {
+		"VHOST": (func(plan map[string]interface{}) func(*gin.Context) {
 			newplan := make(Plan, len(plan))
 			for k, v := range plan {
 				newplan[k] = v.(func(*gin.Context))
 			}
 			return VHOST(newplan)
 		}),
-		"Logger":    gin.Logger,
-		"Recovery":  gin.Recovery,
-		"GZip":      func() func(*gin.Context) {
+		"Logger":   gin.Logger,
+		"Recovery": gin.Recovery,
+		"GZip": func() func(*gin.Context) {
 			return gzip.Gzip(gzip.DefaultCompression)
 		},
 		"DLR_NS":    DLR_NS,
@@ -80,6 +81,22 @@ func BindOther(L *lua.State) {
 			return int(time.Now().UnixNano())
 		}),
 		"_syntaxhlfunc": helpers.SyntaxHL,
+	})
+}
+func BindComs(L *lua.State) {
+	luar.Register(L, "com", luar.Map{
+		"create": (func() chan interface{} {
+			return make(chan interface{})
+		}),
+		"createBuffered": (func(buffer int) chan interface{} {
+			return make(chan interface{}, buffer)
+		}),
+		"receive": (func(c chan interface{}) {
+			return <-c
+		}),
+		"send": (func(c chan interface{}, val interface{}) {
+			c <- val
+		}),
 	})
 }
 func BindConversions(L *lua.State) {

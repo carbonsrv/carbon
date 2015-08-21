@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/pmylund/go-cache"
 	"github.com/vifino/carbon/modules/glue"
 	"github.com/vifino/carbon/modules/helpers"
@@ -13,7 +14,6 @@ import (
 	"github.com/vifino/luar"
 	"net/http"
 	"time"
-	"github.com/gorilla/websocket"
 )
 
 // Cache
@@ -292,14 +292,14 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 			"TextMessage":   websocket.TextMessage,
 			//"read":          conn.ReadMessage,
 			//"send":          conn.SendMessage,
-			"read":          (func() (int, string, error) {
+			"read": (func() (int, string, error) {
 				messageType, p, err := conn.ReadMessage()
 				if err != nil {
 					return -1, "", err
 				}
 				return messageType, string(p), nil
 			}),
-			"send":          (func(t int, cnt string) error {
+			"send": (func(t int, cnt string) error {
 				return conn.WriteMessage(t, []byte(cnt))
 			}),
 		})
