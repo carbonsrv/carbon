@@ -1,6 +1,7 @@
 -- Middleware helpers, not really useful with anything but the server init script
 function mw.new(fn, bindings, instances, newstate)
 	local code = ""
+	local instances = instances or -1
 	if type(fn) == "function" then
 		code = string.dump(fn)
 	elseif type(fn) == "string" then
@@ -20,7 +21,6 @@ function mw.new(fn, bindings, instances, newstate)
 			r, err = mw.DLR_NS(code, false, {["s"]="v"})
 		end
 	else
-		local instances = instances or -1
 		if type(bindings) == "table" then
 			r, err = mw.DLR_RUS(code, instances, true, bindings)
 		else

@@ -221,7 +221,8 @@ func DLR_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.C
 func DLR_RUS(bcode string, instances int, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but reuses states. Much faster. Higher memory use though, because more states.
 	insts := instances
 	if instances < 0 {
-		if jobs/2 > 2 {
+		insts = 2
+		if jobs/2 > 1 {
 			insts = jobs
 		}
 	}
@@ -259,7 +260,8 @@ func DLR_RUS(bcode string, instances int, dobind bool, vals map[string]interface
 func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but for websockets.
 	insts := instances
 	if instances < 0 {
-		if jobs/2 > 2 {
+		insts = 2
+		if jobs/2 > 1 {
 			insts = jobs
 		}
 	}
