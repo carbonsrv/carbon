@@ -1,5 +1,5 @@
 -- Middleware helpers, not really useful with anything but the server init script
-function mw.new(fn, bindings, newstate)
+function mw.new(fn, bindings, instances, newstate)
 	local code = ""
 	if type(fn) == "function" then
 		code = string.dump(fn)
@@ -15,7 +15,8 @@ function mw.new(fn, bindings, newstate)
 	local err
 	if newstate then
 		if type(bindings) == "table" then
-			r, err = mw.DLR_NS(code, true, bindings)
+			local instances = instances or -1
+			r, err = mw.DLR_NS(code, instances, true, bindings)
 		else
 			r, err = mw.DLR_NS(code, false, {["s"]="v"})
 		end
@@ -31,7 +32,7 @@ function mw.new(fn, bindings, newstate)
 	end
 	return r
 end
-function mw.ws(fn, bindings)
+function mw.ws(fn, bindings, instances)
 	local code = ""
 	if type(fn) == "function" then
 		code = string.dump(fn)
@@ -45,10 +46,11 @@ function mw.ws(fn, bindings)
 	end
 	local r
 	local err
+	local instances = instances or -1
 	if type(bindings) == "table" then
-		r, err = mw.DLRWS_RUS(code, true, bindings)
+		r, err = mw.DLRWS_RUS(code, instances, true, bindings)
 	else
-		r, err = mw.DLRWS_RUS(code, false, {["s"]="v"})
+		r, err = mw.DLRWS_RUS(code, instances, false, {["s"]="v"})
 	end
 	if err ~= nil then
 		error(err)
