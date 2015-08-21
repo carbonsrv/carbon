@@ -257,6 +257,11 @@ func DLR_RUS(bcode string, instances int, dobind bool, vals map[string]interface
 	}, nil
 }
 
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
 func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but for websockets.
 	insts := instances
 	if instances < 0 {
@@ -264,10 +269,6 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 		if jobs/2 > 1 {
 			insts = jobs
 		}
-	}
-	var upgrader = websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
 	}
 	schan := make(chan *lua.State, insts)
 	for i := 0; i < jobs/2; i++ {

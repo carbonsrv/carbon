@@ -12,7 +12,7 @@ srv.GET("/woot", mw.echo(doctype()(
 srv.GET("/wat", mw.echoText("u wut m8?!?!"))
 
 srv.GET("/test", mw.new(function()
-	content(type(new), 200)
+	content(type("wee"), 200)
 end))
 srv.POST("/", mw.new(function()
 	print(form("f"))
@@ -24,4 +24,9 @@ end))
 srv.GET("/bindtest", mw.new(function()
 	test(context)
 end, {test=mw.echo("test")}))
+srv.GET("/ws", mw.ws(function()
+	while true do
+		print(ws.read())
+	end
+end))
 print("bai")
