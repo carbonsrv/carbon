@@ -273,7 +273,6 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 	schan := make(chan *lua.State, insts)
 	for i := 0; i < jobs/2; i++ {
 		L := GetInstance()
-
 		if dobind {
 			luar.Register(L, "", vals)
 		}
