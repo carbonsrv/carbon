@@ -21,4 +21,7 @@ srv.POST("/", mw.new(function()
 		print("is nil")
 	end
 end))
+srv.GET("/bindtest", mw.new(function()
+	test(context)
+end, {test=mw.echo("test")}))
 print("bai")
