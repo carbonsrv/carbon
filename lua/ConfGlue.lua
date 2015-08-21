@@ -15,12 +15,12 @@ function mw.new(fn, bindings, instances, newstate)
 	local err
 	if newstate then
 		if type(bindings) == "table" then
-			local instances = instances or -1
-			r, err = mw.DLR_NS(code, instances, true, bindings)
+			r, err = mw.DLR_NS(code, true, bindings)
 		else
 			r, err = mw.DLR_NS(code, false, {["s"]="v"})
 		end
 	else
+		local instances = instances or -1
 		if type(bindings) == "table" then
 			r, err = mw.DLR_RUS(code, instances, true, bindings)
 		else
