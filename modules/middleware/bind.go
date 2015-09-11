@@ -106,7 +106,7 @@ func BindComs(L *lua.State) {
 func BindNet(L *lua.State) {
 	luar.Register(L, "net", luar.Map{
 		"dial": net.Dial,
-		"write": (func(con *net.Conn, str string) {
+		"write": (func(con net.Conn, str string) {
 			fmt.Fprintf(con, str)
 		}),
 		"readline": (func(conn *net.Conn) (string, error) {
