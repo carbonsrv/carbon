@@ -109,8 +109,8 @@ func BindNet(L *lua.State) {
 		"write": (func(con net.Conn, str string) {
 			fmt.Fprintf(con, str)
 		}),
-		"readline": (func(conn *net.Conn) (string, error) {
-			return bufio.NewReader(conn).ReadString('\n')
+		"readline": (func(con net.Conn) (string, error) {
+			return bufio.NewReader(con).ReadString('\n')
 		}),
 	})
 }
