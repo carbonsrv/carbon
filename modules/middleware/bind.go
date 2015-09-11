@@ -12,6 +12,9 @@ import (
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
 	"time"
+	"net"
+	"fmt"
+	"bufio"
 )
 
 func Bind(L *lua.State) {
@@ -96,6 +99,17 @@ func BindComs(L *lua.State) {
 		}),
 		"send": (func(c chan interface{}, val interface{}) {
 			c <- val
+		}),
+	})
+}
+func BindNet(L *lua.State) {
+	luar.Register(L, "net", luar.Map{
+		"dial": net.Dial,
+		"write": (func(con *net.Conn, string str) {
+			fmt.Fprintf(con, str)
+		}),
+		"readline": (func(con *net.Conn) (string, error) {
+			return bufio.NewReader(conn).ReadString('\n')
 		}),
 	})
 }
