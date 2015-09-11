@@ -22,6 +22,7 @@ func Bind(L *lua.State) {
 	BindRedis(L)
 	BindPhysFS(L)
 	BindOther(L)
+	BindNet(L)
 	BindConversions(L)
 	BindComs(L)
 }
@@ -105,10 +106,10 @@ func BindComs(L *lua.State) {
 func BindNet(L *lua.State) {
 	luar.Register(L, "net", luar.Map{
 		"dial": net.Dial,
-		"write": (func(con *net.Conn, string str) {
+		"write": (func(con *net.Conn, str string) {
 			fmt.Fprintf(con, str)
 		}),
-		"readline": (func(con *net.Conn) (string, error) {
+		"readline": (func(conn *net.Conn) (string, error) {
 			return bufio.NewReader(conn).ReadString('\n')
 		}),
 	})
