@@ -65,7 +65,7 @@ func SyntaxHL(s string, customcss string) (string, error) {
 	if err != nil {
 		return "", err
 	} else {
-		if customcss != "" {
+		if customcss == "" {
 			return `<style>` + css + `</style><pre><code>` + string(highlighted) + `</code></pre>`, nil
 		} else {
 			return `<style>` + customcss + `</style><pre><code>` + string(highlighted) + `</code></pre>`, nil
