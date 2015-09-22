@@ -7,7 +7,7 @@ import (
 	"github.com/pmylund/go-cache"
 	"github.com/vifino/carbon/modules/middleware"
 	"github.com/vifino/luar"
-	"http"
+	"net/http"
 )
 
 // Configure the server based on a lua script.
