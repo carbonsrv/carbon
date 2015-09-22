@@ -17,13 +17,13 @@ func VHOST(plan Plan) func(*gin.Context) {
 		if plan[host] != nil {
 			fmt.Println("Found")
 			plan[host](c)
-		} elseif plan[hostwithoutport] != nil {
+		} else if plan[hostwithoutport] != nil {
 			fmt.Println("Found without port")
 			plan[hostwithoutport](c)
-		} elseif plan["***"] != nil {
+		} else if plan["***"] != nil {
 			fmt.Println("Found catchall")
 			plan["***"](c)
-		} else
+		} else {
 			fmt.Println("Found nothing")
 		}
 	}
