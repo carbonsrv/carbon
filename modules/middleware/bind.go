@@ -27,6 +27,12 @@ func Bind(L *lua.State) {
 	BindComs(L)
 }
 
+func BindEngine(L *lua.State) {
+	luar.Register(L, "engine", luar.Map{
+		"new": gin.New,
+	})
+}
+
 func BindMiddleware(L *lua.State) {
 	luar.Register(L, "mw", luar.Map{
 		"Lua": Lua,

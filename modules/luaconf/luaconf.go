@@ -7,10 +7,11 @@ import (
 	"github.com/pmylund/go-cache"
 	"github.com/vifino/carbon/modules/middleware"
 	"github.com/vifino/luar"
+	"http"
 )
 
 // Configure the server based on a lua script.
-func Configure(script string, cfe *cache.Cache, webroot string) (*gin.Engine, error) {
+func Configure(script string, cfe *cache.Cache, webroot string) (http.Handler, error) {
 	srv := gin.New()
 	L := luar.Init()
 	luar.Register(L, "", luar.Map{ // Global

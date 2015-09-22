@@ -124,7 +124,7 @@ func bootstrap(srv *gin.Engine, dir string, cfe *cache.Cache) {
 	srv.Use(st)*/
 }
 
-func serve(srv *gin.Engine, en_http bool, en_https bool, en_http2 bool, bind string, binds string, cert string, key string) {
+func serve(srv http.Handler, en_http bool, en_https bool, en_http2 bool, bind string, binds string, cert string, key string) {
 	end := make(chan bool)
 	if en_http {
 		go serveHTTP(srv, bind, en_http2)
@@ -134,7 +134,7 @@ func serve(srv *gin.Engine, en_http bool, en_https bool, en_http2 bool, bind str
 	}
 	<-end
 }
-func serveHTTP(srv *gin.Engine, bind string, en_http2 bool) {
+func serveHTTP(srv http.Handler, bind string, en_http2 bool) {
 	s := &http.Server{
 		Addr:           bind,
 		Handler:        srv,
@@ -150,7 +150,7 @@ func serveHTTP(srv *gin.Engine, bind string, en_http2 bool) {
 		panic(err)
 	}
 }
-func serveHTTPS(srv *gin.Engine, bind string, en_http2 bool, cert string, key string) {
+func serveHTTPS(srv http.Handler, bind string, en_http2 bool, cert string, key string) {
 	s := &http.Server{
 		Addr:           bind,
 		Handler:        srv,
