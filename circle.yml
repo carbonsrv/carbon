@@ -1,3 +1,7 @@
+general:
+  artifacts:
+    - "carbon"
+
 dependencies:
   pre:
     - sudo apt-get update; sudo apt-get install libluajit-5.1-dev libphysfs-dev
