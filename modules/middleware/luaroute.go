@@ -186,7 +186,11 @@ func DLR_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.C
 	return func(context *gin.Context) {
 		L := GetInstance()
 		if dobind {
-			luar.Register(L, "", vals)
+			for k, v := range vals {
+				luar.Register(L, "", luar.Map{
+					k: v,
+				})
+			}
 		}
 		defer scheduler.Add(func() {
 			L.Close()
@@ -230,7 +234,11 @@ func DLR_RUS(bcode string, instances int, dobind bool, vals map[string]interface
 	for i := 0; i < jobs/2; i++ {
 		L := GetInstance()
 		if dobind {
-			luar.Register(L, "", vals)
+			for k, v := range vals {
+				luar.Register(L, "", luar.Map{
+					k: v,
+				})
+			}
 		}
 		if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
 			return func(context *gin.Context) {}, errors.New(L.ToString(-1))
@@ -274,7 +282,11 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 	for i := 0; i < jobs/2; i++ {
 		L := GetInstance()
 		if dobind {
-			luar.Register(L, "", vals)
+			for k, v := range vals {
+				luar.Register(L, "", luar.Map{
+					k: v,
+				})
+			}
 		}
 		if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
 			return func(context *gin.Context) {}, errors.New(L.ToString(-1))
