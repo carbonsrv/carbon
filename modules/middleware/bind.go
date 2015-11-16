@@ -93,7 +93,7 @@ func BindRedis(L *lua.State) {
 
 func BindThread(L *lua.State) {
 	luar.Register(L, "thread", luar.Map{
-		"_spawn": (func(bcode string, instances int, dobind bool, vals map[string]interface{}) error {
+		"_spawn": (func(bcode string, dobind bool, vals map[string]interface{}) error {
 			L := luar.Init()
 			Bind(L)
 			err := L.DoString(glue.MainGlue())
