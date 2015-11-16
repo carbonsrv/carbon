@@ -102,11 +102,7 @@ func BindThread(L *lua.State) {
 			}
 
 			if dobind {
-				for k, v := range vals {
-					luar.Register(L, "", luar.Map{
-						k: v,
-					})
-				}
+				luar.Register(L, "", vals)
 			}
 
 			if L.LoadBuffer(bcode, len(bcode), "thread") != 0 {
