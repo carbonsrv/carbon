@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"bufio"
-	"error"
+	"errors"
 	"fmt"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/fzzy/radix/redis"
