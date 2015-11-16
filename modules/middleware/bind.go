@@ -1,21 +1,22 @@
 package middleware
 
 import (
+	"bufio"
+	"error"
+	"fmt"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/fzzy/radix/redis"
 	"github.com/gin-gonic/gin"
 	"github.com/pmylund/go-cache"
 	"github.com/vifino/carbon/modules/glue"
 	"github.com/vifino/carbon/modules/helpers"
-	"github.com/vifino/carbon/modules/static"
 	"github.com/vifino/carbon/modules/scheduler"
+	"github.com/vifino/carbon/modules/static"
 	"github.com/vifino/contrib/gzip"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
-	"time"
 	"net"
-	"fmt"
-	"bufio"
+	"time"
 )
 
 func Bind(L *lua.State) {
@@ -92,7 +93,7 @@ func BindRedis(L *lua.State) {
 
 func BindThread(L *lua.State) {
 	luar.Register(L, "thread", luar.Map{
-		"_spawn": (func(bcode string, instances int, dobind bool, vals map[string]interface{}) (error) {
+		"_spawn": (func(bcode string, instances int, dobind bool, vals map[string]interface{}) error {
 			L := luar.Init()
 			Bind(L)
 			err := L.DoString(glue.MainGlue())
@@ -108,11 +109,12 @@ func BindThread(L *lua.State) {
 				return errors.New(L.ToString(-1))
 			}
 
-			scheduler.Add(func(){
+			scheduler.Add(func() {
 				if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
 					// Silently error because reasons. ._.
 				}
 			})
+			return nil
 		}),
 	})
 }
