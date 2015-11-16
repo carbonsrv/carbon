@@ -211,3 +211,29 @@ function syntaxhl(text, customcss)
 		return _syntaxhlfunc(text, "")
 	end
 end
+
+-- Wrappers
+function thread.spawn(fn, bindings)
+	local code = ""
+	if type(fn) == "function" then
+		code = string.dump(fn)
+	elseif type(fn) == "string" then
+		fn, err = loadstring(code)
+		if not err then
+			code = string.dump(fn)
+		else
+			error(err)
+		end
+	end
+	local r
+	local err
+	if type(bindings) == "table" then
+		err = mw.DLR_RUS(code, true, bindings)
+	else
+		err = mw.DLR_RUS(code, false, {["s"]="v"})
+	end
+	if err ~= nil then
+		return false, error(err)
+	end
+	return true
+end

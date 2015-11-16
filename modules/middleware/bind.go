@@ -8,6 +8,7 @@ import (
 	"github.com/vifino/carbon/modules/glue"
 	"github.com/vifino/carbon/modules/helpers"
 	"github.com/vifino/carbon/modules/static"
+	"github.com/vifino/carbon/modules/scheduler"
 	"github.com/vifino/contrib/gzip"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
@@ -21,6 +22,7 @@ func Bind(L *lua.State) {
 	BindMiddleware(L)
 	BindRedis(L)
 	BindPhysFS(L)
+	BindThread(L)
 	BindOther(L)
 	BindNet(L)
 	BindConversions(L)
@@ -63,6 +65,7 @@ func BindMiddleware(L *lua.State) {
 	})
 	L.DoString(glue.RouteGlue())
 }
+
 func BindPhysFS(L *lua.State) {
 	luar.Register(L, "fs", luar.Map{ // PhysFS
 		"mount":       physfs.Mount,
@@ -75,6 +78,7 @@ func BindPhysFS(L *lua.State) {
 		"getWriteDir": physfs.GetWriteDir,
 	})
 }
+
 func BindRedis(L *lua.State) {
 	luar.Register(L, "redis", luar.Map{
 		"connectTimeout": (func(host string, timeout int) (*redis.Client, error) {
@@ -85,6 +89,34 @@ func BindRedis(L *lua.State) {
 		}),
 	})
 }
+
+func BindThread(L *lua.State) {
+	luar.Register(L, "thread", luar.Map{
+		"_spawn": (func(bcode string, instances int, dobind bool, vals map[string]interface{}) (error) {
+			L := luar.Init()
+			Bind(L)
+			err := L.DoString(glue.MainGlue())
+			if err != nil {
+				panic(err)
+			}
+
+			if dobind {
+				luar.Register(L, "", vals)
+			}
+
+			if L.LoadBuffer(bcode, len(bcode), "thread") != 0 {
+				return errors.New(L.ToString(-1))
+			}
+
+			scheduler.Add(func(){
+				if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
+					// Silently error because reasons. ._.
+				}
+			})
+		}),
+	})
+}
+
 func BindOther(L *lua.State) {
 	luar.Register(L, "", luar.Map{
 		"unixtime": (func() int {
@@ -93,6 +125,7 @@ func BindOther(L *lua.State) {
 		"_syntaxhlfunc": helpers.SyntaxHL,
 	})
 }
+
 func BindComs(L *lua.State) {
 	luar.Register(L, "com", luar.Map{
 		"create": (func() chan interface{} {
@@ -109,6 +142,7 @@ func BindComs(L *lua.State) {
 		}),
 	})
 }
+
 func BindNet(L *lua.State) {
 	luar.Register(L, "net", luar.Map{
 		"dial": net.Dial,
@@ -120,6 +154,7 @@ func BindNet(L *lua.State) {
 		}),
 	})
 }
+
 func BindConversions(L *lua.State) {
 	luar.Register(L, "convert", luar.Map{
 		"stringtocharslice": (func(x string) []byte {
@@ -130,6 +165,7 @@ func BindConversions(L *lua.State) {
 		}),
 	})
 }
+
 func BindContext(L *lua.State, context *gin.Context) {
 	luar.Register(L, "", luar.Map{
 		"context":    context,
