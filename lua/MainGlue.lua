@@ -228,9 +228,9 @@ function thread.spawn(fn, bindings)
 	local r
 	local err
 	if type(bindings) == "table" then
-		err = mw.DLR_RUS(code, true, bindings)
+		err = thread._spawn(code, true, bindings)
 	else
-		err = mw.DLR_RUS(code, false, {["s"]="v"})
+		err = thread._spawn(code, false, {["s"]="v"})
 	end
 	if err ~= nil then
 		return false, error(err)
