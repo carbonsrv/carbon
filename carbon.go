@@ -1,6 +1,6 @@
 package main
 
-//go:generate go-bindata -o modules/glue/generated_lua.go -pkg=glue -prefix "./lua" ./lua ./lua/3rdparty
+//go:generate go-bindata -o modules/glue/generated_lua.go -pkg=glue -prefix "./lua" ./lua ./lua/3rdparty ./lua/libs
 
 import (
 	"bufio"

@@ -1,39 +1,12 @@
 -- Main glue
 
--- Load 3rdparty libraries
--- MessagePack.lua
-msgpack = assert(loadstring(carbon.glue("3rdparty/MessagePack.lua")))()
-
--- Support more lua types, but at the cost of compatibility with non-carbon msgpack things.
--- Functions
-msgpack.packers['function'] = function (buffer, fct)
-	msgpack.packers['ext'](buffer, 7, assert(string.dump(fct)))
+-- Load Libraries/Wrappers.
+local function loadasset(name, location)
+	_G[name] = assert(loadstring(carbon.glue(location)))()
 end
 
--- Tables
-msgpack.packers['table'] = function (buffer, t)
-	local mt = getmetatable(t)
-	if mt then
-		local buf = {}
-		msgpack.packers['_table'](buf, t)
-		msgpack.packers['table'](buf, mt)
-		msgpack.packers['ext'](buffer, 42, table.concat(buf))
-	else
-		msgpack.packers['_table'](buffer, t)
-	end
-end
-
--- Unpacker for both
-msgpack.build_ext = function (tag, data)
-	if tag == 7 then -- Function
-		return assert(loadstring(data))
-	elseif tag == 42 then -- Table
-		local f = msgpack.unpacker(data)
-		local _, t = f()
-		local _, mt = f()
-		return setmetatable(t, mt)
-	end
-end
+loadasset("thread", "libs/thread.lua")
+loadasset("msgpack", "libs/MessagePack.lua")
 
 -- Tags
 local html_escape={["<"]="&lt;",[">"]="&gt;",["&"]="&amp;"}
@@ -248,114 +221,4 @@ function syntaxhl(text, customcss)
 	else
 		return _syntaxhlfunc(text, "")
 	end
-end
-
-function thread.spawn(fn, bindings)
-	local code = ""
-	if type(fn) == "function" then
-		code = string.dump(fn)
-	elseif type(fn) == "string" then
-		fn, err = loadstring(code)
-		if not err then
-			code = string.dump(fn)
-		else
-			error(err)
-		end
-	end
-	local r
-	local err
-	if type(bindings) == "table" then
-		err = thread._spawn(code, true, bindings)
-	else
-		err = thread._spawn(code, false, {["s"]="v"})
-	end
-	if err ~= nil then
-		return false, error(err)
-	end
-	return true
-end
-function thread.rpcthread() -- not working, issues with binding .-.
-	local to_func = com.create()
-	local to_len = com.create()
-	local to_vals = com.createBuffered(64)
-	local from_len = com.create()
-	local from_vals = com.createBuffered(64)
-
-	local function call(f, ...)
-		local fn
-		print(f)
-		if type(f) == "function" then
-			fn = fn
-		elseif type(f) == "string" then
-			local f, err = loadstring(f)
-			if err then
-				return false, err
-			end
-			fn = f
-		end
-		print(fn)
-		local args = {...}
-		print(com.send(to_func, string.dump(fn)))
-		com.send(to_len, #args)
-		for _, v in pairs(vars) do
-			com.send(to_vals, v)
-		end
-		return true
-	end
-	local function recieve()
-		local vals = {}
-		local l = com.receive(from_len)
-		if l > 0 then
-			for i=1, l do
-				vals[i] = com.receive(from_vals)
-			end
-		end
-		return true, unpack(vals)
-	end
-
-	thread.spawn(function()
-		print(luar.type(to_func))
-		print(luar.type(to_len))
-		local function pushback(...)
-			local vars = {...}
-			com.send(from_len, #vars)
-			for _, v in pairs(vars) do
-				com.send(from_vals, v)
-			end
-		end
-		while true do
-			local args = {}
-			local bcode = com.receive(to_func)
-			print(bcode)
-			local l = com.receive(to_len)
-			if l > 0 then
-				for i=1, l do
-					args[i] = com.receive(to_vals)
-				end
-			end
-			local f, err = loadstring(bcode)
-			if err ~= nil then
-				pushback(false, err)
-			else
-				pushback(pcall(f, unpack(args)))
-			end
-		end
-	end, {
-		["to_func"] = to_func,
-		["to_len"] = to_len,
-		["to_vals"] = to_vals,
-		["from_len"] = from_len,
-		["from_vals"] = from_vals
-	})
-	return {
-		["call_async"] = call,
-		["call"] = (function(f, ...)
-			local suc, err = call(f, ...)
-			if not suc then
-				return false, err
-			end
-			return recieve()
-		end),
-		["recieve"] = recieve,
-	}
 end
