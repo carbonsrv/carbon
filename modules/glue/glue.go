@@ -25,7 +25,7 @@ func ConfGlue() string {
 func GetGlue(asset string) string {
 	data, err := Asset(asset)
 	if err != nil {
-		return nil
+		return ""
 	}
 	return string(data)
 }
