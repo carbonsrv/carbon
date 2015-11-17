@@ -1,4 +1,5 @@
 -- Threads
+-- Has a buttload of issues, mostly bindings. Gotta looooove broken shit.
 
 function thread.spawn(fn, bindings)
 	local code = ""
@@ -24,12 +25,9 @@ function thread.spawn(fn, bindings)
 	end
 	return true
 end
-function thread.rpcthread() -- not working, issues with binding .-.
-	local to_func = com.create()
-	local to_len = com.create()
-	local to_vals = com.createBuffered(64)
-	local from_len = com.create()
-	local from_vals = com.createBuffered(64)
+
+function thread.rpcthread() -- not working, issues with binding or something .-.
+	local chan = com.create()
 
 	local function call(f, ...)
 		local fn
@@ -45,57 +43,33 @@ function thread.rpcthread() -- not working, issues with binding .-.
 		end
 		print(fn)
 		local args = {...}
-		print(com.send(to_func, string.dump(fn)))
-		com.send(to_len, #args)
-		for _, v in pairs(vars) do
-			com.send(to_vals, v)
-		end
+		com.send(chan, msgpack.pack({
+			["f"] = string.dump(fn),
+			["args"] = args,
+		}))
 		return true
 	end
 	local function recieve()
-		local vals = {}
-		local l = com.receive(from_len)
-		if l > 0 then
-			for i=1, l do
-				vals[i] = com.receive(from_vals)
-			end
-		end
-		return true, unpack(vals)
+		local res = com.receive(chan)
+		return true, unpack(res)
 	end
 
 	thread.spawn(function()
-		print(luar.type(to_func))
-		print(luar.type(to_len))
 		local function pushback(...)
-			local vars = {...}
-			com.send(from_len, #vars)
-			for _, v in pairs(vars) do
-				com.send(from_vals, v)
-			end
+			com.send(chan, msgpack.pack({...}))
 		end
 		while true do
 			local args = {}
-			local bcode = com.receive(to_func)
-			print(bcode)
-			local l = com.receive(to_len)
-			if l > 0 then
-				for i=1, l do
-					args[i] = com.receive(to_vals)
-				end
-			end
-			local f, err = loadstring(bcode)
+			local cmd = com.receive(chan)
+			local f, err = loadstring(cmd.f)
 			if err ~= nil then
 				pushback(false, err)
 			else
-				pushback(pcall(f, unpack(args)))
+				pushback(pcall(f, unpack(cmd.args)))
 			end
 		end
 	end, {
-		["to_func"] = to_func,
-		["to_len"] = to_len,
-		["to_vals"] = to_vals,
-		["from_len"] = from_len,
-		["from_vals"] = from_vals
+		["chan"] = chan,
 	})
 	return {
 		["call_async"] = call,
@@ -108,6 +82,41 @@ function thread.rpcthread() -- not working, issues with binding .-.
 		end),
 		["recieve"] = recieve,
 	}
+end
+
+function thread.kvstore() -- doesn't work either .-.
+	local chan = com.create()
+
+	thread.spawn(function()
+		local store = {}
+		while true do
+			local suc, cmd = pcall(msgpack.unpack, com.receive(chan))
+			if suc then
+				if cmd.value then
+					store[cmd.name] = cmd.value
+					com.send(chan, msgpack.pack({value=true, error=nil}))
+				else
+					com.send(chan, msgpack.pack({value=store[cmd.name], error=nil}))
+				end
+			else
+				com.send(chan, msgpack.pack({value=nil, error=cmd}))
+			end
+		end
+	end, {
+		["chan"] = chan
+	})
+
+	return function(name, value)
+		if name then
+			com.send(chan, msgpack.pack({["name"]=name, ["value"]=value}))
+			local res = com.receive(chan)
+			if res.error then
+				return false, res.error
+			else
+				return true, res.value
+			end
+		end
+	end
 end
 
 return thread
