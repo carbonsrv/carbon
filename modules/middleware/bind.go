@@ -4,19 +4,26 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/DeedleFake/Go-PhysicsFS/physfs"
-	"github.com/fzzy/radix/redis"
-	"github.com/gin-gonic/gin"
-	"github.com/pmylund/go-cache"
+	"net"
+	"time"
+
+	"github.com/vifino/golua/lua"
+	"github.com/vifino/luar"
+
 	"github.com/carbonsrv/carbon/modules/glue"
 	"github.com/carbonsrv/carbon/modules/helpers"
 	"github.com/carbonsrv/carbon/modules/scheduler"
 	"github.com/carbonsrv/carbon/modules/static"
 	"github.com/vifino/contrib/gzip"
-	"github.com/vifino/golua/lua"
-	"github.com/vifino/luar"
-	"net"
-	"time"
+
+	"github.com/DeedleFake/Go-PhysicsFS/physfs"
+	"github.com/fzzy/radix/redis"
+	"github.com/gin-gonic/gin"
+	"github.com/pmylund/go-cache"
+
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
 func Bind(L *lua.State) {
@@ -94,6 +101,53 @@ func BindRedis(L *lua.State) {
 		}),
 		"connect": (func(host string) (*redis.Client, error) {
 			return redis.Dial("tcp", host)
+		}),
+	})
+}
+
+func BindDB(L *lua.State) {
+	luar.Register(L, "db", luar.Map{
+		"open": sql.Open,
+		"rows": (func(rows *sql.Rows) (map[int]map[string]interface{}, error) {
+			var res map[int]map[int]interface{}
+			rowno := 1
+			for rows.Next() {
+				var elem1 interface{}
+				var elem2 interface{}
+				var elem3 interface{}
+				var elem4 interface{}
+				var elem5 interface{}
+				var elem6 interface{}
+				var elem7 interface{}
+				var elem8 interface{}
+				var elem9 interface{}
+				var elem10 interface{}
+
+				err := rows.Scan(&elem1, &elem2, &elem3, &elem4, &elem5, &elem6, &elem7, &elem8, &elem9, &elem10)
+				if err != nil {
+					return res, err
+				}
+				rowtmp := map[int]interface{
+					1: elem1,
+					2: elem2,
+					3: elem3,
+					4: elem4,
+					5: elem5,
+					6: elem6,
+					7: elem7,
+					8: elem8,
+					9: elem9,
+					10: elem10,
+				}
+				res[rowno] = rowtmp
+				rowno+= 1
+			}
+			err = rows.Err()
+			if err != nil {
+				return res, err
+			} else {
+				return res, nil
+			}
 		}),
 	})
 }
