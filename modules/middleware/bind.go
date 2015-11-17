@@ -109,7 +109,7 @@ func BindRedis(L *lua.State) {
 func BindDB(L *lua.State) {
 	luar.Register(L, "db", luar.Map{
 		"open": sql.Open,
-		"rows": (func(rows *sql.Rows) (map[int]map[string]interface{}, error) {
+		"rows": (func(rows *sql.Rows) (map[int]map[int]interface{}, error) {
 			var res map[int]map[int]interface{}
 			rowno := 1
 			for rows.Next() {
