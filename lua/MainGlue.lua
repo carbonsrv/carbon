@@ -1,7 +1,39 @@
 -- Main glue
 
 -- Load 3rdparty libraries
+-- MessagePack.lua
 msgpack = assert(loadstring(carbon.glue("3rdparty/MessagePack.lua")))()
+
+-- Support more lua types, but at the cost of compatibility with non-carbon msgpack things.
+-- Functions
+msgpack.packers['function'] = function (buffer, fct)
+	msgpack.packers['ext'](buffer, 7, assert(string.dump(fct)))
+end
+
+-- Tables
+mp.packers['table'] = function (buffer, t)
+	local mt = getmetatable(t)
+	if mt then
+		local buf = {}
+		mp.packers['_table'](buf, t)
+		mp.packers['table'](buf, mt)
+		mp.packers['ext'](buffer, 42, table.concat(buf))
+	else
+		mp.packers['_table'](buffer, t)
+	end
+end
+
+-- Unpacker for both
+msgpack.build_ext = function (tag, data)
+	if tag == 7 then
+		return assert(loadstring(data))
+	elseif tag == 42 then
+		local f = mp.unpacker(data)
+		local _, t = f()
+		local _, mt = f()
+		return setmetatable(t, mt)
+	end
+end
 
 -- Tags
 local html_escape={["<"]="&lt;",[">"]="&gt;",["&"]="&amp;"}
