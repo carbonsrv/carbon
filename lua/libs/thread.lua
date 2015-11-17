@@ -110,4 +110,4 @@ function thread.rpcthread() -- not working, issues with binding .-.
 	}
 end
 
-return threads
+return thread
