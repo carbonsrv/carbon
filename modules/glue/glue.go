@@ -21,3 +21,11 @@ func ConfGlue() string {
 	}
 	return string(data)
 }
+
+func GetGlue(asset string) string {
+	data, err := Asset(asset)
+	if err != nil {
+		return nil
+	}
+	return string(data)
+}

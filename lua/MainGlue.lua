@@ -1,3 +1,9 @@
+-- Main glue
+
+-- Load 3rdparty libraries
+msgpack = assert(loadstring(carbon.glue("3rdparty/MessagePack.lua")))()
+
+-- Tags
 local html_escape={["<"]="&lt;",[">"]="&gt;",["&"]="&amp;"}
 
 local uri_escape=function(a)
@@ -203,7 +209,7 @@ function doctype()
 	return tag"!DOCTYPE"[{"html"}]:force_open()
 end
 
--- helpers
+-- Wrappers
 function syntaxhl(text, customcss)
 	if customcss then
 		return _syntaxhlfunc(text, tostring(customcss))
@@ -212,7 +218,6 @@ function syntaxhl(text, customcss)
 	end
 end
 
--- Wrappers
 function thread.spawn(fn, bindings)
 	local code = ""
 	if type(fn) == "function" then
@@ -321,8 +326,4 @@ function thread.rpcthread() -- not working, issues with binding .-.
 		end),
 		["recieve"] = recieve,
 	}
-end
-
-function thread.kvstore()
-
 end

@@ -20,6 +20,7 @@ import (
 )
 
 func Bind(L *lua.State) {
+	BindCarbon(L)
 	BindMiddleware(L)
 	BindRedis(L)
 	BindPhysFS(L)
@@ -28,6 +29,12 @@ func Bind(L *lua.State) {
 	BindNet(L)
 	BindConversions(L)
 	BindComs(L)
+}
+
+func BindCarbon(L *lua.State) {
+	luar.Register(L, "carbon", luar.Map{ // Carbon specific API
+		"glue": glue.GetGlue,
+	})
 }
 
 func BindEngine(L *lua.State) {
