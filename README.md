@@ -1,4 +1,6 @@
 # carbon
+[![Circle CI](https://circleci.com/gh/carbonsrv/carbon.svg?style=shield)](https://circleci.com/gh/carbonsrv/carbon)
+
 Carbon is a Webserver written in [Go](https://golang.org) that uses the [Lua Scripting Language](http://www.lua.org/) for dynamic content and as a HTML template language.
 
 # Installing
