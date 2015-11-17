@@ -128,20 +128,20 @@ func BindDB(L *lua.State) {
 				if err != nil {
 					return res, err
 				}
-				rowtmp := map[int]interface{
-					1: elem1,
-					2: elem2,
-					3: elem3,
-					4: elem4,
-					5: elem5,
-					6: elem6,
-					7: elem7,
-					8: elem8,
-					9: elem9,
-					10: elem10,
-				}
+				rowtmp := make(map[int]interface{})
+				rowtmp[1] = elem1
+				rowtmp[2] = elem2
+				rowtmp[3] = elem3
+				rowtmp[4] = elem4
+				rowtmp[5] = elem5
+				rowtmp[6] = elem6
+				rowtmp[7] = elem7
+				rowtmp[8] = elem8
+				rowtmp[9] = elem9
+				rowtmp[10] = elem10
+
 				res[rowno] = rowtmp
-				rowno+= 1
+				rowno += 1
 			}
 			err = rows.Err()
 			if err != nil {
