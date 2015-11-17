@@ -11,24 +11,24 @@ msgpack.packers['function'] = function (buffer, fct)
 end
 
 -- Tables
-mp.packers['table'] = function (buffer, t)
+msgpack.packers['table'] = function (buffer, t)
 	local mt = getmetatable(t)
 	if mt then
 		local buf = {}
-		mp.packers['_table'](buf, t)
-		mp.packers['table'](buf, mt)
-		mp.packers['ext'](buffer, 42, table.concat(buf))
+		msgpack.packers['_table'](buf, t)
+		msgpack.packers['table'](buf, mt)
+		msgpack.packers['ext'](buffer, 42, table.concat(buf))
 	else
-		mp.packers['_table'](buffer, t)
+		msgpack.packers['_table'](buffer, t)
 	end
 end
 
 -- Unpacker for both
 msgpack.build_ext = function (tag, data)
-	if tag == 7 then
+	if tag == 7 then -- Function
 		return assert(loadstring(data))
-	elseif tag == 42 then
-		local f = mp.unpacker(data)
+	elseif tag == 42 then -- Table
+		local f = msgpack.unpacker(data)
 		local _, t = f()
 		local _, mt = f()
 		return setmetatable(t, mt)
