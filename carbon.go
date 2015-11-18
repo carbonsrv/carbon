@@ -27,6 +27,7 @@ var jobs *int
 
 // Cache
 var cfe *cache.Cache
+var kvstore *cache.Cache
 
 func cacheRead(c *cache.Cache, file string) (string, error) {
 	res := ""
