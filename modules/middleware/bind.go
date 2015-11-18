@@ -109,39 +109,31 @@ func BindRedis(L *lua.State) {
 func BindDB(L *lua.State) {
 	luar.Register(L, "db", luar.Map{
 		"open": sql.Open,
-		"rows": (func(rows *sql.Rows) (map[int]map[int]interface{}, error) {
-			var res map[int]map[int]interface{}
+		"rows": (func(rows *sql.Rows) (map[int]map[string]interface{}, error) {
+			var res map[int]map[string]interface{}
 			rowno := 1
+			names, err := rows.Columns()
+			if err != nil {
+				return res, err
+			}
+			numnames := len(names)
 			for rows.Next() {
-				var elem1 interface{}
-				var elem2 interface{}
-				var elem3 interface{}
-				var elem4 interface{}
-				var elem5 interface{}
-				var elem6 interface{}
-				var elem7 interface{}
-				var elem8 interface{}
-				var elem9 interface{}
-				var elem10 interface{}
+				var elems = make([]interface{}, numnames)
 
-				err := rows.Scan(&elem1, &elem2, &elem3, &elem4, &elem5, &elem6, &elem7, &elem8, &elem9, &elem10)
+				err := rows.Scan(&elems...)
 				if err != nil {
 					return res, err
 				}
-				rowtmp := make(map[int]interface{})
-				rowtmp[1] = elem1
-				rowtmp[2] = elem2
-				rowtmp[3] = elem3
-				rowtmp[4] = elem4
-				rowtmp[5] = elem5
-				rowtmp[6] = elem6
-				rowtmp[7] = elem7
-				rowtmp[8] = elem8
-				rowtmp[9] = elem9
-				rowtmp[10] = elem10
+
+				rowtmp := make(map[string]interface{})
+				i := 0
+				for name := range numnames {
+					rowtmp[name] = elems[i]
+					i += 1
+				}
 
 				res[rowno] = rowtmp
-				fmt.Println("Row",rowno, ":", elem1)
+				fmt.Printf("Row %d: %#v",rowno, elems)
 				rowno += 1
 			}
 			err := rows.Err()
