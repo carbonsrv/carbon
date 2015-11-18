@@ -23,6 +23,7 @@ func Bind(L *lua.State) {
 	BindCarbon(L)
 	BindMiddleware(L)
 	BindRedis(L)
+	BindKVStore(L)
 	BindPhysFS(L)
 	BindThread(L)
 	BindOther(L)
