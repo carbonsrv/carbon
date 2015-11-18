@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"time"
-	"log"
 
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
@@ -142,7 +141,7 @@ func BindDB(L *lua.State) {
 				rowtmp[10] = elem10
 
 				res[rowno] = rowtmp
-				log.Println("Row",rowno, ":", elem1)
+				fmt.Println("Row",rowno, ":", elem1)
 				rowno += 1
 			}
 			err := rows.Err()
