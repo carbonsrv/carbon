@@ -4,6 +4,8 @@ go:
   - 1.5
   - tip
 
-befere_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install libluajit-5.1-dev libphysfs-dev
+addons:
+  apt:
+    packages:
+      - libluajit-5.1-dev
+      - libphysfs-dev
