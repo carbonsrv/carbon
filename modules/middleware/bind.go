@@ -115,6 +115,12 @@ func BindKVStore(L *lua.State) { // Thread safe Key Value Store that doesn't per
 				return nil
 			}
 		}),
+		"inc": (func(k string, n int64) error{
+			return kvstore.Increment(k, n)
+		}),
+		"dec": (func(k string, n int64) error{
+			return kvstore.Decrement(k, n)
+		}),
 	})
 }
 
