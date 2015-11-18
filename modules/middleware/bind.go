@@ -136,7 +136,7 @@ func BindDB(L *lua.State) {
 				fmt.Printf("Row %d: %#v",rowno, elems)
 				rowno += 1
 			}
-			err := rows.Err()
+			err = rows.Err()
 			if err != nil {
 				return res, err
 			} else {
