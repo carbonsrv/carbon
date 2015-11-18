@@ -6,13 +6,13 @@ import (
 	"bufio"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/bradfitz/http2"
-	"github.com/gin-gonic/gin"
-	"github.com/namsral/flag"
-	"github.com/pmylund/go-cache"
 	"github.com/carbonsrv/carbon/modules/luaconf"
 	"github.com/carbonsrv/carbon/modules/middleware"
 	"github.com/carbonsrv/carbon/modules/scheduler"
 	"github.com/carbonsrv/carbon/modules/static"
+	"github.com/gin-gonic/gin"
+	"github.com/namsral/flag"
+	"github.com/pmylund/go-cache"
 	"github.com/vifino/contrib/gzip"
 	"log"
 	"net/http"
@@ -169,6 +169,7 @@ func serveHTTPS(srv http.Handler, bind string, en_http2 bool, cert string, key s
 
 func main() {
 	cfe = cache.New(5*time.Minute, 30*time.Second) // File-Exists Cache
+	kvstore = cache.New(-1, -1)                    // Key-Value Storage
 
 	// Use config
 	flag.String("config", "", "Parse Config File")
@@ -209,9 +210,9 @@ func main() {
 	root, _ := filepath.Abs(*webroot)
 	filesystem = initPhysFS(root)
 	defer physfs.Deinit()
-	go scheduler.Run()          // Run the scheduler.
-	go middleware.Preloader()   // Run the Preloader.
-	middleware.Init(*jobs, cfe) // Run init sequence.
+	go scheduler.Run()                   // Run the scheduler.
+	go middleware.Preloader()            // Run the Preloader.
+	middleware.Init(*jobs, cfe, kvstore) // Run init sequence.
 	if *script == "" {
 		srv := new_server()
 		if *useLogger {

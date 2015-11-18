@@ -98,6 +98,25 @@ func BindRedis(L *lua.State) {
 	})
 }
 
+func BindKVStore(L *lua.State) { // Thread safe Key Value Store that doesn't persist.
+	luar.Register(L, "kvstore", luar.Map{
+		"set": (func(k string, v interface{}){
+			kvstore.Set(k, v, -1)
+		}),
+		"del": (func(k string){
+			kvstore.Delete(k)
+		}),
+		"get": (func(k string) interface{}{
+			res, found := kvstore.Get(k)
+			if found {
+				return res
+			} else {
+				return nil
+			}
+		}),
+	})
+}
+
 func BindThread(L *lua.State) {
 	luar.Register(L, "thread", luar.Map{
 		"_spawn": (func(bcode string, dobind bool, vals map[string]interface{}) error {

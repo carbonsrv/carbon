@@ -17,6 +17,7 @@ import (
 )
 
 // Cache
+var kvstore *cache.Cache
 var cbc *cache.Cache
 var cfe *cache.Cache
 var LDumper *lua.State
@@ -109,8 +110,9 @@ func GetInstance() *lua.State {
 }
 
 // Init
-func Init(j int, cfe_new *cache.Cache) {
+func Init(j int, cfe_new *cache.Cache, kvstore_new *cache.Cache) {
 	cfe = cfe_new
+	kvstore = kvstore_new
 	jobs = j
 	filesystem = physfs.FileSystem()
 	cbc = cache.New(5*time.Minute, 30*time.Second) // Initialize cache with 5 minute lifetime and purge every 30 seconds
