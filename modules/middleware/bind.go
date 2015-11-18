@@ -120,7 +120,7 @@ func BindDB(L *lua.State) {
 			for rows.Next() {
 				var elems = make([]interface{}, numnames)
 
-				err := rows.Scan(&elems...)
+				err := rows.Scan(elems...)
 				if err != nil {
 					return res, err
 				}
