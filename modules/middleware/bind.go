@@ -118,7 +118,7 @@ func BindDB(L *lua.State) {
 			}
 			numnames := len(names)
 			for rows.Next() {
-				var elems = make([]&interface{}, numnames)
+				var elems = make([]*interface{}, numnames)
 
 				err := rows.Scan(elems...)
 				if err != nil {
