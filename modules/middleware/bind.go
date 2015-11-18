@@ -127,7 +127,7 @@ func BindDB(L *lua.State) {
 
 				rowtmp := make(map[string]interface{})
 				i := 0
-				for name := range numnames {
+				for name := range names {
 					rowtmp[name] = elems[i]
 					i += 1
 				}
