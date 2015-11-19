@@ -4,7 +4,7 @@
 local function loadasset(name)
 	local location = "libs/" .. tostring(name):gsub("/", ".") .. ".lua"
 	local src = carbon.glue(location)
-	if src then
+	if src ~= "" then
 		-- Compile and return the module
 		return assert(loadstring(src, location))
 	end
