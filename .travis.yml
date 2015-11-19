@@ -11,3 +11,13 @@ addons:
     packages:
       - libluajit-5.1-dev
       - libphysfs-dev
+
+notifications:
+  irc:
+    channels:
+      - "irc.esper.net#vifino"
+      use_notice: true
+    template:
+      - "\x0302%{repository_slug}\x0308#%{build_number} (\x0303%{branch}\x0F: \x0303%{commit}\x0F): %{message} - %{author}"
+      - "Change view: %{compare_url}"
+      - "Build details: %{build_url}"
