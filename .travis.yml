@@ -18,6 +18,6 @@ notifications:
       - "irc.esper.net#vifino"
     use_notice: true
     template:
-      - "\x0302%{repository_slug}\x0308#%{build_number} (\x0303%{branch}\x0F: \x0303%{commit}\x0F): %{message} - %{author}"
+      - "\x0303%{repository_slug}\x0302#%{build_number} (\x0308%{branch}\x0F: \x0303%{commit}\x0F): %{author} - %{message}"
       - "Change view: %{compare_url}"
       - "Build details: %{build_url}"
