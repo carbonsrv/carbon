@@ -1,13 +1,22 @@
 -- Main glue
 
--- Load Libraries/Wrappers.
-local function loadasset(name, location)
-	_G[name] = assert(loadstring(carbon.glue(location)))()
+-- Custom package loader so that you can require the libraries
+local function loadasset(name)
+	local location = "libs/" .. tostring(name):gsub("/", ".") .. ".lua"
+	local src = carbon.glue(location)
+	if src then
+		-- Compile and return the module
+		return assert(loadstring(src, location))
+	end
+	return "\n\tno asset '/" .. location .. "' (not compiled in)"
 end
 
-loadasset("tags", "libs/tags.lua")
-loadasset("thread", "libs/thread.lua")
-loadasset("msgpack", "libs/MessagePack.lua")
+-- Install the loader so that it's called just before the normal Lua loader
+table.insert(package.loaders, 2, loadasset)
+
+-- Load a few builtin libs.
+require("tags")
+thread = require("thread")
 
 -- Specific Tags and Aliases
 function link(url, opt)
