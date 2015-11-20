@@ -82,7 +82,7 @@ function template.render(source, env)
 					t = result
 				end
 
-				local iter = pairs
+				local iter = table.orderedPairs
 				if t[1] then -- If it seems to be n based..
 					iter = ipairs
 				end
@@ -116,7 +116,7 @@ function template.render(source, env)
 					t = result
 				end
 
-				local iter = pairs
+				local iter = table.orderedPairs
 				if t[1] then -- If it seems to be n based..
 					iter = ipairs
 				end

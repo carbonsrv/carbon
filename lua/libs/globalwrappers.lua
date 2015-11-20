@@ -32,6 +32,7 @@ function io.modtime(path)
 end
 
 -- kvstore
+kvstore = kvstore or {}
 function kvstore.set(name, value)
 	if name then
 		kvstore._set(tostring(name), value)
