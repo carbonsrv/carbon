@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/fzzy/radix/redis"
 	"github.com/gin-gonic/gin"
@@ -85,6 +86,23 @@ func BindPhysFS(L *lua.State) {
 		"delete":      physfs.Delete,
 		"setWriteDir": physfs.SetWriteDir,
 		"getWriteDir": physfs.GetWriteDir,
+	})
+}
+
+func BindIOEnhancements(L *lua.State) {
+	luar.Register(L, "io", luar.Map{ // Small enhancements to the io stuff.
+		"list": (func(path string) ([]string) {
+			files, err := ioutil.ReadDir(path)
+			if err {
+				return make([]string), err
+			} else {
+				list := make([]string, len(files))
+				for i := range files {
+					list[i] = files[i].Name()
+				}
+				return list, nil
+			}
+		})
 	})
 }
 
