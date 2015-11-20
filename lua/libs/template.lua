@@ -69,25 +69,7 @@ function template.render(source, env)
 	local env = env or _G
 
 	if source then
-		local output = tostring(source):gsub("<%%%%=(.-)%%%%>", function(content) -- Prettify output, provides <%%= codehere %%>
-			local res = ""
-			local f = eval(content, env)
-			local suc, result = pcall(f)
-			if suc then
-				return prettify(result)
-			else
-				return ""
-			end
-		end):gsub("<%%=(.-)%%>", function(content) -- Prettify output and escape, provides <%= codehere %>
-			local res = ""
-			local f = eval(content, env)
-			local suc, result = pcall(f)
-			if suc then
-				return escapist.escape.html(prettify(result)):gsub("\n", "<br />")
-			else
-				return ""
-			end
-		end):gsub("<%%%%&(.-)%%%%>(.-)<%%&%%>", function(content, src) -- Have an intermediary template, render that, escaping html and providing <%%& codehere %%> <%.%> <%&%>
+		local output = tostring(source):gsub("<%%%%&(.-)%%%%>(.-)<%%&%%>", function(content, src) -- Have an intermediary template, render that, escaping html and providing <%%& codehere %%> <%.%> <%&%>
 			local res = ""
 			local f = eval(content, env)
 			local result = {pcall(f)}
@@ -144,6 +126,24 @@ function template.render(source, env)
 					res = res .. template.render(src:gsub("<%%%.%%>", v2):gsub("<%%k%%>", k2):gsub("<%%v%%>", v2), eenv)
 				end
 				return res
+			else
+				return ""
+			end
+		end):gsub("<%%%%=(.-)%%%%>", function(content) -- Prettify output, provides <%%= codehere %%>
+			local res = ""
+			local f = eval(content, env)
+			local suc, result = pcall(f)
+			if suc then
+				return prettify(result)
+			else
+				return ""
+			end
+		end):gsub("<%%=(.-)%%>", function(content) -- Prettify output and escape, provides <%= codehere %>
+			local res = ""
+			local f = eval(content, env)
+			local suc, result = pcall(f)
+			if suc then
+				return escapist.escape.html(prettify(result)):gsub("\n", "<br />")
 			else
 				return ""
 			end
