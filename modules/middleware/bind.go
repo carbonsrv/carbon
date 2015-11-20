@@ -91,8 +91,8 @@ func BindPhysFS(L *lua.State) {
 }
 
 func BindIOEnhancements(L *lua.State) {
-	luar.Register(L, "io", luar.Map{ // Small enhancements to the io stuff.
-		"list": (func(path string) ([]string, error) {
+	luar.Register(L, "carbon", luar.Map{ // Small enhancements to the io stuff.
+		"_io_list": (func(path string) ([]string, error) {
 			files, err := ioutil.ReadDir(path)
 			if err != nil {
 				return make([]string, 1), err
@@ -176,7 +176,9 @@ func BindOther(L *lua.State) {
 		"unixtime": (func() int {
 			return int(time.Now().UnixNano())
 		}),
-		"_syntaxhlfunc": helpers.SyntaxHL,
+	})
+	luar.Register(L, "carbon", luar.Map{
+		"_syntaxhl": helpers.SyntaxHL,
 	})
 }
 
