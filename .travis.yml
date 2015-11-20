@@ -16,7 +16,6 @@ notifications:
   irc:
     channels:
       - "irc.esper.net#vifino"
-    use_notice: true
     template:
       - "\x0303%{repository_slug}\x0302#%{build_number} (\x0308%{branch}\x0F: \x0303%{commit}\x0F): %{author} - %{message}"
       - "Change view: %{compare_url}"
