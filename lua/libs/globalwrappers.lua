@@ -13,10 +13,10 @@ end
 
 -- kvstore
 function kvstore.set(name, value)
-	if name and value then
+	if name then
 		kvstore._set(tostring(name), value)
 	else
-		error("No name or value given.")
+		error("No name given.")
 	end
 end
 
