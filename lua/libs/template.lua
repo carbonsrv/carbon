@@ -127,7 +127,11 @@ function template.render(source, env)
 					eenv["v"] = v
 					local k2 = escapist.escape.html(prettify(k))
 					local v2 = escapist.escape.html(prettify(v))
-					res = res .. template.render(src:gsub("<%%%.%%>", v2):gsub("<%%k%%>", k2):gsub("<%%v%%>", v2), eenv)
+					local r, err = template.render(src:gsub("<%%%.%%>", v2):gsub("<%%k%%>", k2):gsub("<%%v%%>", v2), eenv)
+					if err then
+						return "", err
+					end
+					res = res .. r
 				end
 				return res
 			else
