@@ -94,7 +94,7 @@ func BindIOEnhancements(L *lua.State) {
 		"list": (func(path string) ([]string, error) {
 			files, err := ioutil.ReadDir(path)
 			if err != nil {
-				return make([]string), err
+				return make([]string, 1), err
 			} else {
 				list := make([]string, len(files))
 				for i := range files {
