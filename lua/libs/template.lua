@@ -93,11 +93,15 @@ function template.render(source, env)
 					eenv["v"] = v
 					local k2 = prettify(k)
 					local v2 = prettify(v)
-					res = res .. template.render(src:gsub("<%%%.%%>", v2):gsub("<%%k%%>", k2):gsub("<%%v%%>", v2), eenv)
+					local r, err = template.render(src:gsub("<%%%.%%>", v2):gsub("<%%k%%>", k2):gsub("<%%v%%>", v2), eenv)
+					if err then
+						return "", err
+					end
+					res = res .. r
 				end
 				return res
 			else
-				return ""
+				return "", result[2]
 			end
 		end):gsub("<%%&(.-)%%>(.-)<%%&%%>", function(content, src) -- Have an intermediary template, render that, escaping html and providing <%& codehere %> <%.%> <%&%>
 			local res = ""
@@ -127,7 +131,7 @@ function template.render(source, env)
 				end
 				return res
 			else
-				return ""
+				return "", result[2]
 			end
 		end):gsub("<%%%%=(.-)%%%%>", function(content) -- Prettify output, provides <%%= codehere %%>
 			local res = ""
@@ -136,7 +140,7 @@ function template.render(source, env)
 			if suc then
 				return prettify(result)
 			else
-				return ""
+				return "", result
 			end
 		end):gsub("<%%=(.-)%%>", function(content) -- Prettify output and escape, provides <%= codehere %>
 			local res = ""
@@ -145,7 +149,7 @@ function template.render(source, env)
 			if suc then
 				return escapist.escape.html(prettify(result)):gsub("\n", "<br />")
 			else
-				return ""
+				return "", result
 			end
 		end)
 		return output
