@@ -11,6 +11,16 @@ function io.list(path)
 	end
 end
 
+function io.glob(path)
+	local path = path or "*"
+	local res, err = carbon._io_glob(path)
+	if err then
+		return nil, err
+	else
+		return luar.slice2table(res)
+	end
+end
+
 -- kvstore
 function kvstore.set(name, value)
 	if name then

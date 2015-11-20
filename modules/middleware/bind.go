@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/fzzy/radix/redis"
 	"github.com/gin-gonic/gin"
@@ -104,6 +105,7 @@ func BindIOEnhancements(L *lua.State) {
 				return list, nil
 			}
 		}),
+		"_io_glob": filepath.Glob,
 	})
 }
 
