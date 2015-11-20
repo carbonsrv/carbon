@@ -31,7 +31,7 @@ end
 function kvstore.get(name)
 	if name then
 		local res = kvstore._get(name)
-		local t = type(res)
+		local t = tostring(res)
 		if t == "map[string]interface {}" then
 			return luar.map2table(res)
 		elseif t == "[]interface {}" then
