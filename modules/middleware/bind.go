@@ -91,7 +91,7 @@ func BindPhysFS(L *lua.State) {
 
 func BindIOEnhancements(L *lua.State) {
 	luar.Register(L, "io", luar.Map{ // Small enhancements to the io stuff.
-		"list": (func(path string) ([]string) {
+		"list": (func(path string) ([]string, error) {
 			files, err := ioutil.ReadDir(path)
 			if err {
 				return make([]string), err
