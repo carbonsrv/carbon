@@ -2,7 +2,7 @@
 
 -- Load 3rdparty libraries
 -- MessagePack.lua
-msgpack = assert(loadstring(carbon.glue("3rdparty/MessagePack.lua")))()
+local msgpack = assert(loadstring(carbon.glue("3rdparty/MessagePack.lua")))()
 
 -- Support more lua types, but at the cost of compatibility with non-carbon msgpack things.
 -- Functions

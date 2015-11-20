@@ -1,35 +1,5 @@
 -- Tags
-local html_escape = {
-	["<"]="&lt;",
-	[">"]="&gt;",
-	["&"]="&amp;"
-}
-
-local function uri_escape(a)
-	return ("%%%02x"):format(a:byte())
-end
-
-local function uri_unescape(a)
-	return string.char(tonumber(a,16))
-end
-
-escape = {
-	html = function(str)
-		return (str:gsub("[<>&]", html_escape))
-	end,
-	url = function(str)
-		return (str:gsub("[^a-zA-Z0-9_.~-]", uri_escape))
-	end,
-	shell = function(str)
-		return (str:gsub("[%s`~!#$&*()|\\'\";<>?{}[%]^]", "\\%1"))
-	end
-}
-
-unescape = {
-	url = function(str)
-		return (str:gsub("+", " "):gsub("%%(%x%x)", uri_unescape))
-	end
-}
+local escapist = require("escapist")
 
 -- tag metatable
 local tagmeth = {
@@ -95,7 +65,7 @@ local tagmeth = {
 			local value = select(i, ...)
 			if type(value) == "string" then
 				if #value ~= 0 then
-					table.insert(self.content, escape.html(value))
+					table.insert(self.content, escapist.escape.html(value))
 				end
 			else
 				table.insert(self.content, value)

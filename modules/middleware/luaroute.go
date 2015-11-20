@@ -259,11 +259,6 @@ func DLR_RUS(bcode string, instances int, dobind bool, vals map[string]interface
 	}, nil
 }
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
-
 func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but for websockets. Not working because?!
 	insts := instances
 	if instances < 0 {
@@ -283,6 +278,10 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 		}
 		L.PushValue(-1)
 		schan <- L
+	}
+	var upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
 	}
 	return func(context *gin.Context) {
 		conn, err := upgrader.Upgrade(context.Writer, context.Request, nil)
