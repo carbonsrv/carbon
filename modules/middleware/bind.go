@@ -93,7 +93,7 @@ func BindIOEnhancements(L *lua.State) {
 	luar.Register(L, "io", luar.Map{ // Small enhancements to the io stuff.
 		"list": (func(path string) ([]string, error) {
 			files, err := ioutil.ReadDir(path)
-			if err {
+			if err != nil {
 				return make([]string), err
 			} else {
 				list := make([]string, len(files))
