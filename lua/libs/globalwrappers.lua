@@ -1,7 +1,7 @@
 -- Global wrappers
 
 function io.list(path)
-	local path = tostring(path) or "."
+	local path = path or "."
 	local res, err = carbon._io_list(path)
 	if err then
 		return nil, err
