@@ -101,7 +101,7 @@ function template.render(source, env)
 				end
 
 				for k, v in pairs(t) do
-					res = res .. src:gsub("<%%%.%%>", prettify(v)):gsub("<%%%k%%>", prettify(k)):gsub("<%%%v%%>", prettify(v))
+					res = res .. src:gsub("<%%%.%%>", prettify(v)):gsub("<%%k%%>", prettify(k)):gsub("<%%v%%>", prettify(v))
 				end
 				return template.render(res, env)
 			else
@@ -121,9 +121,9 @@ function template.render(source, env)
 				end
 
 				for k, v in pairs(t) do
-					res = res .. src:gsub("<%%%.%%>", escapist.escape.html(prettify(v)):gsub("\n", "<br />"))
-						:gsub("<%%k%%>", escapist.escape.html(prettify(k)):gsub("\n", "<br />"))
-						:gsub("<%%v%%>", escapist.escape.html(prettify(v)):gsub("\n", "<br />"))
+					local k2 = escapist.escape.html(prettify(k))
+					local v2 = escapist.escape.html(prettify(v))
+					res = res .. src:gsub("<%%%.%%>", v2):gsub("<%%k%%>", k2):gsub("<%%v%%>", v2)
 				end
 				return template.render(res, env)
 			else
