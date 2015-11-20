@@ -21,6 +21,16 @@ function io.glob(path)
 	end
 end
 
+function io.modtime(path)
+	local path = path or "*"
+	local res, err = carbon._io_modtime(path)
+	if err then
+		return nil, err
+	else
+		return res
+	end
+end
+
 -- kvstore
 function kvstore.set(name, value)
 	if name then

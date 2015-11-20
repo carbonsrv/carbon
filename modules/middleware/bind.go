@@ -106,6 +106,14 @@ func BindIOEnhancements(L *lua.State) {
 			}
 		}),
 		"_io_glob": filepath.Glob,
+		"_io_modtime": (func(path string) (int, error) {
+			info, err := os.Stat(path)
+			if err != nil {
+				return -1, err
+			} else {
+				return int(info.ModTime().UTC().Unix()), nil
+			}
+		}),
 	})
 }
 
@@ -176,7 +184,7 @@ func BindThread(L *lua.State) {
 func BindOther(L *lua.State) {
 	luar.Register(L, "", luar.Map{
 		"unixtime": (func() int {
-			return int(time.Now().UnixNano())
+			return int(time.Now().UTC().Unix())
 		}),
 	})
 	luar.Register(L, "carbon", luar.Map{
