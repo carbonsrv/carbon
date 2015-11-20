@@ -103,7 +103,7 @@ func BindIOEnhancements(L *lua.State) {
 				return list, nil
 			}
 		})
-	})
+	}),
 }
 
 func BindRedis(L *lua.State) {
