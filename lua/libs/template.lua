@@ -83,7 +83,7 @@ function template.render(source, env)
 			local f = eval(content, env)
 			local suc, result = pcall(f)
 			if suc then
-				return escapist.escape.html(prettify(result):gsub("\n", "<br />"))
+				return escapist.escape.html(prettify(result)):gsub("\n", "<br />")
 			else
 				return ""
 			end
@@ -121,7 +121,7 @@ function template.render(source, env)
 				end
 
 				for k, v in pairs(t) do
-					res = res .. src:gsub("<%%%.%%>", escapist.escape.html(prettify(v):gsub("\n", "<br />"))):gsub("<%%%k%%>", escapist.escape.html(prettify(k):gsub("\n", "<br />"))):gsub("<%%%v%%>", escapist.escape.html(prettify(v):gsub("\n", "<br />")))
+					res = res .. src:gsub("<%%%.%%>", escapist.escape.html(prettify(v)):gsub("\n", "<br />")):gsub("<%%%k%%>", escapist.escape.html(prettify(k)):gsub("\n", "<br />")):gsub("<%%%v%%>", escapist.escape.html(prettify(v)):gsub("\n", "<br />"))
 				end
 				return template.render(res, env)
 			else
