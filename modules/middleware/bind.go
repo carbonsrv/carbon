@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/fzzy/radix/redis"
