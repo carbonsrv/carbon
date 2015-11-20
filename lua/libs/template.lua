@@ -100,7 +100,12 @@ function template.render(source, env)
 					t = result
 				end
 
-				for k, v in pairs(t) do
+				local iter = pairs
+				if t[1] then -- If it seems to be n based..
+					iter = ipairs
+				end
+
+				for k, v in iter(t) do
 					res = res .. src:gsub("<%%%.%%>", prettify(v)):gsub("<%%k%%>", prettify(k)):gsub("<%%v%%>", prettify(v))
 				end
 				return template.render(res, env)
@@ -120,7 +125,12 @@ function template.render(source, env)
 					t = result
 				end
 
-				for k, v in pairs(t) do
+				local iter = pairs
+				if t[1] then -- If it seems to be n based..
+					iter = ipairs
+				end
+
+				for k, v in iter(t) do
 					local k2 = escapist.escape.html(prettify(k))
 					local v2 = escapist.escape.html(prettify(v))
 					res = res .. src:gsub("<%%%.%%>", v2):gsub("<%%k%%>", k2):gsub("<%%v%%>", v2)
