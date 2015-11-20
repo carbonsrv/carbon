@@ -106,9 +106,14 @@ function template.render(source, env)
 				end
 
 				for k, v in iter(t) do
-					res = res .. src:gsub("<%%%.%%>", prettify(v)):gsub("<%%k%%>", prettify(k)):gsub("<%%v%%>", prettify(v))
+					local eenv = env
+					eenv["k"] = k
+					eenv["v"] = v
+					local k2 = prettify(k)
+					local v2 = prettify(v)
+					res = res .. template.render(src:gsub("<%%%.%%>", v2):gsub("<%%k%%>", k2):gsub("<%%v%%>", v2), eenv)
 				end
-				return template.render(res, env)
+				return res
 			else
 				return ""
 			end
@@ -131,11 +136,14 @@ function template.render(source, env)
 				end
 
 				for k, v in iter(t) do
+					local eenv = env
+					eenv["k"] = k
+					eenv["v"] = v
 					local k2 = escapist.escape.html(prettify(k))
 					local v2 = escapist.escape.html(prettify(v))
-					res = res .. src:gsub("<%%%.%%>", v2):gsub("<%%k%%>", k2):gsub("<%%v%%>", v2)
+					res = res .. template.render(src:gsub("<%%%.%%>", v2):gsub("<%%k%%>", k2):gsub("<%%v%%>", v2), eenv)
 				end
-				return template.render(res, env)
+				return res
 			else
 				return ""
 			end
