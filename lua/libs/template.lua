@@ -75,15 +75,19 @@ function template.render(source, env)
 			local result = {pcall(f)}
 			local suc = table.remove(result, 1)
 			if suc then
+				local iter = table.orderedPairs
 				local t
 				if type(result[1]) == "table" then
 					t = result[1]
+
+					if t[1] then -- If it seems to be n based..
+						iter = ipairs
+					end
+				elseif type(result[1]) == "function" and type(result[2]) == "table" then -- if it is the result of an iterator
+					iter = function() return table.unpack(result) end
+					t = {}
 				else
 					t = result
-				end
-
-				local iter = table.orderedPairs
-				if t[1] then -- If it seems to be n based..
 					iter = ipairs
 				end
 
@@ -109,15 +113,19 @@ function template.render(source, env)
 			local result = {pcall(f)}
 			local suc = table.remove(result, 1)
 			if suc then
+				local iter = table.orderedPairs
 				local t
 				if type(result[1]) == "table" then
 					t = result[1]
+
+					if t[1] then -- If it seems to be n based..
+						iter = ipairs
+					end
+				elseif type(result[1]) == "function" and type(result[2]) == "table" then -- if it is the result of an iterator
+					iter = function() return table.unpack(result) end
+					t = {}
 				else
 					t = result
-				end
-
-				local iter = table.orderedPairs
-				if t[1] then -- If it seems to be n based..
 					iter = ipairs
 				end
 
