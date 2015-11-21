@@ -4,7 +4,6 @@
 local M = {}
 
 -- Prefix related stuff...
-
 M._prefix = "" -- defaults to none.
 
 function M.setPrefix(new_prefix)
@@ -21,12 +20,19 @@ function M.resetPrefix()
 end
 
 -- General things.
-
 function M.Use(middleware)
 	if tostring(middleware) == "gin.HandlerFunc" or tostring(middleware) == "func(*gin.Context)" then
 		carbon.srv.Use(middleware)
 	else
 		error("Middleware is not the valid type! (gin.HandlerFunc)")
+	end
+end
+
+function M.DefaultRoute(handler)
+	if tostring(handler) == "func(*gin.Context)" then
+		carbon.srv.NoRoute(handler)
+	else
+		error("Invalid handler.")
 	end
 end
 
