@@ -1,4 +1,7 @@
 -- Middleware helpers, not really useful with anything but the server init script
+
+srv = require("wrappers.srv")
+
 function mw.new(fn, bindings, instances, newstate)
 	local code = ""
 	local instances = instances or -1

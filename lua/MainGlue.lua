@@ -2,7 +2,7 @@
 
 -- Custom package loader so that you can require the libraries
 local function loadasset(name)
-	local location = "libs/" .. tostring(name):gsub("/", ".") .. ".lua"
+	local location = "libs/" .. tostring(name):gsub("%.", "/") .. ".lua"
 	local src = carbon.glue(location)
 	if src ~= "" then
 		-- Compile and return the module

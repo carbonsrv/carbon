@@ -14,7 +14,7 @@ import (
 func Configure(script string, cfe *cache.Cache, webroot string) (http.Handler, error) {
 	srv := gin.New()
 	L := luar.Init()
-	luar.Register(L, "", luar.Map{ // Global
+	luar.Register(L, "carbon", luar.Map{ // srv and the state
 		"srv": srv,
 		"L":   L,
 	})
