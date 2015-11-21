@@ -23,7 +23,7 @@ end
 -- General things.
 
 function M.Use(middleware)
-	if tostring(middleware) == "gin.HandlerFunc" then
+	if tostring(middleware) == "gin.HandlerFunc" or tostring(middleware) == "func(*gin.Context)" then
 		carbon.srv.Use(middleware)
 	else
 		error("Middleware is not the valid type! (gin.HandlerFunc)")
