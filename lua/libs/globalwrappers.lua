@@ -82,6 +82,8 @@ function kvstore._dec(name, number)
 end
 
 -- table
+table.unpack = unpack
+
 function table.scopy(orig) -- http://lua-users.org/wiki/CopyTable
 	local orig_type = type(orig)
 	local copy

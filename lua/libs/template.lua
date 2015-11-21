@@ -84,8 +84,8 @@ function template.render(source, env)
 						iter = ipairs
 					end
 				elseif type(result[1]) == "function" and type(result[2]) == "table" then -- if it is the result of an iterator
-					iter = function() return table.unpack(result) end
-					t = {}
+					iter = table.unpack
+					t = result
 				else
 					t = result
 					iter = ipairs
@@ -105,7 +105,7 @@ function template.render(source, env)
 				end
 				return res
 			else
-				return "", result[2]
+				return "", result[1]
 			end
 		end):gsub("<%%&(.-)%%>(.-)<%%&%%>", function(content, src) -- Have an intermediary template, render that, escaping html and providing <%& codehere %> <%.%> <%&%>
 			local res = ""
@@ -122,8 +122,8 @@ function template.render(source, env)
 						iter = ipairs
 					end
 				elseif type(result[1]) == "function" and type(result[2]) == "table" then -- if it is the result of an iterator
-					iter = function() return table.unpack(result) end
-					t = {}
+					iter = table.unpack
+					t = result
 				else
 					t = result
 					iter = ipairs
@@ -143,7 +143,7 @@ function template.render(source, env)
 				end
 				return res
 			else
-				return "", result[2]
+				return "", result[1]
 			end
 		end):gsub("<%%%%=(.-)%%%%>", function(content) -- Prettify output, provides <%%= codehere %%>
 			local res = ""
