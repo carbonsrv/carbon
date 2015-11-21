@@ -118,11 +118,11 @@ func BindIOEnhancements(L *lua.State) {
 			}
 		}),
 		"_os_exists": (func(path string) (bool, error) {
-			_, err := os.Stat(path)
-			if os.IsNotExist(err) {
-				return false, nil
+			if _, err := os.Stat(path); err == nil {
+				return true
+			} else {
+				return false
 			}
-			return err != nil, err
 		}),
 	})
 }
