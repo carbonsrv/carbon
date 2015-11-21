@@ -18,6 +18,7 @@ import (
 	"github.com/vifino/contrib/gzip"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
+	"github.com/shurcooL/github_flavored_markdown"
 	"net"
 	"time"
 )
@@ -30,10 +31,11 @@ func Bind(L *lua.State) {
 	BindPhysFS(L)
 	BindIOEnhancements(L)
 	BindThread(L)
-	BindOther(L)
 	BindNet(L)
 	BindConversions(L)
 	BindComs(L)
+	BindMarkdown(L)
+	BindOther(L)
 }
 
 func BindCarbon(L *lua.State) {
@@ -182,17 +184,6 @@ func BindThread(L *lua.State) {
 	})
 }
 
-func BindOther(L *lua.State) {
-	luar.Register(L, "", luar.Map{
-		"unixtime": (func() int {
-			return int(time.Now().UTC().Unix())
-		}),
-	})
-	luar.Register(L, "carbon", luar.Map{
-		"_syntaxhl": helpers.SyntaxHL,
-	})
-}
-
 func BindComs(L *lua.State) {
 	luar.Register(L, "com", luar.Map{
 		"create": (func() chan interface{} {
@@ -247,5 +238,24 @@ func BindStatic(L *lua.State, cfe *cache.Cache) {
 		"serve": (func(prefix string) func(*gin.Context) {
 			return staticServe.ServeCached(prefix, staticServe.PhysFS("", true, true), cfe)
 		}),
+	})
+}
+
+func BindMarkdown(L *lua.State) {
+	luar.Register(L, "markdown", luar.Map{
+		"github": (func(source string) string {
+			return string(github_flavored_markdown.Markdown([]byte(source)))
+		}),
+	})
+}
+
+func BindOther(L *lua.State) {
+	luar.Register(L, "", luar.Map{
+		"unixtime": (func() int {
+			return int(time.Now().UTC().Unix())
+		}),
+	})
+	luar.Register(L, "carbon", luar.Map{
+		"_syntaxhl": helpers.SyntaxHL,
 	})
 }
