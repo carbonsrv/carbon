@@ -31,6 +31,15 @@ function io.modtime(path)
 	end
 end
 
+-- os
+function os.exists(path)
+	if path then
+		return carbon._os_exists(path)
+	else
+		error("No path given.")
+	end
+end
+
 -- kvstore
 kvstore = kvstore or {}
 function kvstore.set(name, value)
