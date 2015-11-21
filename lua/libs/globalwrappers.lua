@@ -109,6 +109,14 @@ function table.reverse(tbl)
 	return ret
 end
 
+function table.flip(tbl)
+	local flipped = {}
+	for k, v in pairs(tbl) do
+		flipped[v] = k
+	end
+	return flipped
+end
+
 --[[
 Ordered table iterator, allow to iterate on the natural order of the keys of a
 table.
