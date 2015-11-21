@@ -3,6 +3,8 @@
 
 local M = {}
 
+-- Prefix related stuff...
+
 M._prefix = "" -- defaults to none.
 
 function M.setPrefix(new_prefix)
@@ -18,6 +20,17 @@ function M.resetPrefix()
 	M._prefix = ""
 end
 
+-- General things.
+
+function M.Use(middleware)
+	if tostring(middleware) == "gin.HandlerFunc" then
+		carbon.srv.Use(middleware)
+	else
+		error("Middleware is not the valid type! (gin.HandlerFunc)")
+	end
+end
+
+-- HTTP Verbs
 function M.GET(pattern, handler, bindings)
 	if type(pattern) == "string" then
 		local h
