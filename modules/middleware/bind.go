@@ -45,8 +45,8 @@ func BindCarbon(L *lua.State) {
 }
 
 func BindEngine(L *lua.State) {
-	luar.Register(L, "engine", luar.Map{
-		"new": gin.New,
+	luar.Register(L, "carbon", luar.Map{
+		"_gin_new": gin.New,
 	})
 }
 
