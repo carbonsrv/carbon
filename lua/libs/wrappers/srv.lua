@@ -3,7 +3,7 @@
 
 local M = {}
 local args = {...}
-local real_srv = args[1]
+local real_srv = args[1]or carbon.srv
 
 -- Prefix related stuff...
 M._prefix = "" -- defaults to none.
@@ -41,7 +41,7 @@ end
 -- Engine creation
 function M.new()
 	local s = carbon._gin_new()
-	return require("wrappers.srv", s)
+	return loadstring(carbon.glue("libs/wrappers.srv.lua"), "srv")(s)
 end
 
 -- HTTP Verbs
