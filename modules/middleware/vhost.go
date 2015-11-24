@@ -25,7 +25,7 @@ func VHOST(plan Plan) func(*gin.Context) {
 			plan["***"](c)
 		} else {
 			fmt.Println("Found nothing")
-			c.Next()
+			c.Data(404, "text/plain", []byte("404 page not found"))
 		}
 	}
 }
