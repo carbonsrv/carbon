@@ -28,7 +28,11 @@ M.finish_handler = function(type, path, h)
 	if M.use_vhosts then
 		M._vhosts[type] = M._vhosts[type] or {}
 		M._vhosts[type][path] = M._vhosts[type][path] or {}
-		M._vhosts[type][path][M.vhost] = h
+		if type ~= "Use" then
+			M._vhosts[type][path][M.vhost] = h
+		else
+			table.insert(M._vhosts[type][path][M.vhost], h)
+		end
 	else
 		carbon.srv[type](path, h)
 	end
@@ -74,8 +78,7 @@ end
 -- General things.
 function M.Use(middleware)
 	if tostring(middleware) == "gin.HandlerFunc" or tostring(middleware) == "func(*gin.Context)" then
-		--M.finish_handler("Use", "", middleware)
-		carbon.srv.Use(middleware)
+		M.finish_handler("Use", M._prefix, middleware)
 	else
 		error("Middleware is not the valid type! (gin.HandlerFunc)")
 	end
