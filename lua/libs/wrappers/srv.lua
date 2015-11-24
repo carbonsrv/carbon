@@ -20,13 +20,13 @@ function M.resetPrefix()
 end
 
 -- And VHOST stuff..
-local finish_handler = function(type, path, h) carbon.srv[type](path, h) end
+M.finish_handler = function(type, path, h) carbon.srv[type](path, h) end
 M._vhosts = {}
 M.vhost = "***"
 
 function M.Begin_VHOSTS(cur)
 	M.vhost = cur or M.vhost
-	finish_handler = function(type, path, h)
+	M.M.finish_handler = function(type, path, h)
 		M._vhosts[type] = M._vhosts[type] or {}
 		M._vhosts[type][path] = M._vhosts[type][path] or {}
 		M._vhosts[type][path][M.vhost] = h
@@ -69,7 +69,7 @@ function M.GET(pattern, handler, bindings)
 		else
 			error("Invalid handler.")
 		end
-		finish_handler("GET", M._prefix .. pattern, h)
+		M.finish_handler("GET", M._prefix .. pattern, h)
 	else
 		error("Invalid pattern.")
 	end
@@ -85,7 +85,7 @@ function M.POST(pattern, handler, bindings)
 		else
 			error("Invalid handler.")
 		end
-		finish_handler("POST", M._prefix .. pattern, h)
+		M.finish_handler("POST", M._prefix .. pattern, h)
 	else
 		error("Invalid pattern.")
 	end
@@ -101,7 +101,7 @@ function M.PUT(pattern, handler, bindings)
 		else
 			error("Invalid handler.")
 		end
-		finish_handler("PUT", M._prefix .. pattern, h)
+		M.finish_handler("PUT", M._prefix .. pattern, h)
 	else
 		error("Invalid pattern.")
 	end
@@ -117,7 +117,7 @@ function M.DELETE(pattern, handler, bindings)
 		else
 			error("Invalid handler.")
 		end
-		finish_handler("DELETE", M._prefix .. pattern, h)
+		M.finish_handler("DELETE", M._prefix .. pattern, h)
 	else
 		error("Invalid pattern.")
 	end
@@ -133,7 +133,7 @@ function M.PATCH(pattern, handler, bindings)
 		else
 			error("Invalid handler.")
 		end
-		finish_handler("PATCH", M._prefix .. pattern, h)
+		M.finish_handler("PATCH", M._prefix .. pattern, h)
 	else
 		error("Invalid pattern.")
 	end
@@ -149,7 +149,7 @@ function M.HEAD(pattern, handler, bindings)
 		else
 			error("Invalid handler.")
 		end
-		finish_handler("HEAD", M._prefix .. pattern, h)
+		M.finish_handler("HEAD", M._prefix .. pattern, h)
 	else
 		error("Invalid pattern.")
 	end
@@ -165,7 +165,7 @@ function M.OPTIONS(pattern, handler, bindings)
 		else
 			error("Invalid handler.")
 		end
-		finish_handler("OPTIONS", M._prefix .. pattern, h)
+		M.finish_handler("OPTIONS", M._prefix .. pattern, h)
 	else
 		error("Invalid pattern.")
 	end
