@@ -40,6 +40,14 @@ function os.exists(path)
 	end
 end
 
+function os.chdir(path)
+	if path then
+		return carbon._os_chdir(path)
+	else
+		error("No path given.")
+	end
+end
+
 -- kvstore
 kvstore = kvstore or {}
 function kvstore.set(name, value)

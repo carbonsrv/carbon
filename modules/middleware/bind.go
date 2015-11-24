@@ -30,6 +30,7 @@ func Bind(L *lua.State) {
 	BindKVStore(L)
 	BindPhysFS(L)
 	BindIOEnhancements(L)
+	BindOSEnhancements(L)
 	BindThread(L)
 	BindNet(L)
 	BindConversions(L)
@@ -117,6 +118,11 @@ func BindIOEnhancements(L *lua.State) {
 				return int(info.ModTime().UTC().Unix()), nil
 			}
 		}),
+	})
+}
+
+func BindOSEnhancements(L *lua.State) {
+	luar.Register(L, "carbon", luar.Map{ // Small enhancements to the io stuff.
 		"_os_exists": (func(path string) bool {
 			if _, err := os.Stat(path); err == nil {
 				return true
@@ -124,6 +130,7 @@ func BindIOEnhancements(L *lua.State) {
 				return false
 			}
 		}),
+		"_os_chdir": os.Chdir,
 	})
 }
 
