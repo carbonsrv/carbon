@@ -43,7 +43,28 @@ function M.Finish_VHOSTS()
 	M.use_vhosts = false
 	for type, paths in pairs(M._vhosts) do
 		for path, vhosts in pairs(paths) do
-			carbon.srv[type](path, mw.VHOST(vhosts))
+			if type == "Use" then
+				if #vhosts == 1 then
+					local _, h = pairs(vhosts)(vhosts)
+					carbon.srv.Use(h)
+				else
+					carbon.srv.Use(mw.VHOST(vhosts))
+				end
+			elseif type == "Default" then
+				if #vhosts == 1 then
+					local _, h = pairs(vhosts)(vhosts)
+					carbon.srv.NoRoute(h)
+				else
+					carbon.srv.NoRoute(mw.VHOST(vhosts))
+				end
+			else
+				if #vhosts == 1 then
+					local _, h = pairs(vhosts)(vhosts)
+					carbon.srv[type](path, h)
+				else
+					carbon.srv[type](path, mw.VHOST(vhosts))
+				end
+			end
 		end
 	end
 	M._vhosts = {}
@@ -53,7 +74,7 @@ end
 -- General things.
 function M.Use(middleware)
 	if tostring(middleware) == "gin.HandlerFunc" or tostring(middleware) == "func(*gin.Context)" then
-		carbon.srv.Use(middleware)
+		M.finish_handler("Use", "", middleware)
 	else
 		error("Middleware is not the valid type! (gin.HandlerFunc)")
 	end
