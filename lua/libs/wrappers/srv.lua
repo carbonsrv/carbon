@@ -26,7 +26,7 @@ M.vhost = "***"
 
 function M.Begin_VHOSTS(cur)
 	M.vhost = cur or M.vhost
-	M.M.finish_handler = function(type, path, h)
+	M.finish_handler = function(type, path, h)
 		M._vhosts[type] = M._vhosts[type] or {}
 		M._vhosts[type][path] = M._vhosts[type][path] or {}
 		M._vhosts[type][path][M.vhost] = h
