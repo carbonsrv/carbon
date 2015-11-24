@@ -4,22 +4,22 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
-	"github.com/fzzy/radix/redis"
-	"github.com/gin-gonic/gin"
-	"github.com/pmylund/go-cache"
 	"github.com/carbonsrv/carbon/modules/glue"
 	"github.com/carbonsrv/carbon/modules/helpers"
 	"github.com/carbonsrv/carbon/modules/scheduler"
 	"github.com/carbonsrv/carbon/modules/static"
+	"github.com/fzzy/radix/redis"
+	"github.com/gin-gonic/gin"
+	"github.com/pmylund/go-cache"
+	"github.com/shurcooL/github_flavored_markdown"
 	"github.com/vifino/contrib/gzip"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
-	"github.com/shurcooL/github_flavored_markdown"
+	"io/ioutil"
 	"net"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -117,7 +117,7 @@ func BindIOEnhancements(L *lua.State) {
 				return int(info.ModTime().UTC().Unix()), nil
 			}
 		}),
-		"_os_exists": (func(path string) (bool) {
+		"_os_exists": (func(path string) bool {
 			if _, err := os.Stat(path); err == nil {
 				return true
 			} else {
@@ -140,13 +140,13 @@ func BindRedis(L *lua.State) {
 
 func BindKVStore(L *lua.State) { // Thread safe Key Value Store that doesn't persist.
 	luar.Register(L, "kvstore", luar.Map{
-		"_set": (func(k string, v interface{}){
+		"_set": (func(k string, v interface{}) {
 			kvstore.Set(k, v, -1)
 		}),
-		"_del": (func(k string){
+		"_del": (func(k string) {
 			kvstore.Delete(k)
 		}),
-		"_get": (func(k string) interface{}{
+		"_get": (func(k string) interface{} {
 			res, found := kvstore.Get(k)
 			if found {
 				return res
@@ -154,10 +154,10 @@ func BindKVStore(L *lua.State) { // Thread safe Key Value Store that doesn't per
 				return nil
 			}
 		}),
-		"_inc": (func(k string, n int64) error{
+		"_inc": (func(k string, n int64) error {
 			return kvstore.Increment(k, n)
 		}),
-		"_dec": (func(k string, n int64) error{
+		"_dec": (func(k string, n int64) error {
 			return kvstore.Decrement(k, n)
 		}),
 	})

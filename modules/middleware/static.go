@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/carbonsrv/carbon/modules/helpers"
+	"github.com/gin-gonic/gin"
 )
 
 func Echo(status int, s string) func(*gin.Context) {

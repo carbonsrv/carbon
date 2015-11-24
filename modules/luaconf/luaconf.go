@@ -1,11 +1,11 @@
 package luaconf
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/carbonsrv/carbon/modules/glue"
+	"github.com/gin-gonic/gin"
 	//"github.com/vifino/golua/lua"
-	"github.com/pmylund/go-cache"
 	"github.com/carbonsrv/carbon/modules/middleware"
+	"github.com/pmylund/go-cache"
 	"github.com/vifino/luar"
 	"net/http"
 )
