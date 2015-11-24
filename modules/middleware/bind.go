@@ -68,6 +68,13 @@ func BindMiddleware(L *lua.State) {
 			}
 			return VHOST(newplan)
 		}),
+		"VHOST_Middleware": (func(plan map[string]interface{}) gin.HandlerFunc {
+			newplan := make(Plan, len(plan))
+			for k, v := range plan {
+				newplan[k] = v.(func(*gin.Context))
+			}
+			return VHOST_Middleware(newplan)
+		}),
 		"Logger":   gin.Logger,
 		"Recovery": gin.Recovery,
 		"GZip": func() func(*gin.Context) {

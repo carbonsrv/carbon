@@ -48,7 +48,7 @@ function M.Finish_VHOSTS()
 					local _, h = pairs(vhosts)(vhosts)
 					carbon.srv.Use(h)
 				else
-					carbon.srv.Use(mw.VHOST(vhosts))
+					carbon.srv.Use(mw.VHOST_Middleware(vhosts))
 				end
 			elseif type == "Default" then
 				if #vhosts == 1 then
