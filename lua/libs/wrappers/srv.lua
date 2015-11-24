@@ -3,8 +3,6 @@
 
 local M = srv or {}
 
-print("srv", srv)
-
 -- Prefix related stuff...
 M._prefix = M._prefix or "" -- defaults to none.
 
@@ -28,12 +26,10 @@ M.vhost = M.vhost or "***"
 
 M.finish_handler = function(type, path, h)
 	if M.use_vhosts then
-		print("VHOST")
 		M._vhosts[type] = M._vhosts[type] or {}
 		M._vhosts[type][path] = M._vhosts[type][path] or {}
 		M._vhosts[type][path][M.vhost] = h
 	else
-		print("Normal")
 		carbon.srv[type](path, h)
 	end
 end
@@ -50,6 +46,7 @@ function M.Finish_VHOSTS()
 			carbon.srv[type](path, mw.VHOST(vhosts))
 		end
 	end
+	M._vhosts = {}
 	M.vhost = "***"
 end
 
