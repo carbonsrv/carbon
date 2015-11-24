@@ -29,7 +29,7 @@ function M.Begin_VHOSTS(cur)
 	finish_handler = function(type, path, h)
 		M._vhosts[type] = M._vhosts[type] or {}
 		M._vhosts[type][path] = M._vhosts[type][path] or {}
-		M._vhosts[type][path][vhost] = h
+		M._vhosts[type][path][M.vhost] = h
 	end
 end
 
