@@ -1,10 +1,10 @@
 -- srv wrapper
 -- Wraps around carbon.srv and provides the usual http verbs: GET, POST, PUT, DELETE, PATCH, HEAD and OPTIONS. Also provides way to prefix all routing things.
 
-local M = {}
+local M = srv or {}
 
 -- Prefix related stuff...
-M._prefix = "" -- defaults to none.
+M._prefix = M._prefix or "" -- defaults to none.
 
 function M.setPrefix(new_prefix)
 	if type(new_prefix) == "string" then
@@ -20,9 +20,9 @@ function M.resetPrefix()
 end
 
 -- And VHOST stuff..
-M._vhosts = {}
-M.use_vhosts = false
-M.vhost = "***"
+M._vhosts = M._vhosts or {}
+M.use_vhosts = M.use_vhosts or false
+M.vhost = M.vhost or "***"
 
 M.finish_handler = function(type, path, h)
 	if M.use_vhosts then
@@ -46,6 +46,7 @@ function M.Finish_VHOSTS()
 			carbon.srv[type](path, mw.VHOST(vhosts))
 		end
 	end
+	M.vhost = "***"
 end
 
 -- General things.
