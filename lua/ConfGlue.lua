@@ -1,5 +1,5 @@
 -- Config Glue
 
-srv = require("wrappers.srv")
+srv = srv or require("wrappers.srv")
 
 require("wrappers.mw")

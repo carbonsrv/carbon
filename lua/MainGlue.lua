@@ -18,4 +18,4 @@ table.insert(package.loaders, 2, loadasset)
 require("globalwrappers")
 require("tags")
 
-thread = require("thread")
+thread = thread or require("thread")
