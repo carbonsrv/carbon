@@ -1,4 +1,4 @@
--- Main glue
+-- Main Glue
 
 -- Custom package loader so that you can require the libraries
 local function loadasset(name)

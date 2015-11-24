@@ -1,3 +1,5 @@
+-- Route Glue
+
 -- Return function
 function content(data, code, ctype)
 	local code = code or 200
