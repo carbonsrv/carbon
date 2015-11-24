@@ -15,13 +15,17 @@ func VHOST(plan Plan) func(*gin.Context) {
 		fmt.Println(hostwithoutport)
 
 		if plan[host] != nil {
+			fmt.Println("Found")
 			plan[host](c)
 		} else if plan[hostwithoutport] != nil {
+			fmt.Println("Found without port")
 			plan[hostwithoutport](c)
 		} else if plan["***"] != nil {
+			fmt.Println("Found catchall")
 			plan["***"](c)
 		} else {
-			c.Data(404, "text/plain", []byte("404 page not found"))
+			fmt.Println("Found nothing")
+			c.Next()
 		}
 	}
 }
