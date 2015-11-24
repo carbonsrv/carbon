@@ -20,20 +20,27 @@ function M.resetPrefix()
 end
 
 -- And VHOST stuff..
-M.finish_handler = function(type, path, h) carbon.srv[type](path, h) end
 M._vhosts = {}
+M.use_vhosts = false
 M.vhost = "***"
 
-function M.Begin_VHOSTS(cur)
-	M.vhost = cur or M.vhost
-	M.finish_handler = function(type, path, h)
+M.finish_handler = function(type, path, h)
+	if M.use_vhosts then
 		M._vhosts[type] = M._vhosts[type] or {}
 		M._vhosts[type][path] = M._vhosts[type][path] or {}
 		M._vhosts[type][path][M.vhost] = h
+	else
+		carbon.srv[type](path, h)
 	end
 end
 
+function M.Begin_VHOSTS(cur)
+	M.vhost = cur or M.vhost
+	M.use_vhosts = true
+end
+
 function M.Finish_VHOSTS()
+	M.use_vhosts = false
 	for type, paths in pairs(M._vhosts) do
 		for path, vhosts in pairs(paths) do
 			carbon.srv[type](path, mw.VHOST(vhosts))
