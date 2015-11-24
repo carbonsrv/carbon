@@ -19,6 +19,28 @@ function M.resetPrefix()
 	M._prefix = ""
 end
 
+-- And VHOST stuff..
+local finish_handler = function(type, path, h) carbon.srv[type](path, h) end
+M._vhosts = {}
+M.vhost = "***"
+
+function M.Begin_VHOSTS(cur)
+	M.vhost = cur or M.vhost
+	finish_handler = function(type, path, h)
+		M._vhosts[type] = M._vhosts[type] or {}
+		M._vhosts[type][path] = M._vhosts[type][path] or {}
+		M._vhosts[type][path][vhost] = h
+	end
+end
+
+function M.Finish_VHOSTS()
+	for type, paths in pairs(M._vhosts) do
+		for path, vhosts in pairs(paths) do
+			carbon.srv[type](path, mw.VHOST(vhosts))
+		end
+	end
+end
+
 -- General things.
 function M.Use(middleware)
 	if tostring(middleware) == "gin.HandlerFunc" or tostring(middleware) == "func(*gin.Context)" then
@@ -47,7 +69,7 @@ function M.GET(pattern, handler, bindings)
 		else
 			error("Invalid handler.")
 		end
-		carbon.srv.GET(M._prefix .. pattern, h)
+		finish_handler("GET", M._prefix .. pattern, h)
 	else
 		error("Invalid pattern.")
 	end
@@ -63,7 +85,7 @@ function M.POST(pattern, handler, bindings)
 		else
 			error("Invalid handler.")
 		end
-		carbon.srv.POST(M._prefix .. pattern, h)
+		finish_handler("POST", M._prefix .. pattern, h)
 	else
 		error("Invalid pattern.")
 	end
@@ -79,7 +101,7 @@ function M.PUT(pattern, handler, bindings)
 		else
 			error("Invalid handler.")
 		end
-		carbon.srv.PUT(M._prefix .. pattern, h)
+		finish_handler("PUT", M._prefix .. pattern, h)
 	else
 		error("Invalid pattern.")
 	end
@@ -95,7 +117,7 @@ function M.DELETE(pattern, handler, bindings)
 		else
 			error("Invalid handler.")
 		end
-		carbon.srv.DELETE(M._prefix .. pattern, h)
+		finish_handler("DELETE", M._prefix .. pattern, h)
 	else
 		error("Invalid pattern.")
 	end
@@ -111,7 +133,7 @@ function M.PATCH(pattern, handler, bindings)
 		else
 			error("Invalid handler.")
 		end
-		carbon.srv.PATCH(M._prefix .. pattern, h)
+		finish_handler("PATCH", M._prefix .. pattern, h)
 	else
 		error("Invalid pattern.")
 	end
@@ -127,7 +149,7 @@ function M.HEAD(pattern, handler, bindings)
 		else
 			error("Invalid handler.")
 		end
-		carbon.srv.HEAD(M._prefix .. pattern, h)
+		finish_handler("HEAD", M._prefix .. pattern, h)
 	else
 		error("Invalid pattern.")
 	end
@@ -143,7 +165,7 @@ function M.OPTIONS(pattern, handler, bindings)
 		else
 			error("Invalid handler.")
 		end
-		carbon.srv.OPTIONS(M._prefix .. pattern, h)
+		finish_handler("OPTIONS", M._prefix .. pattern, h)
 	else
 		error("Invalid pattern.")
 	end
