@@ -74,7 +74,8 @@ end
 -- General things.
 function M.Use(middleware)
 	if tostring(middleware) == "gin.HandlerFunc" or tostring(middleware) == "func(*gin.Context)" then
-		M.finish_handler("Use", "", middleware)
+		--M.finish_handler("Use", "", middleware)
+		carbon.srv.Use(middleware)
 	else
 		error("Middleware is not the valid type! (gin.HandlerFunc)")
 	end
