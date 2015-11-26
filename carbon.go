@@ -195,6 +195,8 @@ func main() {
 	var workers = flag.Int("workers", wrkrs, "Number of Worker threads.")
 	var webroot = flag.String("root", ".", "Path to Web Root")
 
+	// Do debug!
+	doDebug := flag.Bool("debug", false, "Show debug information")
 	// Middleware options
 	useRecovery := flag.Bool("recovery", false, "Recover from Panics")
 	useLogger := flag.Bool("logger", true, "Log Request information")
@@ -216,6 +218,10 @@ func main() {
 	go scheduler.Run()                   // Run the scheduler.
 	go middleware.Preloader()            // Run the Preloader.
 	middleware.Init(*jobs, cfe, kvstore) // Run init sequence.
+
+	if *doDebug == false {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	if *script == "" {
 		srv := new_server()
