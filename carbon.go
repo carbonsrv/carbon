@@ -223,7 +223,7 @@ func main() {
 	if *script_flag == "" {
 		script = flag.Arg(0)
 	} else {
-		script = *script
+		script = *script_flag
 	}
 
 	if *doDebug == false {
