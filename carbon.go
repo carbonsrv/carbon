@@ -232,17 +232,10 @@ func main() {
 		bootstrap(srv, "", cfe)
 		serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 	} else {
-		srv, err := luaconf.Configure(*script, cfe, *webroot)
+		srv, err := luaconf.Configure(*script, cfe, *webroot, *useRecovery, *useLogger)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
-		}
-		if *useLogger {
-			doLog = true
-			srv.Use(gin.Logger())
-		}
-		if *useRecovery {
-			srv.Use(gin.Recovery())
 		}
 		serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 	}

@@ -11,8 +11,15 @@ import (
 )
 
 // Configure the server based on a lua script.
-func Configure(script string, cfe *cache.Cache, webroot string) (http.Handler, error) {
+func Configure(script string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool) (http.Handler, error) {
 	srv := gin.New()
+	if useLogger {
+		doLog = true
+		srv.Use(gin.Logger())
+	}
+	if useRecovery {
+		srv.Use(gin.Recovery())
+	}
 	L := luar.Init()
 	luar.Register(L, "carbon", luar.Map{ // srv and the state
 		"srv": srv,
