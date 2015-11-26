@@ -219,6 +219,10 @@ func main() {
 	go middleware.Preloader()            // Run the Preloader.
 	middleware.Init(*jobs, cfe, kvstore) // Run init sequence.
 
+	if *script == "" {
+		script = *flag.Arg(0)
+	}
+
 	if *doDebug == false {
 		gin.SetMode(gin.ReleaseMode)
 	}
