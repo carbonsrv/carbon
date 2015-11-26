@@ -195,7 +195,7 @@ func main() {
 
 	// Middleware options
 	useRecovery := flag.Bool("recovery", false, "Recover from Panics")
-	useLogger := flag.Bool("logger", true, "Log Requests and Cache information")
+	useLogger := flag.Bool("logger", true, "Log Request information")
 	useGzip := flag.Bool("gzip", false, "Use GZIP")
 
 	flag.Parse()
@@ -214,6 +214,7 @@ func main() {
 	go scheduler.Run()                   // Run the scheduler.
 	go middleware.Preloader()            // Run the Preloader.
 	middleware.Init(*jobs, cfe, kvstore) // Run init sequence.
+
 	if *script == "" {
 		srv := new_server()
 		if *useLogger {
@@ -231,7 +232,15 @@ func main() {
 	} else {
 		srv, err := luaconf.Configure(*script, cfe, *webroot)
 		if err != nil {
-			panic(err)
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if *useLogger {
+			doLog = true
+			srv.Use(gin.Logger())
+		}
+		if *useRecovery {
+			srv.Use(gin.Recovery())
 		}
 		serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 	}
