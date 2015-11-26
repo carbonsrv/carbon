@@ -44,3 +44,13 @@ function query(name)
 		return f
 	end
 end
+
+-- Writing stuff.
+function header(name, value)
+	local name = name or tostring(name)
+	if value then
+		context.Header(name, tostring(value))
+	else
+		return context.Request.Header().Get(name)
+	end
+end
