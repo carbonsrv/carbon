@@ -4,6 +4,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/bradfitz/http2"
 	"github.com/carbonsrv/carbon/modules/luaconf"
@@ -16,6 +17,7 @@ import (
 	"github.com/vifino/contrib/gzip"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
