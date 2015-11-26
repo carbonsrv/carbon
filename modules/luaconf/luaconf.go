@@ -14,7 +14,6 @@ import (
 func Configure(script string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool) (http.Handler, error) {
 	srv := gin.New()
 	if useLogger {
-		doLog = true
 		srv.Use(gin.Logger())
 	}
 	if useRecovery {
