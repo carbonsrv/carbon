@@ -176,7 +176,7 @@ func main() {
 
 	// Use config
 	flag.String("config", "", "Parse Config File")
-	var script = flag.String("script", "", "Parse Lua Script as initialization")
+	var script_flag = flag.String("script", "", "Parse Lua Script as initialization")
 
 	var host = flag.String("host", "", "IP of Host to bind the Webserver on")
 	var port = flag.Int("port", 8080, "Port to run Webserver on (HTTP)")
@@ -219,15 +219,18 @@ func main() {
 	go middleware.Preloader()            // Run the Preloader.
 	middleware.Init(*jobs, cfe, kvstore) // Run init sequence.
 
-	if *script == "" {
-		script = *flag.Arg(0)
+	var script string
+	if *script_flag == "" {
+		script = flag.Arg(0)
+	} else {
+		script = *script
 	}
 
 	if *doDebug == false {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	if *script == "" {
+	if script == "" {
 		srv := new_server()
 		if *useLogger {
 			doLog = true
@@ -245,7 +248,7 @@ func main() {
 		if *useLogger {
 			doLog = true
 		}
-		srv, err := luaconf.Configure(*script, cfe, *webroot, *useRecovery, *useLogger)
+		srv, err := luaconf.Configure(script, cfe, *webroot, *useRecovery, *useLogger)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
