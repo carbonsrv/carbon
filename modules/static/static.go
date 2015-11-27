@@ -20,7 +20,7 @@ type ServeFileSystem interface {
 
 type localFileSystem struct {
 	http.FileSystem
-	origfs:	http.FileSystem
+	origfs	http.FileSystem
 	root    string
 	prefix	string
 	indexes bool
@@ -30,7 +30,7 @@ type localFileSystem struct {
 func OwnFS(fs http.FileSystem, root, prefix string, indexes bool) *localFileSystem {
 	return &localFileSystem{
 		FileSystem:	fs,
-		origfs: fs
+		origfs: fs,
 		root:	root,
 		prefix:	prefix,
 		indexes:	indexes,
