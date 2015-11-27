@@ -16,8 +16,6 @@ function content(data, code, ctype)
 end
 
 -- Vars and stuff from context.
-url = context.Request.URL.Path
-
 function param(name)
 	if name ~= nil then
 		local f = _paramfunc(tostring(name))
@@ -27,9 +25,7 @@ function param(name)
 		return f
 	end
 end
-
 params = param
-
 function form(name)
 	if name ~= nil then
 		local f = _formfunc(tostring(name))
@@ -39,7 +35,6 @@ function form(name)
 		return f
 	end
 end
-
 function query(name)
 	if name ~= nil then
 		local f = _queryfunc(tostring(name))
