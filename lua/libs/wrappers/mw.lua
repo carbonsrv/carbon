@@ -80,7 +80,7 @@ function mw.syntaxhl(text, resp)
 end
 
 function mw.static(path, prefix)
-	local path = path or "/"
-	local prefix = prefix or ""
+	local path = path or ""
+	local prefix = prefix or path
 	return carbon._staticserve(path, prefix)
 end
