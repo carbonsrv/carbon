@@ -70,7 +70,7 @@ func (l *localFileSystem) Open(name string) (http.File, error) {
 		newname = path.Join(l.root, name)
 	}
 	fmt.Println("Open: "+newname)
-	f, err := l.fs.Open(newname)
+	f, err := l.Open(newname)
 	if err != nil {
 		return nil, err
 	}
