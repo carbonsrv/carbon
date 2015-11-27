@@ -13,8 +13,13 @@ import (
 	"github.com/pmylund/go-cache"
 )
 
+type ServeFileSystem interface {
+	http.FileSystem
+	Exists(prefix string, path string) bool
+}
+
 type localFileSystem struct {
-	fs      http.FileSystem
+	http.FileSystem
 	root    string
 	prefix	string
 	indexes bool
@@ -23,11 +28,11 @@ type localFileSystem struct {
 
 func OwnFS(fs http.FileSystem, root, prefix string, indexes bool) *localFileSystem {
 	return &localFileSystem{
-		fs,
-		root,
-		root,
-		indexes,
-		false,
+		FileSystem:	fs,
+		root:	root,
+		prefix:	prefix,
+		indexes:	indexes,
+		physfs:	false,
 	}
 }
 
@@ -50,11 +55,11 @@ func PhysFS(root, prefix string, indexes bool, alreadyinitialized bool) *localFi
 	}
 	fs := physfs.FileSystem()
 	return &localFileSystem{
-		fs,
-		root,
-		prefix,
-		indexes,
-		true,
+		FileSystem:	fs,
+		root:	root,
+		prefix:	prefix,
+		indexes:	indexes,
+		physfs:	true,
 	}
 }
 
@@ -111,14 +116,14 @@ func (f neuteredReaddirFile) Readdir(count int) ([]os.FileInfo, error) {
 	return nil, nil
 }
 
-func ServeCached(prefix string, fs *localFileSystem, cfe *cache.Cache) gin.HandlerFunc {
+func ServeCached(prefix string, fs ServeFileSystem, cfe *cache.Cache) gin.HandlerFunc {
 	//cfe := cache.New(5*time.Minute, 30*time.Second) // File-Exists Cache
 	var fileserver http.Handler
 
 	if prefix != "" && prefix != "/" {
-		fileserver = http.StripPrefix(prefix, http.FileServer(fs.fs))
+		fileserver = http.StripPrefix(prefix, http.FileServer(fs))
 	} else {
-		fileserver = http.FileServer(fs.fs)
+		fileserver = http.FileServer(fs)
 	}
 
 	return func(c *gin.Context) {
