@@ -113,10 +113,10 @@ func ServeCached(prefix string, fs *localFileSystem, cfe *cache.Cache) gin.Handl
 	}
 
 	return func(c *gin.Context) {
-		if cachedFileExists(fs, cfe, prefix, c.Request.URL.Path) {
-			fileserver.ServeHTTP(c.Writer, c.Request)
-		} else {
-			c.Data(404, "text/plain", []byte("404 page not found"))
-		}
+		//if cachedFileExists(fs, cfe, prefix, c.Request.URL.Path) {
+		fileserver.ServeHTTP(c.Writer, c.Request)
+		/*} else {
+			c.Abort()
+		}*/
 	}
 }
