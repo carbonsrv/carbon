@@ -81,6 +81,6 @@ end
 
 function mw.static(path, prefix)
 	local path = path or ""
-	local prefix = prefix or path
+	local prefix = prefix or ""
 	return carbon._staticserve(path, prefix)
 end
