@@ -371,18 +371,18 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"ConfGlue.lua": confglueLua,
-	"MainGlue.lua": mainglueLua,
-	"RouteGlue.lua": routeglueLua,
+	"ConfGlue.lua":             confglueLua,
+	"MainGlue.lua":             mainglueLua,
+	"RouteGlue.lua":            routeglueLua,
 	"3rdparty/MessagePack.lua": _3rdpartyMessagepackLua,
-	"libs/escapist.lua": libsEscapistLua,
-	"libs/globalwrappers.lua": libsGlobalwrappersLua,
-	"libs/msgpack.lua": libsMsgpackLua,
-	"libs/tags.lua": libsTagsLua,
-	"libs/template.lua": libsTemplateLua,
-	"libs/thread.lua": libsThreadLua,
-	"libs/wrappers/mw.lua": libsWrappersMwLua,
-	"libs/wrappers/srv.lua": libsWrappersSrvLua,
+	"libs/escapist.lua":        libsEscapistLua,
+	"libs/globalwrappers.lua":  libsGlobalwrappersLua,
+	"libs/msgpack.lua":         libsMsgpackLua,
+	"libs/tags.lua":            libsTagsLua,
+	"libs/template.lua":        libsTemplateLua,
+	"libs/thread.lua":          libsThreadLua,
+	"libs/wrappers/mw.lua":     libsWrappersMwLua,
+	"libs/wrappers/srv.lua":    libsWrappersSrvLua,
 }
 
 // AssetDir returns the file names below a certain
@@ -424,22 +424,23 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
 	"3rdparty": &bintree{nil, map[string]*bintree{
 		"MessagePack.lua": &bintree{_3rdpartyMessagepackLua, map[string]*bintree{}},
 	}},
-	"ConfGlue.lua": &bintree{confglueLua, map[string]*bintree{}},
-	"MainGlue.lua": &bintree{mainglueLua, map[string]*bintree{}},
+	"ConfGlue.lua":  &bintree{confglueLua, map[string]*bintree{}},
+	"MainGlue.lua":  &bintree{mainglueLua, map[string]*bintree{}},
 	"RouteGlue.lua": &bintree{routeglueLua, map[string]*bintree{}},
 	"libs": &bintree{nil, map[string]*bintree{
-		"escapist.lua": &bintree{libsEscapistLua, map[string]*bintree{}},
+		"escapist.lua":       &bintree{libsEscapistLua, map[string]*bintree{}},
 		"globalwrappers.lua": &bintree{libsGlobalwrappersLua, map[string]*bintree{}},
-		"msgpack.lua": &bintree{libsMsgpackLua, map[string]*bintree{}},
-		"tags.lua": &bintree{libsTagsLua, map[string]*bintree{}},
-		"template.lua": &bintree{libsTemplateLua, map[string]*bintree{}},
-		"thread.lua": &bintree{libsThreadLua, map[string]*bintree{}},
+		"msgpack.lua":        &bintree{libsMsgpackLua, map[string]*bintree{}},
+		"tags.lua":           &bintree{libsTagsLua, map[string]*bintree{}},
+		"template.lua":       &bintree{libsTemplateLua, map[string]*bintree{}},
+		"thread.lua":         &bintree{libsThreadLua, map[string]*bintree{}},
 		"wrappers": &bintree{nil, map[string]*bintree{
-			"mw.lua": &bintree{libsWrappersMwLua, map[string]*bintree{}},
+			"mw.lua":  &bintree{libsWrappersMwLua, map[string]*bintree{}},
 			"srv.lua": &bintree{libsWrappersSrvLua, map[string]*bintree{}},
 		}},
 	}},
@@ -491,4 +492,3 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-
