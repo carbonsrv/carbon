@@ -116,7 +116,7 @@ func new_server() *gin.Engine {
 func bootstrap(srv *gin.Engine, dir string, cfe *cache.Cache) {
 	switcher := middleware.ExtRoute(middleware.Plan{
 		".lua": middleware.Lua(),
-		"***":  staticServe.ServeCached("", staticServe.PhysFS("", true, true), cfe),
+		"***":  staticServe.ServeCached("", staticServe.PhysFS("", "", true, true), cfe),
 	})
 	/*srv.GET(`/:file`, switcher)
 	srv.POST(`/:file`, switcher)*/
