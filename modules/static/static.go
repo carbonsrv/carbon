@@ -64,7 +64,7 @@ func (l *localFileSystem) Open(name string) (http.File, error) {
 	if p := strings.TrimPrefix(name, l.prefix); len(p) <= len(name) {
 		newname = path.Join(l.root, name)
 	}
-
+	fmt.Println("Open: "+newname)
 	f, err := l.fs.Open(newname)
 	if err != nil {
 		return nil, err
@@ -85,6 +85,7 @@ func (l *localFileSystem) Exists(prefix string, filepath string) bool {
 		/*if !l.physfs {
 			return existsFile(l, p)
 		} else {*/
+		fmt.Println("Exists: "+p)
 		return physfs.Exists(p)
 		//}
 	}
