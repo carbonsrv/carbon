@@ -20,21 +20,21 @@ type ServeFileSystem interface {
 
 type localFileSystem struct {
 	http.FileSystem
-	origfs	http.FileSystem
+	origfs  http.FileSystem
 	root    string
-	prefix	string
+	prefix  string
 	indexes bool
 	physfs  bool
 }
 
 func OwnFS(fs http.FileSystem, root, prefix string, indexes bool) *localFileSystem {
 	return &localFileSystem{
-		FileSystem:	fs,
-		origfs: fs,
-		root:	root,
-		prefix:	prefix,
-		indexes:	indexes,
-		physfs:	false,
+		FileSystem: fs,
+		origfs:     fs,
+		root:       root,
+		prefix:     prefix,
+		indexes:    indexes,
+		physfs:     false,
 	}
 }
 
@@ -57,12 +57,12 @@ func PhysFS(root, prefix string, indexes bool, alreadyinitialized bool) *localFi
 	}
 	fs := physfs.FileSystem()
 	return &localFileSystem{
-		FileSystem:	fs,
-		origfs: fs,
-		root:	root,
-		prefix:	prefix,
-		indexes:	indexes,
-		physfs:	true,
+		FileSystem: fs,
+		origfs:     fs,
+		root:       root,
+		prefix:     prefix,
+		indexes:    indexes,
+		physfs:     true,
 	}
 }
 
@@ -92,7 +92,7 @@ func (l *localFileSystem) Exists(prefix string, filepath string) bool {
 		/*if !l.physfs {
 			return existsFile(l, p)
 		} else {*/
-		fmt.Println("Exists: "+p)
+		fmt.Println("Exists: " + p)
 		return physfs.Exists(p)
 		//}
 	}
