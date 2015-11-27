@@ -67,7 +67,7 @@ func (l *localFileSystem) Open(name string) (http.File, error) {
 	//if !l.physfs {
 	newname := name
 	if p := strings.TrimPrefix(name, l.prefix); len(p) <= len(name) {
-		newname = path.Join(l.root, name)
+		newname = path.Join(l.root, p)
 	}
 	fmt.Println("Open: "+newname)
 	f, err := l.Open(newname)
