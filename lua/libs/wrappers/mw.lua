@@ -78,3 +78,9 @@ end
 function mw.syntaxhl(text, resp)
 	return mw.echo((tonumber(resp) or 200), syntaxhl(text))
 end
+
+function mw.static(path, prefix)
+	local path = path or "/"
+	local prefix = prefix or ""
+	return carbon._staticserve(path, prefix)
+end

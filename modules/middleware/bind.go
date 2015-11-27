@@ -255,9 +255,9 @@ func BindContext(L *lua.State, context *gin.Context) {
 	})
 }
 func BindStatic(L *lua.State, cfe *cache.Cache) {
-	luar.Register(L, "static", luar.Map{
-		"serve": (func(prefix string) func(*gin.Context) {
-			return staticServe.ServeCached(prefix, staticServe.PhysFS("", true, true), cfe)
+	luar.Register(L, "carbon", luar.Map{
+		"_staticserve": (func(path, prefix static) func(*gin.Context) {
+			return staticServe.ServeCached(prefix, staticServe.PhysFS(path, true, true), cfe)
 		}),
 	})
 }
