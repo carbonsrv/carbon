@@ -16,20 +16,22 @@ import (
 type localFileSystem struct {
 	fs      http.FileSystem
 	root    string
+	prefix	string
 	indexes bool
 	physfs  bool
 }
 
-func OwnFS(fs http.FileSystem, root string, indexes bool) *localFileSystem {
+func OwnFS(fs http.FileSystem, root, prefix string, indexes bool) *localFileSystem {
 	return &localFileSystem{
 		fs,
+		root,
 		root,
 		indexes,
 		false,
 	}
 }
 
-func PhysFS(root string, indexes bool, alreadyinitialized bool) *localFileSystem {
+func PhysFS(root, prefix string, indexes bool, alreadyinitialized bool) *localFileSystem {
 	if !alreadyinitialized {
 		root, err := filepath.Abs(root)
 		fmt.Println(root)
@@ -50,6 +52,7 @@ func PhysFS(root string, indexes bool, alreadyinitialized bool) *localFileSystem
 	return &localFileSystem{
 		fs,
 		root,
+		prefix,
 		indexes,
 		true,
 	}
@@ -57,7 +60,12 @@ func PhysFS(root string, indexes bool, alreadyinitialized bool) *localFileSystem
 
 func (l *localFileSystem) Open(name string) (http.File, error) {
 	//if !l.physfs {
-	f, err := l.fs.Open(name)
+	newname := name
+	if p := strings.TrimPrefix(name, l.prefix); len(p) <= len(name) {
+		newname := path.Join(l.root, name)
+	}
+
+	f, err := l.fs.Open(newname)
 	if err != nil {
 		return nil, err
 	}
