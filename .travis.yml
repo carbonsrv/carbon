@@ -12,13 +12,13 @@ addons:
       - libluajit-5.1-dev
       - libphysfs-dev
 
-notifications:
-  irc:
-    on_success: change
-    on_failure: change
-    channels:
-      - "irc.esper.net#vifino"
-    template:
-      - "\x0303%{repository_slug}\x0302#%{build_number} (\x0308%{branch}\x0F: \x0303%{commit}\x0F): %{author} - %{message}"
-      - "Change view: %{compare_url}"
-      - "Build details: %{build_url}"
+#notifications:
+#  irc:
+#    on_success: change
+#    on_failure: change
+#    channels:
+#      - "irc.esper.net#vifino"
+#    template:
+#      - "\x0303%{repository_slug}\x0302#%{build_number} (\x0308%{branch}\x0F: \x0303%{commit}\x0F): %{author} - %{message}"
+#      - "Change view: %{compare_url}"
+#      - "Build details: %{build_url}"
