@@ -48,21 +48,15 @@ function M.Finish_VHOSTS()
 	for type, paths in pairs(M._vhosts) do
 		for path, vhosts in pairs(paths) do
 			if type == "Use" then
-				carbon.srv.Use(mw.VHOST_Middleware(vhosts))
+				for vhost, middlewares in pairs(vhosts) do
+					for _, mw in pairs(middlewares) do
+						carbon.srv.Use(mw.VHOST_Middleware({[vhost] = mw}))
+					end
+				end
 			elseif type == "Default" then
-				if #vhosts == 1 then
-					local _, h = pairs(vhosts)(vhosts)
-					carbon.srv.NoRoute(h)
-				else
-					carbon.srv.NoRoute(mw.VHOST(vhosts))
-				end
+				carbon.srv.NoRoute(mw.VHOST(vhosts))
 			else
-				if #vhosts == 1 then
-					local _, h = pairs(vhosts)(vhosts)
-					carbon.srv[type](path, h)
-				else
-					carbon.srv[type](path, mw.VHOST(vhosts))
-				end
+				carbon.srv[type](path, mw.VHOST(vhosts))
 			end
 		end
 	end
@@ -73,8 +67,8 @@ end
 -- General things.
 function M.Use(middleware)
 	if tostring(middleware) == "gin.HandlerFunc" or tostring(middleware) == "func(*gin.Context)" then
-		--M.finish_handler("Use", M._prefix, middleware)
-		carbon.srv.Use(middleware)
+		M.finish_handler("Use", "", middleware)
+		--carbon.srv.Use(middleware)
 	else
 		error("Middleware is not the valid type! (gin.HandlerFunc)")
 	end
@@ -82,7 +76,8 @@ end
 
 function M.DefaultRoute(handler)
 	if tostring(handler) == "func(*gin.Context)" then
-		carbon.srv.NoRoute(handler)
+		--carbon.srv.NoRoute(handler)
+		M.finish_handler("Default", "", handler)
 	else
 		error("Invalid handler.")
 	end
