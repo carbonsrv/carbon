@@ -84,3 +84,12 @@ function mw.static(path, prefix)
 	local prefix = prefix or ""
 	return carbon._staticserve(path, prefix)
 end
+
+function mw.CGI(path, args, cwd)
+	if type(path) == "string" and type(args) == "table" then
+		local cwd = cwd or ""
+		return carbon._mw_CGI(path, cwd, args)
+	else
+		error("path or args not correct type.")
+	end
+end

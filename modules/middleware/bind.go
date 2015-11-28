@@ -86,6 +86,9 @@ func BindMiddleware(L *lua.State) {
 		"Echo":      EchoHTML,
 		"EchoText":  Echo,
 	})
+	luar.Register(L, "carbon", luar.Map{
+		"_mw_CGI": CGI,
+	})
 	L.DoString(glue.RouteGlue())
 }
 
