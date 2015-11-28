@@ -48,6 +48,14 @@ function os.chdir(path)
 	end
 end
 
+function os.abspath(path)
+	if path then
+		return assert(carbon._os_abspath(path))
+	else
+		error("No path given.")
+	end
+end
+
 -- kvstore
 kvstore = kvstore or {}
 function kvstore.set(name, value)

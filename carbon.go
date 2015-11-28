@@ -248,7 +248,7 @@ func main() {
 		if *useLogger {
 			doLog = true
 		}
-		srv, err := luaconf.Configure(script, cfe, *webroot, *useRecovery, *useLogger)
+		srv, err := luaconf.Configure(script, cfe, root, *useRecovery, *useLogger)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)

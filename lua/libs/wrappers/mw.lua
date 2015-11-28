@@ -88,7 +88,8 @@ end
 function mw.CGI(path, args, cwd)
 	if type(path) == "string" then
 		local args = args or {}
-		args["DOCUMENT_ROOT"] = var.webroot
+		args["DOCUMENT_ROOT"] = var.root
+		args["SCRIPT_FILENAME"] = os.abspath(path)
 		local cwd = cwd or ""
 		local preparedargs = {}
 		for k, v in pairs(args) do
