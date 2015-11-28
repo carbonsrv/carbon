@@ -86,10 +86,16 @@ function mw.static(path, prefix)
 end
 
 function mw.CGI(path, args, cwd)
-	if type(path) == "string" and type(args) == "table" then
+	if type(path) == "string" then
+		local args = args or {}
+		args["DOCUMENT_ROOT"] = var.webroot
 		local cwd = cwd or ""
-		return carbon._mw_CGI(path, cwd, args)
+		local preparedargs = {}
+		for k, v in pairs(args) do
+			table.insert(preparedargs, tostring(k).."="..tostring(v))
+		end
+		return carbon._mw_CGI(path, cwd, preparedargs)
 	else
-		error("path or args not correct type.")
+		error("path not string.")
 	end
 end
