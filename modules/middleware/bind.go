@@ -88,7 +88,7 @@ func BindMiddleware(L *lua.State) {
 	})
 	luar.Register(L, "carbon", luar.Map{
 		"_mw_CGI": CGI,
-		"_mw_combine": (func(middlewares map[string]interface{}) func(*gin.Context) {
+		"_mw_combine": (func(middlewares []interface{}) func(*gin.Context) {
 			newmiddlewares := make([]func(*gin.Context), len(middlewares))
 			for k, v := range middlewares {
 				newmiddlewares[k] = v.(func(*gin.Context))
