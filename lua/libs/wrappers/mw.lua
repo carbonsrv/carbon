@@ -96,6 +96,7 @@ function mw.CGI(path, args, env, cwd)
 		end
 
 		local env = env or {}
+		env["SERVER_SOFTWARE"] = "Carbon" -- Proudness ahead. :3
 		env["DOCUMENT_ROOT"] = var.root
 		env["SCRIPT_FILENAME"] = os.abspath(path)
 		local preparedenv = {}
