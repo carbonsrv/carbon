@@ -90,7 +90,7 @@ func BindMiddleware(L *lua.State) {
 		"_mw_CGI": CGI,
 		"_mw_combine": (func(middlewares map[string]interface{}) func(*gin.Context) {
 			newmiddlewares := make([]func(*gin.Context), len(middlewares))
-			for k, v := range plan {
+			for k, v := range middlewares {
 				newmiddlewares[k] = v.(func(*gin.Context))
 			}
 			return Combine(newmiddlewares)
