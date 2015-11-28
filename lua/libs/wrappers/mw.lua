@@ -109,3 +109,8 @@ function mw.CGI(path, args, env, cwd)
 		error("path not string.")
 	end
 end
+
+function mw.combine(...)
+	local args = {...}
+	return carbon._mw_combine(args)
+end
