@@ -85,17 +85,25 @@ function mw.static(path, prefix)
 	return carbon._staticserve(path, prefix)
 end
 
-function mw.CGI(path, args, cwd)
+function mw.CGI(path, args, env, cwd)
 	if type(path) == "string" then
-		local args = args or {}
-		args["DOCUMENT_ROOT"] = var.root
-		args["SCRIPT_FILENAME"] = os.abspath(path)
 		local cwd = cwd or ""
+
+		local args = args or {}
 		local preparedargs = {}
 		for k, v in pairs(args) do
 			table.insert(preparedargs, tostring(k).."="..tostring(v))
 		end
-		return carbon._mw_CGI(path, cwd, preparedargs)
+
+		local env = env or {}
+		env["DOCUMENT_ROOT"] = var.root
+		env["SCRIPT_FILENAME"] = os.abspath(path)
+		local preparedenv = {}
+		for k, v in pairs(env) do
+			table.insert(preparedenv, tostring(k).."="..tostring(v))
+		end
+
+		return carbon._mw_CGI(path, cwd, preparedargs, preparedenv)
 	else
 		error("path not string.")
 	end
