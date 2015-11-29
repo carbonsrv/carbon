@@ -17,12 +17,12 @@ func CGI(path, dir string, args, env []string) func(*gin.Context) {
 	}
 }
 
-func CGI_Interpret(path, dir string, args, env []string) func(*gin.Context) {
+func CGI_Dynamic(path, dir string, args, env []string) func(*gin.Context) {
 	return func(c *gin.Context) {
 		handler := cgi.Handler{
 			Path: path,
 			Dir:  dir,
-			Args: append(args, context.Request.URL.Path),
+			Args: append(args, c.Request.URL.Path),
 			Env:  env,
 		}
 		handler.ServeHTTP(c.Writer, c.Request)

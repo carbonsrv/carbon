@@ -110,7 +110,7 @@ function mw.CGI(path, args, env, cwd)
 	end
 end
 
-function mw.CGI_Interpret(path, args, env, cwd)
+function mw.CGI_Dynamic(path, args, env, cwd)
 	if type(path) == "string" then
 		local cwd = cwd or ""
 
@@ -129,7 +129,7 @@ function mw.CGI_Interpret(path, args, env, cwd)
 			table.insert(preparedenv, tostring(k).."="..tostring(v))
 		end
 
-		return carbon._mw_CGI(path, cwd, preparedargs, preparedenv)
+		return carbon._mw_CGI_Dynamic(path, cwd, preparedargs, preparedenv)
 	else
 		error("path not string.")
 	end

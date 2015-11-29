@@ -104,8 +104,8 @@ func BindMiddleware(L *lua.State) {
 		"EchoText": Echo,
 	})
 	luar.Register(L, "carbon", luar.Map{
-		"_mw_CGI":           CGI,           // Run an CGI App!
-		"_mw_CGI_Interpret": CGI_Interpret, // Run CGI Apps based on path!
+		"_mw_CGI":         CGI,         // Run an CGI App!
+		"_mw_CGI_Dynamic": CGI_Dynamic, // Run CGI Apps based on path!
 		"_mw_combine": (func(middlewares []interface{}) func(*gin.Context) { // Combine routes, doesn't properly route like middleware or anything.
 			newmiddlewares := make([]func(*gin.Context), len(middlewares))
 			for k, v := range middlewares {
