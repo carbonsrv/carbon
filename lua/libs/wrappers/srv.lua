@@ -84,113 +84,120 @@ function M.DefaultRoute(handler)
 end
 
 -- HTTP Verbs
-function M.GET(pattern, handler, bindings)
+function M.GET(pattern, ...)
 	if type(pattern) == "string" then
+		local handlers = {...}
 		local h
-		if tostring(handler) == "func(*gin.Context)" then
-			h = handler
-		elseif type(handler) == "function" then
-			h = mw.new(handler, bindings)
+		if tostring(handlers[1]) == "func(*gin.Context)" then
+			h = handlers
+		elseif type(handlers[1]) == "function" then
+			h = {mw.new(handlers[1])}
 		else
 			error("Invalid handler.")
 		end
-		M.finish_handler("GET", M._prefix .. pattern, h)
+		M.finish_handler("GET", M._prefix .. pattern, unpack(h))
 	else
 		error("Invalid pattern.")
 	end
 end
 
-function M.POST(pattern, handler, bindings)
+function M.POST(pattern, ...)
 	if type(pattern) == "string" then
+		local handlers = {...}
 		local h
-		if tostring(handler) == "func(*gin.Context)" then
-			h = handler
-		elseif type(handler) == "function" then
-			h = mw.new(handler, bindings)
+		if tostring(handlers[1]) == "func(*gin.Context)" then
+			h = handlers
+		elseif type(handlers[1]) == "function" then
+			h = {mw.new(handlers[1])}
 		else
 			error("Invalid handler.")
 		end
-		M.finish_handler("POST", M._prefix .. pattern, h)
+		M.finish_handler("POST", M._prefix .. pattern, unpack(h))
 	else
 		error("Invalid pattern.")
 	end
 end
 
-function M.PUT(pattern, handler, bindings)
+function M.PUT(pattern, ...)
 	if type(pattern) == "string" then
+		local handlers = {...}
 		local h
-		if tostring(handler) == "func(*gin.Context)" then
-			h = handler
-		elseif type(handler) == "function" then
-			h = mw.new(handler, bindings)
+		if tostring(handlers[1]) == "func(*gin.Context)" then
+			h = handlers
+		elseif type(handlers[1]) == "function" then
+			h = {mw.new(handlers[1])}
 		else
 			error("Invalid handler.")
 		end
-		M.finish_handler("PUT", M._prefix .. pattern, h)
+		M.finish_handler("PUT", M._prefix .. pattern, unpack(h))
 	else
 		error("Invalid pattern.")
 	end
 end
 
-function M.DELETE(pattern, handler, bindings)
+function M.DELETE(pattern, ...)
 	if type(pattern) == "string" then
+		local handlers = {...}
 		local h
-		if tostring(handler) == "func(*gin.Context)" then
-			h = handler
-		elseif type(handler) == "function" then
-			h = mw.new(handler, bindings)
+		if tostring(handlers[1]) == "func(*gin.Context)" then
+			h = handlers
+		elseif type(handlers[1]) == "function" then
+			h = {mw.new(handlers[1])}
 		else
 			error("Invalid handler.")
 		end
-		M.finish_handler("DELETE", M._prefix .. pattern, h)
+		M.finish_handler("DELETE", M._prefix .. pattern, unpack(h))
 	else
 		error("Invalid pattern.")
 	end
 end
 
-function M.PATCH(pattern, handler, bindings)
+function M.PATCH(pattern, ...)
 	if type(pattern) == "string" then
+		local handlers = {...}
 		local h
-		if tostring(handler) == "func(*gin.Context)" then
-			h = handler
-		elseif type(handler) == "function" then
-			h = mw.new(handler, bindings)
+		if tostring(handlers[1]) == "func(*gin.Context)" then
+			h = handlers
+		elseif type(handlers[1]) == "function" then
+			h = {mw.new(handlers[1])}
 		else
 			error("Invalid handler.")
 		end
-		M.finish_handler("PATCH", M._prefix .. pattern, h)
+		M.finish_handler("PATCH", M._prefix .. pattern, unpack(h))
 	else
 		error("Invalid pattern.")
 	end
 end
 
-function M.HEAD(pattern, handler, bindings)
+function M.HEAD(pattern, ...)
 	if type(pattern) == "string" then
+		local handlers = {...}
 		local h
-		if tostring(handler) == "func(*gin.Context)" then
-			h = handler
-		elseif type(handler) == "function" then
-			h = mw.new(handler, bindings)
+		if tostring(handlers[1]) == "func(*gin.Context)" then
+			h = handlers
+		elseif type(handlers[1]) == "function" then
+			h = {mw.new(handlers[1])}
 		else
 			error("Invalid handler.")
 		end
-		M.finish_handler("HEAD", M._prefix .. pattern, h)
+		M.finish_handler("HEAD", M._prefix .. pattern, unpack(h))
 	else
 		error("Invalid pattern.")
 	end
 end
 
-function M.OPTIONS(pattern, handler, bindings)
+function M.OPTIONS(pattern, ...)
 	if type(pattern) == "string" then
+		local handlers = {...}
 		local h
-		if tostring(handler) == "func(*gin.Context)" then
-			h = handler
-		elseif type(handler) == "function" then
-			h = mw.new(handler, bindings)
+		if tostring(handlers[1]) == "func(*gin.Context)" then
+			h = handlers
+		elseif type(handlers[1]) == "function" then
+			h = {mw.new(handlers[1])}
 		else
 			error("Invalid handler.")
 		end
-		M.finish_handler("OPTIONS", M._prefix .. pattern, h)
+		M.finish_handler("OPTIONS", M._prefix .. pattern, unpack(h))
 	else
 		error("Invalid pattern.")
 	end
