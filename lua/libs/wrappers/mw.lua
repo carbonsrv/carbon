@@ -90,10 +90,6 @@ function mw.CGI(path, args, env, cwd)
 		local cwd = cwd or ""
 
 		local args = args or {}
-		local preparedargs = {}
-		for k, v in pairs(args) do
-			table.insert(preparedargs, tostring(k).."="..tostring(v))
-		end
 
 		local env = env or {}
 		env["SERVER_SOFTWARE"] = "Carbon" -- Proudness ahead. :3
@@ -104,7 +100,7 @@ function mw.CGI(path, args, env, cwd)
 			table.insert(preparedenv, tostring(k).."="..tostring(v))
 		end
 
-		return carbon._mw_CGI(path, cwd, preparedargs, preparedenv)
+		return carbon._mw_CGI(path, cwd, args, preparedenv)
 	else
 		error("path not string.")
 	end
@@ -115,10 +111,6 @@ function mw.CGI_Dynamic(path, args, env, cwd)
 		local cwd = cwd or ""
 
 		local args = args or {}
-		local preparedargs = {}
-		for k, v in pairs(args) do
-			table.insert(preparedargs, tostring(k).."="..tostring(v))
-		end
 
 		local env = env or {}
 		env["SERVER_SOFTWARE"] = "Carbon" -- Proudness ahead. :3
@@ -129,7 +121,7 @@ function mw.CGI_Dynamic(path, args, env, cwd)
 			table.insert(preparedenv, tostring(k).."="..tostring(v))
 		end
 
-		return carbon._mw_CGI_Dynamic(path, cwd, preparedargs, preparedenv)
+		return carbon._mw_CGI_Dynamic(path, cwd, args, preparedenv)
 	else
 		error("path not string.")
 	end
