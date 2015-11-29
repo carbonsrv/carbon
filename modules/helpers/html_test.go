@@ -15,6 +15,6 @@ func TestHTMLHelpers(t *testing.T) {
 
 	w := ctest.Request(r, "GET", "/string")
 	assert.Equal(t, w.Code, 200)
-	assert.Equal(t, string(w.Body), "Hello world!")
+	assert.Equal(t, w.Body.String(), "Hello world!")
 	assert.Equal(t, w.HeaderMap.Get("Content-Type"), "text/plain")
 }
