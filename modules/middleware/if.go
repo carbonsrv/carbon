@@ -13,13 +13,16 @@ func If_Written(handler func(*gin.Context)) func(*gin.Context) { // Runs handler
 	}
 }
 
-func If_Regexp(regex string, handler func(*gin.Context)) func(*gin.Context) { // Runs if the URL matches the given regexp, otherwise does nothing.
-	expr := regexp.Compile(regex)
+func If_Regexp(regex string, handler func(*gin.Context)) (func(*gin.Context), error) { // Runs if the URL matches the given regexp, otherwise does nothing.
+	expr, err := regexp.Compile(regex)
+	if err != nil {
+		return nil, err
+	}
 	return func(c *gin.Context) {
 		if regexp.MatchString(expr) {
 			handler(c)
 		}
-	}
+	}, nil
 }
 
 func If_Status(status int, handler func(*gin.Context)) func(*gin.Context) {
@@ -40,13 +43,16 @@ func If_Not_Written(handler func(*gin.Context)) func(*gin.Context) { // Runs han
 	}
 }
 
-func If_Not_Regexp(regex string, handler func(*gin.Context)) func(*gin.Context) { // Runs if the URL matches the given regexp, otherwise does nothing.
-	expr := regexp.Compile(regex)
+func If_Not_Regexp(regex string, handler func(*gin.Context)) (func(*gin.Context), error) { // Runs if the URL matches the given regexp, otherwise does nothing.
+	expr, err := regexp.Compile(regex)
+	if err != nil {
+		return nil, err
+	}
 	return func(c *gin.Context) {
 		if !regexp.MatchString(expr) {
 			handler(c)
 		}
-	}
+	}, nil
 }
 
 func If_Not_Status(status int, handler func(*gin.Context)) func(*gin.Context) {
