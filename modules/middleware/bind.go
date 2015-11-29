@@ -277,8 +277,12 @@ func BindContext(L *lua.State, context *gin.Context) {
 	luar.Register(L, "", luar.Map{
 		"context": context,
 		"req":     context.Request,
+
+		"host":   context.Request.URL.Host,
+		"path":   context.Request.URL.Path,
+		"scheme": context.Request.URL.Scheme,
 	})
-	luar.REgister(L, "carbon", luar.Map{
+	luar.Register(L, "carbon", luar.Map{
 		"_header_set": context.Header,
 		"_header_get": context.Request.Header().Get,
 		"_paramfunc":  context.Param,
