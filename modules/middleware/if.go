@@ -16,7 +16,7 @@ func If_Written(handler func(*gin.Context)) func(*gin.Context) { // Runs handler
 func If_Regexp(regexp string, handler func(*gin.Context)) func(*gin.Context) { // Runs if the URL matches the given regexp, otherwise does nothing.
 	expr = regexp.Compile(regexp)
 	return func(c *gin.Context) {
-		if expr.MatchString(regexp) {
+		if regexp.MatchString(expr) {
 			handler(c)
 		}
 	}
@@ -43,7 +43,7 @@ func If_Not_Written(handler func(*gin.Context)) func(*gin.Context) { // Runs han
 func If_Not_Regexp(regexp string, handler func(*gin.Context)) func(*gin.Context) { // Runs if the URL matches the given regexp, otherwise does nothing.
 	expr = regexp.Compile(regexp)
 	return func(c *gin.Context) {
-		if !expr.MatchString(regexp) {
+		if !regexp.MatchString(expr) {
 			handler(c)
 		}
 	}

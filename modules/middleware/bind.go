@@ -283,7 +283,6 @@ func BindContext(L *lua.State, context *gin.Context) {
 	luar.Register(L, "req", luar.Map{
 		"host":   context.Request.URL.Host,
 		"path":   context.Request.URL.Path,
-		"host":   context.Request.URL.Host,
 		"scheme": context.Request.URL.Scheme,
 	})
 }
