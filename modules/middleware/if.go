@@ -19,7 +19,7 @@ func If_Regexp(regex string, handler func(*gin.Context)) (func(*gin.Context), er
 		return nil, err
 	}
 	return func(c *gin.Context) {
-		if regexp.MatchString(expr, c.Request.URL.Path) {
+		if expr.MatchString(c.Request.URL.Path) {
 			handler(c)
 		}
 	}, nil
@@ -49,7 +49,7 @@ func If_Not_Regexp(regex string, handler func(*gin.Context)) (func(*gin.Context)
 		return nil, err
 	}
 	return func(c *gin.Context) {
-		if !regexp.MatchString(expr, c.Request.URL.Path) {
+		if !expr.MatchString(c.Request.URL.Path) {
 			handler(c)
 		}
 	}, nil
