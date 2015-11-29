@@ -16,3 +16,15 @@ func CGI(path, dir string, args, env []string) func(*gin.Context) {
 		handler.ServeHTTP(c.Writer, c.Request)
 	}
 }
+
+func CGI_Interpret(path, dir string, args, env []string) func(*gin.Context) {
+	return func(c *gin.Context) {
+		handler := cgi.Handler{
+			Path: path,
+			Dir:  dir,
+			Args: append(args, context.Request.URL.Path),
+			Env:  env,
+		}
+		handler.ServeHTTP(c.Writer, c.Request)
+	}
+}

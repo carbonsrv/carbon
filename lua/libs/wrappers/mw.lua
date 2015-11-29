@@ -110,6 +110,31 @@ function mw.CGI(path, args, env, cwd)
 	end
 end
 
+function mw.CGI_Interpret(path, args, env, cwd)
+	if type(path) == "string" then
+		local cwd = cwd or ""
+
+		local args = args or {}
+		local preparedargs = {}
+		for k, v in pairs(args) do
+			table.insert(preparedargs, tostring(k).."="..tostring(v))
+		end
+
+		local env = env or {}
+		env["SERVER_SOFTWARE"] = "Carbon" -- Proudness ahead. :3
+		env["DOCUMENT_ROOT"] = var.root
+		env["SCRIPT_FILENAME"] = os.abspath(path)
+		local preparedenv = {}
+		for k, v in pairs(env) do
+			table.insert(preparedenv, tostring(k).."="..tostring(v))
+		end
+
+		return carbon._mw_CGI(path, cwd, preparedargs, preparedenv)
+	else
+		error("path not string.")
+	end
+end
+
 function mw.combine(...)
 	local args = {...}
 	return carbon._mw_combine(args)
