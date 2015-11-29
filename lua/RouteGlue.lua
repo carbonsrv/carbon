@@ -18,7 +18,7 @@ end
 -- Vars and stuff from context.
 function param(name)
 	if name ~= nil then
-		local f = _paramfunc(tostring(name))
+		local f = carbon._paramfunc(tostring(name))
 		if f == "" then
 			return nil
 		end
@@ -28,7 +28,7 @@ end
 params = param
 function form(name)
 	if name ~= nil then
-		local f = _formfunc(tostring(name))
+		local f = carbon._formfunc(tostring(name))
 		if f == "" then
 			return nil
 		end
@@ -37,7 +37,7 @@ function form(name)
 end
 function query(name)
 	if name ~= nil then
-		local f = _queryfunc(tostring(name))
+		local f = carbon._queryfunc(tostring(name))
 		if f == "" then
 			return nil
 		end
@@ -47,10 +47,10 @@ end
 
 -- Writing stuff.
 function header(name, value)
-	local name = name or tostring(name)
+	local name = name and tostring(name) or error("No name given.")
 	if value then
-		context.Header(name, tostring(value))
+		carbon._header_set(name, tostring(value))
 	else
-		return context.Request.Header().Get(name)
+		return carbon._header_get(name)
 	end
 end

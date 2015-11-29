@@ -275,15 +275,15 @@ func BindConversions(L *lua.State) {
 
 func BindContext(L *lua.State, context *gin.Context) {
 	luar.Register(L, "", luar.Map{
-		"context":    context,
-		"_paramfunc": context.Param,
-		"_formfunc":  context.PostForm,
-		"_queryfunc": context.Query,
+		"context": context,
+		"req":     context.Request,
 	})
-	luar.Register(L, "req", luar.Map{
-		"host":   context.Request.URL.Host,
-		"path":   context.Request.URL.Path,
-		"scheme": context.Request.URL.Scheme,
+	luar.REgister(L, "carbon", luar.Map{
+		"_header_set": context.Header,
+		"_header_get": context.Request.Header().Get,
+		"_paramfunc":  context.Param,
+		"_formfunc":   context.PostForm,
+		"_queryfunc":  context.Query,
 	})
 }
 func BindStatic(L *lua.State, cfe *cache.Cache) {
