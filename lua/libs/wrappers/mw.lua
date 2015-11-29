@@ -115,7 +115,7 @@ function mw.CGI_Dynamic(path, args, env, cwd)
 		local env = env or {}
 		env["SERVER_SOFTWARE"] = "Carbon" -- Proudness ahead. :3
 		env["DOCUMENT_ROOT"] = var.root
-		env["SCRIPT_FILENAME"] = os.abspath(path)
+		--env["SCRIPT_FILENAME"] = os.abspath(path)
 		local preparedenv = {}
 		for k, v in pairs(env) do
 			table.insert(preparedenv, tostring(k).."="..tostring(v))

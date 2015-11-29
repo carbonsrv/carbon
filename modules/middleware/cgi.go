@@ -23,7 +23,7 @@ func CGI_Dynamic(path, dir string, args, env []string) func(*gin.Context) {
 			Path: path,
 			Dir:  dir,
 			Args: append(args, c.Request.URL.Path),
-			Env:  env,
+			Env:  append(env, "SCRIPT_FILENAME="+dir+c.Request.URL.Path),
 		}
 		handler.ServeHTTP(c.Writer, c.Request)
 	}
