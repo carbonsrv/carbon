@@ -53,7 +53,17 @@ func BindEngine(L *lua.State) {
 
 func BindMiddleware(L *lua.State) {
 	luar.Register(L, "mw", luar.Map{
-		"Lua": Lua,
+		// Essentials
+		"Logger":   gin.Logger,
+		"Recovery": gin.Recovery,
+
+		// Lua related stuff
+		"Lua":       Lua,
+		"DLR_NS":    DLR_NS,
+		"DLR_RUS":   DLR_RUS,
+		"DLRWS_RUS": DLRWS_RUS,
+
+		// Custom sub-routers.
 		"ExtRoute": (func(plan map[string]interface{}) func(*gin.Context) {
 			newplan := make(Plan, len(plan))
 			for k, v := range plan {
@@ -75,20 +85,27 @@ func BindMiddleware(L *lua.State) {
 			}
 			return VHOST_Middleware(newplan)
 		}),
-		"Logger":   gin.Logger,
-		"Recovery": gin.Recovery,
+
+		// To run or not to run, that is the question!
+		"if_regex":       If_Regexp,
+		"if_written":     If_Written,
+		"if_status":      If_Status,
+		"if_not_regex":   If_Not_Regexp,
+		"if_not_written": If_Not_Written,
+		"if_not_status":  If_Not_Status,
+
+		// Modification stuff.
 		"GZip": func() func(*gin.Context) {
 			return gzip.Gzip(gzip.DefaultCompression)
 		},
-		"DLR_NS":    DLR_NS,
-		"DLR_RUS":   DLR_RUS,
-		"DLRWS_RUS": DLRWS_RUS,
-		"Echo":      EchoHTML,
-		"EchoText":  Echo,
+
+		// Basic
+		"Echo":     EchoHTML,
+		"EchoText": Echo,
 	})
 	luar.Register(L, "carbon", luar.Map{
-		"_mw_CGI": CGI,
-		"_mw_combine": (func(middlewares []interface{}) func(*gin.Context) {
+		"_mw_CGI": CGI, // Run CGI Apps!
+		"_mw_combine": (func(middlewares []interface{}) func(*gin.Context) { // Combine routes, doesn't properly route like middleware or anything.
 			newmiddlewares := make([]func(*gin.Context), len(middlewares))
 			for k, v := range middlewares {
 				newmiddlewares[k] = v.(func(*gin.Context))
@@ -259,10 +276,15 @@ func BindConversions(L *lua.State) {
 func BindContext(L *lua.State, context *gin.Context) {
 	luar.Register(L, "", luar.Map{
 		"context":    context,
-		"req":        context.Request,
 		"_paramfunc": context.Param,
 		"_formfunc":  context.PostForm,
 		"_queryfunc": context.Query,
+	})
+	luar.Register(L, "req", luar.Map{
+		"host":   context.Request.URL.Host,
+		"path":   context.Request.URL.Path,
+		"host":   context.Request.URL.Host,
+		"scheme": context.Request.URL.Scheme,
 	})
 }
 func BindStatic(L *lua.State, cfe *cache.Cache) {
