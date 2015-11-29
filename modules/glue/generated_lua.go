@@ -3,6 +3,7 @@
 // lua/ConfGlue.lua
 // lua/MainGlue.lua
 // lua/RouteGlue.lua
+// lua/gluetest
 // lua/3rdparty/MessagePack.lua
 // lua/libs/escapist.lua
 // lua/libs/globalwrappers.lua
@@ -135,6 +136,26 @@ func routeglueLua() (*asset, error) {
 	}
 
 	info := bindataFileInfo{name: "RouteGlue.lua", size: 1095, mode: os.FileMode(420), modTime: time.Unix(1448815808, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var _gluetest = []byte("\x1f\x8b\x08\x00\x00\x09\x6e\x88\x00\xff\xf2\x48\xcd\xc9\xc9\x57\x28\xcf\x2f\xca\x49\x51\xe4\x02\x04\x00\x00\xff\xff\x41\xe4\xa9\xb2\x0d\x00\x00\x00")
+
+func gluetestBytes() ([]byte, error) {
+	return bindataRead(
+		_gluetest,
+		"gluetest",
+	)
+}
+
+func gluetest() (*asset, error) {
+	bytes, err := gluetestBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "gluetest", size: 13, mode: os.FileMode(420), modTime: time.Unix(1448831954, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -374,6 +395,7 @@ var _bindata = map[string]func() (*asset, error){
 	"ConfGlue.lua":             confglueLua,
 	"MainGlue.lua":             mainglueLua,
 	"RouteGlue.lua":            routeglueLua,
+	"gluetest":                 gluetest,
 	"3rdparty/MessagePack.lua": _3rdpartyMessagepackLua,
 	"libs/escapist.lua":        libsEscapistLua,
 	"libs/globalwrappers.lua":  libsGlobalwrappersLua,
@@ -432,6 +454,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 	"ConfGlue.lua":  &bintree{confglueLua, map[string]*bintree{}},
 	"MainGlue.lua":  &bintree{mainglueLua, map[string]*bintree{}},
 	"RouteGlue.lua": &bintree{routeglueLua, map[string]*bintree{}},
+	"gluetest":      &bintree{gluetest, map[string]*bintree{}},
 	"libs": &bintree{nil, map[string]*bintree{
 		"escapist.lua":       &bintree{libsEscapistLua, map[string]*bintree{}},
 		"globalwrappers.lua": &bintree{libsGlobalwrappersLua, map[string]*bintree{}},
