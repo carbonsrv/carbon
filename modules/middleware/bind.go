@@ -284,7 +284,7 @@ func BindContext(L *lua.State, context *gin.Context) {
 	})
 	luar.Register(L, "carbon", luar.Map{
 		"_header_set": context.Header,
-		"_header_get": context.Request.Header().Get,
+		"_header_get": context.Request.Header.Get,
 		"_paramfunc":  context.Param,
 		"_formfunc":   context.PostForm,
 		"_queryfunc":  context.Query,
