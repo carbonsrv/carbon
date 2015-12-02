@@ -308,6 +308,7 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 				return conn.WriteMessage(t, []byte(cnt))
 			}),
 		})
+		L.LoadBuffer(bcode, len(bcode), "route")
 		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
 			fmt.Println("Websocket error: " + L.ToString(-1))
 			context.Abort()
