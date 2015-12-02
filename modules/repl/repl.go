@@ -3,8 +3,8 @@ package repl
 import (
 	"fmt"
 	"github.com/GeertJohan/go.linenoise"
-	"github.com/vifino/luar"
 	"github.com/vifino/golua/lua"
+	"github.com/vifino/luar"
 	"strings"
 )
 
@@ -15,7 +15,7 @@ type Dummy struct {
 const (
 	LUA_PROMPT1 = "> "
 	LUA_PROMPT2 = ">> "
-	BANNER = `
+	BANNER      = `
   ⡎⠑ | Carbon
   ⠣⠔ | (c) 2015 vifino
 `
@@ -65,7 +65,7 @@ func Run(L *lua.State) {
 			if str[0] == '=' || str[0] == '.' {
 				exprs := str[1:]
 				if str[0] == '=' {
-					str = "prettify(" + exprs + ")"
+					str = "print(prettify(" + exprs + "))"
 				} else {
 					str = "print(" + exprs + ")"
 				}
@@ -86,7 +86,7 @@ func Run(L *lua.State) {
 				if strings.HasSuffix(errs, "near '<eof>'") {
 					continuing = true
 				} else {
-					fmt.Println(errs)
+					fmt.Println("Error: " + errs)
 				}
 			}
 			if continuing { // prompt must reflect continuing state

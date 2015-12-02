@@ -233,7 +233,7 @@ func main() {
 
 	if script == "" {
 		if *run_repl {
-			err := luaconf.REPL(cfe, root, *useRecovery, *useLogger, func(srv *gin.Engine) {
+			err := luaconf.REPL(cfe, root, *useRecovery, false, func(srv *gin.Engine) {
 				serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 			})
 			if err != nil {
