@@ -288,39 +288,32 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 	return func(context *gin.Context) {
 		L := <-schan
 		BindContext(L, context)
-		r := wshandler(context.Writer, context.Request, L)
-		schan <- L
-		if r {
-			context.Abort()
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			fmt.Println("Websocket error: " + err.Error()) // silent error.
 		}
+		luar.Register(L, "ws", luar.Map{
+			"BinaryMessage": websocket.BinaryMessage,
+			"TextMessage":   websocket.TextMessage,
+			//"read":          conn.ReadMessage,
+			//"send":          conn.SendMessage,
+			"read": (func() (int, string, error) {
+				messageType, p, err := conn.ReadMessage()
+				if err != nil {
+					return -1, "", err
+				}
+				return messageType, string(p), nil
+			}),
+			"send": (func(t int, cnt string) error {
+				return conn.WriteMessage(t, []byte(cnt))
+			}),
+		})
+		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
+			fmt.Println("Websocket error: " + L.ToString(-1))
+			context.Abort()
+			return
+		}
+		L.PushValue(-1)
+		schan <- L
 	}, nil
-}
-
-func wshandler(w http.ResponseWriter, r *http.Request, L *lua.State) bool {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		return false // silent error.
-	}
-	luar.Register(L, "ws", luar.Map{
-		"BinaryMessage": websocket.BinaryMessage,
-		"TextMessage":   websocket.TextMessage,
-		//"read":          conn.ReadMessage,
-		//"send":          conn.SendMessage,
-		"read": (func() (int, string, error) {
-			messageType, p, err := conn.ReadMessage()
-			if err != nil {
-				return -1, "", err
-			}
-			return messageType, string(p), nil
-		}),
-		"send": (func(t int, cnt string) error {
-			return conn.WriteMessage(t, []byte(cnt))
-		}),
-	})
-	if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
-		fmt.Println("Websocket error: " + L.ToString(-1))
-		return false
-	}
-	L.PushValue(-1)
-	return true
 }
