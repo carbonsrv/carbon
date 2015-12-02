@@ -313,7 +313,7 @@ local function sdump(st)
 		return cc
 end
 
-mt = getmetatable(__DUMMY__)
+mt = getmetatable(_G)
 mt.__pairs = function(st)
 		local cc = sdump(st)
 		return pairs(cc)
