@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+type Dummy struct {
+	Name string
+}
+
 const (
 	LUA_PROMPT1 = "> "
 	LUA_PROMPT2 = ">> "
@@ -20,6 +24,10 @@ const (
 // modified https://github.com/vifino/luar/blob/master/examples/luar.go
 
 func Run(L *lua.State) {
+	luar.Register(L, "", luar.Map{
+		"__DUMMY__": &Dummy{"me"},
+	})
+
 	err := L.DoString(lua_code)
 	if err != nil {
 		fmt.Println("initial " + err.Error())
@@ -313,7 +321,7 @@ local function sdump(st)
 		return cc
 end
 
-mt = getmetatable(_G)
+mt = getmetatable(__DUMMY__)
 mt.__pairs = function(st)
 		local cc = sdump(st)
 		return pairs(cc)
