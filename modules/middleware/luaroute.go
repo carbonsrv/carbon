@@ -3,6 +3,7 @@ package middleware
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/carbonsrv/carbon/modules/glue"
 	"github.com/carbonsrv/carbon/modules/helpers"
@@ -259,6 +260,11 @@ func DLR_RUS(bcode string, instances int, dobind bool, vals map[string]interface
 	}, nil
 }
 
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
 func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but for websockets. Not working because?!
 	insts := instances
 	if instances < 0 {
@@ -279,18 +285,18 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 		L.PushValue(-1)
 		schan <- L
 	}
-	var upgrader = websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-	}
 	return func(context *gin.Context) {
-		wshandler(context.Writer, context.Request)
+		L := <-schan
+		BindContext(L, context)
+		r := wshandler(context.Writer, context.Request, L)
+		schan <- L
+		if r {
+			context.Abort()
+		}
 	}, nil
 }
 
-func wshandler(w http.ResponseWriter, r *http.Request) {
-	L := <-schan
-	BindContext(L, context)
+func wshandler(w http.ResponseWriter, r *http.Request, L *lua.State) bool {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return // silent error.
@@ -312,10 +318,9 @@ func wshandler(w http.ResponseWriter, r *http.Request) {
 		}),
 	})
 	if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
-		fmt.Println("Websocket error: "+L.ToString(-1))
-		context.Abort()
-		return
+		fmt.Println("Websocket error: " + L.ToString(-1))
+		return false
 	}
 	L.PushValue(-1)
-	schan <- L
+	return true
 }
