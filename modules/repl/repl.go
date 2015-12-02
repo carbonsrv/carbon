@@ -3,16 +3,15 @@ package repl
 import (
 	"fmt"
 	"github.com/GeertJohan/go.linenoise"
-	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
-	"os"
+	"github.com/vifino/golua/lua"
 	"strings"
 )
 
 const (
 	LUA_PROMPT1 = "> "
 	LUA_PROMPT2 = ">> "
-	BANNER      = `
+	BANNER = `
   ⡎⠑ | Carbon
   ⠣⠔ | (c) 2015 vifino
 `
