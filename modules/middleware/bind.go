@@ -20,6 +20,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"regexp"
 	"time"
 )
 
@@ -312,6 +313,7 @@ func BindOther(L *lua.State) {
 		"unixtime": (func() int {
 			return int(time.Now().UTC().Unix())
 		}),
+		"regexp": regexp.Compile,
 	})
 	luar.Register(L, "carbon", luar.Map{
 		"_syntaxhl": helpers.SyntaxHL,

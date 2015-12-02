@@ -248,11 +248,12 @@ func main() {
 		if *useLogger {
 			doLog = true
 		}
-		srv, err := luaconf.Configure(script, cfe, root, *useRecovery, *useLogger)
+		err := luaconf.Configure(script, cfe, root, *useRecovery, *useLogger, func(srv *gin.Engine) {
+			serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
+		})
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 	}
 }

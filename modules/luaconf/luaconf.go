@@ -11,7 +11,7 @@ import (
 )
 
 // Configure the server based on a lua script.
-func Configure(script string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool) (http.Handler, error) {
+func Configure(script string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, finalizer func(srv *gin.Engine)) error {
 	srv := gin.New()
 	if useLogger {
 		srv.Use(gin.Logger())
@@ -31,5 +31,12 @@ func Configure(script string, cfe *cache.Cache, webroot string, useRecovery bool
 	middleware.BindStatic(L, cfe)
 	L.DoString(glue.MainGlue())
 	L.DoString(glue.ConfGlue())
-	return srv, L.DoFile(script)
+	go finalizer(srv)
+	err := L.DoFile(script)
+	if err != nil {
+		return err
+	} else {
+		c := make(chan bool)
+		<-c
+	}
 }
