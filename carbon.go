@@ -177,6 +177,7 @@ func main() {
 	// Use config
 	flag.String("config", "", "Parse Config File")
 	var script_flag = flag.String("script", "", "Parse Lua Script as initialization")
+	var run_repl = flag.Bool("repl", false, "Run REPL")
 
 	var host = flag.String("host", "", "IP of Host to bind the Webserver on")
 	var port = flag.Int("port", 8080, "Port to run Webserver on (HTTP)")
@@ -231,19 +232,29 @@ func main() {
 	}
 
 	if script == "" {
-		srv := new_server()
-		if *useLogger {
-			doLog = true
-			srv.Use(gin.Logger())
+		if *run_repl {
+			err := luaconf.REPL(cfe, root, *useRecovery, *useLogger, func(srv *gin.Engine) {
+				serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
+			})
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		} else {
+			srv := new_server()
+			if *useLogger {
+				doLog = true
+				srv.Use(gin.Logger())
+			}
+			if *useRecovery {
+				srv.Use(gin.Recovery())
+			}
+			if *useGzip {
+				srv.Use(gzip.Gzip(gzip.DefaultCompression))
+			}
+			bootstrap(srv, "", cfe)
+			serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 		}
-		if *useRecovery {
-			srv.Use(gin.Recovery())
-		}
-		if *useGzip {
-			srv.Use(gzip.Gzip(gzip.DefaultCompression))
-		}
-		bootstrap(srv, "", cfe)
-		serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 	} else {
 		if *useLogger {
 			doLog = true
