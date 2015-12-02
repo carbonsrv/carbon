@@ -7,7 +7,6 @@ import (
 	"github.com/carbonsrv/carbon/modules/middleware"
 	"github.com/pmylund/go-cache"
 	"github.com/vifino/luar"
-	"net/http"
 )
 
 // Configure the server based on a lua script.
@@ -39,4 +38,5 @@ func Configure(script string, cfe *cache.Cache, webroot string, useRecovery bool
 		c := make(chan bool)
 		<-c
 	}
+	return nil
 }
