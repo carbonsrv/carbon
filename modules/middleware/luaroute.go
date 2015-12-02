@@ -288,7 +288,7 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 	return func(context *gin.Context) {
 		L := <-schan
 		BindContext(L, context)
-		conn, err := upgrader.Upgrade(w, r, nil)
+		conn, err := upgrader.Upgrade(context.Writer, context.Request, nil)
 		if err != nil {
 			fmt.Println("Websocket error: " + err.Error()) // silent error.
 		}
