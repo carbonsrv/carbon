@@ -284,40 +284,38 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 		WriteBufferSize: 1024,
 	}
 	return func(context *gin.Context) {
-		conn, err := upgrader.Upgrade(context.Writer, context.Request, nil)
-		if err != nil {
-			return // silent error.
-		}
-		L := <-schan
-		BindContext(L, context)
-		luar.Register(L, "ws", luar.Map{
-			"BinaryMessage": websocket.BinaryMessage,
-			"TextMessage":   websocket.TextMessage,
-			//"read":          conn.ReadMessage,
-			//"send":          conn.SendMessage,
-			"read": (func() (int, string, error) {
-				messageType, p, err := conn.ReadMessage()
-				if err != nil {
-					return -1, "", err
-				}
-				return messageType, string(p), nil
-			}),
-			"send": (func(t int, cnt string) error {
-				return conn.WriteMessage(t, []byte(cnt))
-			}),
-		})
-		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
-			helpers.HTMLString(context, http.StatusInternalServerError, `<html>
-			<head><title>Runtime Error on `+context.Request.URL.Path+`</title>
-			<body>
-				<h1>Runtime Error in Lua Route on `+context.Request.URL.Path+`:</h1>
-				<code>`+L.ToString(-1)+`</code>
-			</body>
-			</html>`)
-			context.Abort()
-			return
-		}
-		L.PushValue(-1)
-		schan <- L
+		wshandler(context.Writer, context.Request)
 	}, nil
+}
+
+func wshandler(w http.ResponseWriter, r *http.Request) {
+	L := <-schan
+	BindContext(L, context)
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return // silent error.
+	}
+	luar.Register(L, "ws", luar.Map{
+		"BinaryMessage": websocket.BinaryMessage,
+		"TextMessage":   websocket.TextMessage,
+		//"read":          conn.ReadMessage,
+		//"send":          conn.SendMessage,
+		"read": (func() (int, string, error) {
+			messageType, p, err := conn.ReadMessage()
+			if err != nil {
+				return -1, "", err
+			}
+			return messageType, string(p), nil
+		}),
+		"send": (func(t int, cnt string) error {
+			return conn.WriteMessage(t, []byte(cnt))
+		}),
+	})
+	if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
+		fmt.Println("Websocket error: "+L.ToString(-1))
+		context.Abort()
+		return
+	}
+	L.PushValue(-1)
+	schan <- L
 }
