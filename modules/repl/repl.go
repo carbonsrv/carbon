@@ -65,7 +65,7 @@ func Run(L *lua.State) {
 			if str[0] == '=' || str[0] == '.' {
 				exprs := str[1:]
 				if str[0] == '=' {
-					str = "print(prettify(" + exprs + "))"
+					str = "print(serialize.simple(" + exprs + "))"
 				} else {
 					str = "print(" + exprs + ")"
 				}
@@ -102,7 +102,7 @@ func Run(L *lua.State) {
 
 // pretty-printing and code completion logic in Lua
 const lua_code = `
-local prettify = require("serialize").simple
+serialize = require("serialize")
 
 local tostring = tostring
 local append = table.insert
