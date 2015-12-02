@@ -3,7 +3,7 @@ package repl
 import (
 	"fmt"
 	"github.com/GeertJohan/go.linenoise"
-	"github.com/vifino/golua"
+	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
 	"os"
 	"strings"
