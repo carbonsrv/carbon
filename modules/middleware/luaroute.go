@@ -299,7 +299,7 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 func wshandler(w http.ResponseWriter, r *http.Request, L *lua.State) bool {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		return // silent error.
+		return false // silent error.
 	}
 	luar.Register(L, "ws", luar.Map{
 		"BinaryMessage": websocket.BinaryMessage,
