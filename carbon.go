@@ -259,7 +259,7 @@ func main() {
 		if *useLogger {
 			doLog = true
 		}
-		err := luaconf.Configure(script, cfe, root, *useRecovery, *useLogger, func(srv *gin.Engine) {
+		err := luaconf.Configure(script, cfe, root, *useRecovery, *useLogger, true, func(srv *gin.Engine) {
 			serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 		})
 		if err != nil {

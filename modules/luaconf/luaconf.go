@@ -11,7 +11,7 @@ import (
 )
 
 // Configure the server based on a lua script.
-func Configure(script string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, finalizer func(srv *gin.Engine)) error {
+func Configure(script string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, runrepl bool, finalizer func(srv *gin.Engine)) error {
 	srv := gin.New()
 	if useLogger {
 		srv.Use(gin.Logger())
@@ -36,6 +36,9 @@ func Configure(script string, cfe *cache.Cache, webroot string, useRecovery bool
 	if err != nil {
 		return err
 	} else {
+		if runrepl {
+			repl.Run(L)
+		}
 		c := make(chan bool)
 		<-c
 	}
