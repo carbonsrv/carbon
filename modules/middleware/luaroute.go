@@ -279,10 +279,6 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 		if dobind {
 			luar.Register(L, "", vals)
 		}
-		if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
-			return func(context *gin.Context) {}, errors.New(L.ToString(-1))
-		}
-		L.PushValue(-1)
 		schan <- L
 	}
 	return func(context *gin.Context) {
@@ -310,11 +306,10 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 		})
 		L.LoadBuffer(bcode, len(bcode), "route")
 		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
-			fmt.Println("Websocket error: " + L.ToString(-1))
+			fmt.Println("Websocket Lua error: " + L.ToString(-1))
 			context.Abort()
 			return
 		}
-		L.PushValue(-1)
 		schan <- L
 	}, nil
 }
