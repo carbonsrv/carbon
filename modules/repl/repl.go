@@ -34,7 +34,7 @@ func Run(L *lua.State) {
 		return
 	}
 	// particularly the completion logic
-	complete := luar.NewLuaObjectFromName(L, "lua_candidates")
+	complete := luar.NewLuaObjectFromName(L, "carbon._lua_candidates")
 	// this function returns a string slice of candidates
 	str_slice := luar.Types([]string{})
 
@@ -256,7 +256,7 @@ local function is_pair_iterable(t)
 		return type(t) == 'table' or (mt and mt.__pairs)
 end
 
-function lua_candidates(line)
+function carbon._lua_candidates(line)
 	-- identify the expression!
 	local res = {}
 	local i1,i2 = line:find('[.:%w_]+$')
@@ -326,5 +326,4 @@ mt.__pairs = function(st)
 		local cc = sdump(st)
 		return pairs(cc)
 end
-
 `
