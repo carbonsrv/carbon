@@ -28,7 +28,7 @@ func Configure(script string, args []string, cfe *cache.Cache, webroot string, u
 		"root": webroot,
 	})
 	luar.Register(L, "", luar.Map{
-		"args": args
+		"args": args,
 	})
 	middleware.Bind(L)
 	middleware.BindStatic(L, cfe)
