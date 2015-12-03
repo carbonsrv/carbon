@@ -178,6 +178,7 @@ func main() {
 	flag.String("config", "", "Parse Config File")
 	var script_flag = flag.String("script", "", "Parse Lua Script as initialization")
 	var run_repl = flag.Bool("repl", false, "Run REPL")
+	var eval = flag.String("eval", "", "Eval Lua Code")
 
 	var host = flag.String("host", "", "IP of Host to bind the Webserver on")
 	var port = flag.Int("port", 8080, "Port to run Webserver on (HTTP)")
@@ -231,9 +232,22 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	args := flag.Args()
+
+	if *eval != "" {
+		err := luaconf.Eval(*eval, args, cfe, root, *useRecovery, *useLogger, *run_repl, func(srv *gin.Engine) {
+			serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
+		})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
 	if script == "" {
 		if *run_repl {
-			err := luaconf.REPL(cfe, root, *useRecovery, false, func(srv *gin.Engine) {
+			err := luaconf.REPL(args, cfe, root, *useRecovery, false, func(srv *gin.Engine) {
 				serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 			})
 			if err != nil {
@@ -259,7 +273,7 @@ func main() {
 		if *useLogger {
 			doLog = true
 		}
-		err := luaconf.Configure(script, cfe, root, *useRecovery, *useLogger, *run_repl, func(srv *gin.Engine) {
+		err := luaconf.Configure(script, args[1:], cfe, root, *useRecovery, *useLogger, *run_repl, func(srv *gin.Engine) {
 			serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 		})
 		if err != nil {
