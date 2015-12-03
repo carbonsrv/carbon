@@ -3,7 +3,7 @@
 local template = {}
 
 local escapist = require("escapist")
-local prettify = require("serialize").simple
+local prettify = require("prettify")
 
 local function eval(str, env)
 	local f, err = loadstring("return ".. str, "template")
