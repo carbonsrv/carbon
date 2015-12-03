@@ -3,6 +3,9 @@
 
 local M = srv or {}
 
+-- Track if used or not.
+M.used = false
+
 -- Prefix related stuff...
 M._prefix = M._prefix or "" -- defaults to none.
 
@@ -44,29 +47,32 @@ function M.Begin_VHOSTS(cur)
 end
 
 function M.Finish_VHOSTS()
-	M.use_vhosts = false
-	for type, paths in pairs(M._vhosts) do
-		for path, vhosts in pairs(paths) do
-			if type == "Use" then
-				for vhost, middlewares in pairs(vhosts) do
-					for _, mw in pairs(middlewares) do
-						carbon.srv.Use(mw.VHOST_Middleware({[vhost] = mw}))
+	if M.use_vhosts then
+		M.use_vhosts = false
+		for type, paths in pairs(M._vhosts) do
+			for path, vhosts in pairs(paths) do
+				if type == "Use" then
+					for vhost, middlewares in pairs(vhosts) do
+						for _, mw in pairs(middlewares) do
+							carbon.srv.Use(mw.VHOST_Middleware({[vhost] = mw}))
+						end
 					end
+				elseif type == "Default" then
+					carbon.srv.NoRoute(mw.VHOST(vhosts))
+				else
+					carbon.srv[type](path, mw.VHOST(vhosts))
 				end
-			elseif type == "Default" then
-				carbon.srv.NoRoute(mw.VHOST(vhosts))
-			else
-				carbon.srv[type](path, mw.VHOST(vhosts))
 			end
 		end
+		M._vhosts = {}
+		M.vhost = "***"
 	end
-	M._vhosts = {}
-	M.vhost = "***"
 end
 
 -- General things.
 function M.Use(middleware)
 	if tostring(middleware) == "gin.HandlerFunc" or tostring(middleware) == "func(*gin.Context)" then
+		M.used = true
 		M.finish_handler("Use", "", middleware)
 		--carbon.srv.Use(middleware)
 	else
@@ -76,6 +82,7 @@ end
 
 function M.DefaultRoute(handler)
 	if tostring(handler) == "func(*gin.Context)" then
+		M.used = true
 		--carbon.srv.NoRoute(handler)
 		M.finish_handler("Default", "", handler)
 	else
@@ -90,8 +97,10 @@ function M.GET(pattern, ...)
 		local h = {}
 		for _, handler in pairs(handlers) do
 			if tostring(handler) == "func(*gin.Context)" then
+				M.used = true
 				table.insert(h, handler)
 			elseif type(handler) == "function" then
+				M.used = true
 				table.insert(h, mw.new(handler))
 			else
 				error("Invalid handler.")
@@ -109,8 +118,10 @@ function M.POST(pattern, ...)
 		local h = {}
 		for _, handler in pairs(handlers) do
 			if tostring(handler) == "func(*gin.Context)" then
+				M.used = true
 				table.insert(h, handler)
 			elseif type(handler) == "function" then
+				M.used = true
 				table.insert(h, mw.new(handler))
 			else
 				error("Invalid handler.")
@@ -128,8 +139,10 @@ function M.PUT(pattern, ...)
 		local h = {}
 		for _, handler in pairs(handlers) do
 			if tostring(handler) == "func(*gin.Context)" then
+				M.used = true
 				table.insert(h, handler)
 			elseif type(handler) == "function" then
+				M.used = true
 				table.insert(h, mw.new(handler))
 			else
 				error("Invalid handler.")
@@ -147,8 +160,10 @@ function M.DELETE(pattern, ...)
 		local h = {}
 		for _, handler in pairs(handlers) do
 			if tostring(handler) == "func(*gin.Context)" then
+				M.used = true
 				table.insert(h, handler)
 			elseif type(handler) == "function" then
+				M.used = true
 				table.insert(h, mw.new(handler))
 			else
 				error("Invalid handler.")
@@ -166,8 +181,10 @@ function M.PATCH(pattern, ...)
 		local h = {}
 		for _, handler in pairs(handlers) do
 			if tostring(handler) == "func(*gin.Context)" then
+				M.used = true
 				table.insert(h, handler)
 			elseif type(handler) == "function" then
+				M.used = true
 				table.insert(h, mw.new(handler))
 			else
 				error("Invalid handler.")
@@ -185,8 +202,10 @@ function M.HEAD(pattern, ...)
 		local h = {}
 		for _, handler in pairs(handlers) do
 			if tostring(handler) == "func(*gin.Context)" then
+				M.used = true
 				table.insert(h, handler)
 			elseif type(handler) == "function" then
+				M.used = true
 				table.insert(h, mw.new(handler))
 			else
 				error("Invalid handler.")
@@ -204,8 +223,10 @@ function M.OPTIONS(pattern, ...)
 		local h = {}
 		for _, handler in pairs(handlers) do
 			if tostring(handler) == "func(*gin.Context)" then
+				M.used = true
 				table.insert(h, handler)
 			elseif type(handler) == "function" then
+				M.used = true
 				table.insert(h, mw.new(handler))
 			else
 				error("Invalid handler.")

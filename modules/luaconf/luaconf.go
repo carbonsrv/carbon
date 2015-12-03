@@ -10,6 +10,14 @@ import (
 	"github.com/vifino/luar"
 )
 
+var checker_code = `
+srv.Finish_VHOSTS()
+
+if srv.used == false then
+	os.exit(0)
+end
+`
+
 // Configure the server based on a lua script.
 func Configure(script string, args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, runrepl bool, finalizer func(srv *gin.Engine)) error {
 	srv := gin.New()
@@ -42,6 +50,7 @@ func Configure(script string, args []string, cfe *cache.Cache, webroot string, u
 		if runrepl {
 			repl.Run(L)
 		}
+		L.DoString(checker_code)
 		c := make(chan bool)
 		<-c
 	}
@@ -80,6 +89,7 @@ func Eval(script string, args []string, cfe *cache.Cache, webroot string, useRec
 		if runrepl {
 			repl.Run(L)
 		}
+		L.DoString(checker_code)
 		c := make(chan bool)
 		<-c
 	}
@@ -113,5 +123,6 @@ func REPL(args []string, cfe *cache.Cache, webroot string, useRecovery bool, use
 	go finalizer(srv)
 
 	repl.Run(L)
+	L.DoString(checker_code)
 	return nil
 }
