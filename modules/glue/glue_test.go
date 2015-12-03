@@ -1,10 +1,14 @@
 package glue
 
 import (
-	"github.com/stretchr/testify/assert"
+	. "github.com/smartystreets/goconvey/convey"
 	"testing"
 )
 
 func TestGlue(t *testing.T) {
-	assert.Equal(t, GetGlue("gluetest"), "Hello world!\n")
+	Convey("Accessing the built glue", t, func() {
+		Convey("File 'gluetest' should equal \"Hello world!\\n\"", func() {
+			So(GetGlue("gluetest"), ShouldEqual, "Hello world!\n")
+		})
+	})
 }
