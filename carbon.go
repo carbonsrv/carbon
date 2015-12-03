@@ -273,9 +273,9 @@ func main() {
 		if *useLogger {
 			doLog = true
 		}
-		
+
 		if flag.Arg(1) == "" {
-			args = make([]string)
+			args = make([]string, 0)
 		} else {
 			args = args[1:]
 		}
