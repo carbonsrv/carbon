@@ -1,6 +1,9 @@
 --
 -- lua-MessagePack : <http://fperrad.github.io/lua-MessagePack/>
 --
+-- Copyright © 2012-2015 François Perrad ohloh profile for François Perrad
+-- This library is licensed under the terms of the MIT/X11 license, like Lua itself.
+--
 
 local r, jit = pcall(require, 'jit')
 if not r then

@@ -1,12 +1,13 @@
 package main
 
-//go:generate go-bindata -o modules/glue/generated_lua.go -pkg=glue -prefix "./lua" ./lua ./lua/3rdparty ./lua/libs ./lua/libs/wrappers
+//go:generate go-bindata -o modules/glue/generated_lua.go -pkg=glue -prefix "./builtin" ./builtin ./builtin/3rdparty ./builtin/libs ./builtin/libs/wrappers
 
 import (
 	"bufio"
 	"fmt"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/bradfitz/http2"
+	"github.com/carbonsrv/carbon/modules/glue"
 	"github.com/carbonsrv/carbon/modules/luaconf"
 	"github.com/carbonsrv/carbon/modules/middleware"
 	"github.com/carbonsrv/carbon/modules/scheduler"
@@ -179,6 +180,7 @@ func main() {
 	var script_flag = flag.String("script", "", "Parse Lua Script as initialization")
 	var run_repl = flag.Bool("repl", false, "Run REPL")
 	var eval = flag.String("eval", "", "Eval Lua Code")
+	var licenses = flag.Bool("licenses", false, "Show licenses")
 
 	var host = flag.String("host", "", "IP of Host to bind the Webserver on")
 	var port = flag.Int("port", 8080, "Port to run Webserver on (HTTP)")
@@ -210,6 +212,11 @@ func main() {
 		if *key == "" || *cert == "" {
 			panic("Need to have a Key and a Cert defined.")
 		}
+	}
+
+	if *licenses {
+		fmt.Println(glue.GetGlue("NOTICE.txt"))
+		os.Exit(0)
 	}
 
 	runtime.GOMAXPROCS(*workers)
