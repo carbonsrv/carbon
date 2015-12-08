@@ -37,7 +37,11 @@ M.finish_handler = function(type, path, h)
 			table.insert(M._vhosts[type][path][M.vhost], h)
 		end
 	else
-		carbon.srv[type](path, h)
+		if type == "Default" then
+			carbon.srv.NoRoute(h)
+		else
+			carbon.srv[type](path, h)
+		end
 	end
 end
 
