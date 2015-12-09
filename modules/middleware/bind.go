@@ -246,8 +246,31 @@ func BindComs(L *lua.State) {
 		"receive": (func(c chan interface{}) interface{} {
 			return <-c
 		}),
-		"send": (func(c chan interface{}, val interface{}) {
+		"try_receive": (func(c chan interface{}) interface{} {
+			select {
+			case msg := <-c:
+				return msg
+			default:
+				return nil
+			}
+		}),
+		"send": (func(c chan interface{}, val interface{}) bool {
 			c <- val
+			return true
+		}),
+		"try_send": (func(c chan interface{}, val interface{}) bool {
+			select {
+			case c <- val:
+				return true
+			default:
+				return false
+			}
+		}),
+		"size": (func(c chan interface{}) int {
+			return len(c)
+		}),
+		"cap": (func(c chan interface{}) int {
+			return cap(c)
 		}),
 	})
 }
