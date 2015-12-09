@@ -13,19 +13,19 @@ WORKDIR /app
 # Put the source in that directory.
 COPY . /go/src/github.com/carbonsrv/carbon
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN \
+	apt-get update && apt-get install -y --no-install-recommends \
 		pkgconf \
 		libluajit-5.1-dev \
 		libphysfs-dev \
 	&& rm -rf /var/lib/apt/lists/* \
 	&& mkdir -p /go/src/github.com/carbonsrv \
 	&& cd /go/src/github.com/carbonsrv/carbon && go get -t -d -v ./... \
-	&& go build -v -o /usr/local/bin/carbon \
-	&& rm -rf /go \
-	&& rm -rf /usr/local/go
+	&& go build -v -o /go/bin/carbon \
+	&& apt-get remove pkgconf
 
 # Run carbon -h by default!
-CMD ["/usr/local/bin/carbon", "-h"]
+CMD ["/go/bin/carbon", "-h"]
 
 # Expose default ports.
 
