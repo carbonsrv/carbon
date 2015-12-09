@@ -22,10 +22,11 @@ RUN \
 	&& mkdir -p /go/src/github.com/carbonsrv \
 	&& cd /go/src/github.com/carbonsrv/carbon && go get -t -d -v ./... \
 	&& go build -v -o /go/bin/carbon \
-	&& apt-get remove pkgconf
+	&& apt-get remove -y pkgconf
 
 # Run the carbon repl by default!
-CMD ["/go/bin/carbon", "-repl"]
+ENTRYPOINT ["/go/bin/carbon"]
+CMD ["-repl"]
 
 # Expose default ports.
 
