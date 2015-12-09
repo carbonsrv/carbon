@@ -236,7 +236,7 @@ func BindThread(L *lua.State) {
 			}
 
 			if L.LoadBuffer(bcode, len(bcode), "thread") != 0 {
-				return errors.New(L.ToString(-1))
+				return make(chan interface{}), errors.New(L.ToString(-1))
 			}
 
 			scheduler.Add(func() {
