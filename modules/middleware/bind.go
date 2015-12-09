@@ -212,13 +212,24 @@ func BindKVStore(L *lua.State) { // Thread safe Key Value Store that doesn't per
 
 func BindThread(L *lua.State) {
 	luar.Register(L, "thread", luar.Map{
-		"_spawn": (func(bcode string, dobind bool, vals map[string]interface{}) error {
+		"_spawn": (func(bcode string, dobind bool, vals map[string]interface{}, buffer int) (chan interface{}, error) {
+			var ch chan interface{}
+			if buffer == -1 {
+				ch = make(chan interface{})
+			} else {
+				ch = make(chan interface{}, buffer)
+			}
+
 			L := luar.Init()
 			Bind(L)
 			err := L.DoString(glue.MainGlue())
 			if err != nil {
 				panic(err)
 			}
+
+			luar.Register(L, "", luar.Map{
+				"threadcom": ch,
+			})
 
 			if dobind {
 				luar.Register(L, "", vals)

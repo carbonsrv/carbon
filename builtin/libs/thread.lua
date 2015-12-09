@@ -1,7 +1,7 @@
 -- Threads
 -- Has a buttload of issues, mostly bindings. Gotta looooove broken shit.
 
-function thread.spawn(fn, bindings)
+function thread.spawn(fn, bindings, buffer)
 	local code = ""
 	if type(fn) == "function" then
 		code = string.dump(fn)
@@ -13,17 +13,20 @@ function thread.spawn(fn, bindings)
 			error(err)
 		end
 	end
-	local r
+
+	local buffer = tonumber(buffer) or -1
+
+	local ch
 	local err
 	if type(bindings) == "table" then
-		err = thread._spawn(code, true, bindings)
+		ch, err = thread._spawn(code, true, bindings, buffer)
 	else
-		err = thread._spawn(code, false, {["s"]="v"})
+		ch, err = thread._spawn(code, false, {["s"]="v"}, buffer)
 	end
 	if err ~= nil then
 		return false, error(err)
 	end
-	return true
+	return ch
 end
 
 function thread.rpcthread() -- not working, issues with binding or something .-.
