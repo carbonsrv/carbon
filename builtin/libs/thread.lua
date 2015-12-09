@@ -30,7 +30,22 @@ function thread.spawn(fn, bindings, buffer)
 end
 
 function thread.rpcthread() -- not working, issues with binding or something .-.
-	local chan = com.create()
+
+	local chan = thread.spawn(function()
+		local function pushback(...)
+			com.send(chan, msgpack.pack({...}))
+		end
+		while true do
+			local args = {}
+			local cmd = com.receive(threadcom)
+			local f, err = loadstring(cmd.f)
+			if err ~= nil then
+				pushback(false, err)
+			else
+				pushback(pcall(f, unpack(cmd.args)))
+			end
+		end
+	end)
 
 	local function call(f, ...)
 		local fn
@@ -57,23 +72,6 @@ function thread.rpcthread() -- not working, issues with binding or something .-.
 		return true, unpack(res)
 	end
 
-	thread.spawn(function()
-		local function pushback(...)
-			com.send(chan, msgpack.pack({...}))
-		end
-		while true do
-			local args = {}
-			local cmd = com.receive(chan)
-			local f, err = loadstring(cmd.f)
-			if err ~= nil then
-				pushback(false, err)
-			else
-				pushback(pcall(f, unpack(cmd.args)))
-			end
-		end
-	end, {
-		["chan"] = chan,
-	})
 	return {
 		["call_async"] = call,
 		["call"] = (function(f, ...)
@@ -88,26 +86,22 @@ function thread.rpcthread() -- not working, issues with binding or something .-.
 end
 
 function thread.kvstore() -- doesn't work either .-.
-	local chan = com.create()
-
-	thread.spawn(function()
+	local chan = thread.spawn(function()
 		local store = {}
 		while true do
-			local suc, cmd = pcall(msgpack.unpack, com.receive(chan))
+			local suc, cmd = pcall(msgpack.unpack, com.receive(threadcom))
 			if suc then
 				if cmd.value then
 					store[cmd.name] = cmd.value
-					com.send(chan, msgpack.pack({value=true, error=nil}))
+					com.send(threadcom, msgpack.pack({value=true, error=nil}))
 				else
-					com.send(chan, msgpack.pack({value=store[cmd.name], error=nil}))
+					com.send(threadcom, msgpack.pack({value=store[cmd.name], error=nil}))
 				end
 			else
-				com.send(chan, msgpack.pack({value=nil, error=cmd}))
+				com.send(threadcom, msgpack.pack({value=nil, error=cmd}))
 			end
 		end
-	end, {
-		["chan"] = chan
-	})
+	end)
 
 	return function(name, value)
 		if name then
