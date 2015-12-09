@@ -166,6 +166,9 @@ func BindOSEnhancements(L *lua.State) {
 				return false
 			}
 		}),
+		"_os.sleep": (func(secs int64) {
+			time.Sleep(secs * time.Second)
+		}),
 		"_os_chdir":   os.Chdir,
 		"_os_abspath": filepath.Abs,
 	})

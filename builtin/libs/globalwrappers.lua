@@ -56,6 +56,14 @@ function os.abspath(path)
 	end
 end
 
+function os.sleep(secs)
+	if tonumber(secs) then
+		carbon._os_sleep(tonumber(secs))
+	else
+		error("secs not a number!")
+	end
+end
+
 -- kvstore
 kvstore = kvstore or {}
 function kvstore.set(name, value)
