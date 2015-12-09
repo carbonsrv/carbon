@@ -244,7 +244,7 @@ func BindThread(L *lua.State) {
 					// Silently error because reasons. ._.
 				}
 			})
-			return nil
+			return ch, nil
 		}),
 	})
 }
