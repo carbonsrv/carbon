@@ -24,8 +24,8 @@ RUN \
 	&& go build -v -o /go/bin/carbon \
 	&& apt-get remove pkgconf
 
-# Run carbon -h by default!
-CMD ["/go/bin/carbon", "-h"]
+# Run the carbon repl by default!
+CMD ["/go/bin/carbon", "-repl"]
 
 # Expose default ports.
 
