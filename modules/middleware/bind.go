@@ -320,7 +320,7 @@ func BindNet(L *lua.State) {
 			}()
 			for {
 				line := <-input
-				fmt.Fprintf(con, line.(string))
+				fmt.Fprintf(con.(net.Conn), line.(string))
 			}
 		}),
 		"pipe_com_background": (func(con interface{}, input, output chan interface{}) {
@@ -334,7 +334,7 @@ func BindNet(L *lua.State) {
 			scheduler.Add(func() {
 				for {
 					line := <-input
-					fmt.Fprintf(con, line.(string))
+					fmt.Fprintf(con.(net.Conn), line.(string))
 				}
 			})
 		}),
