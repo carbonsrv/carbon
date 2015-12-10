@@ -32,55 +32,35 @@ function thread.spawn(fn, bindings, buffer)
 end
 
 function thread.rpcthread() -- not working, issues with binding or something .-.
-	local chan = thread.spawn(function()
-		local msgpack = require("msgpack")
-		local function pushback(...)
-			com.send(chan, msgpack.pack({...}))
+	local rpc = thread.spawn(function()
+	local msgpack = require("msgpack")
+	while true do
+		local src = com.receive(threadcom)
+		local args = msgpack.unpack(src)
+		local f, err = loadstring(args.f)
+		if not err then
+			com.send(threadcom, msgpack.pack({pcall(f, unpack(args.args))}))
+		else
+			com.send(threadcom, msgpack.pack({false, err}))
 		end
-		while true do
-			local args = {}
-			local cmd = com.receive(threadcom)
-			local f, err = loadstring(cmd.f)
-			if err ~= nil then
-				pushback(false, err)
-			else
-				pushback(pcall(f, unpack(cmd.args)))
-			end
-		end
-	end)
-
-	local function call(f, ...)
-		local fn
-		print(f)
-		if type(f) == "function" then
-			fn = fn
-		elseif type(f) == "string" then
-			local f, err = loadstring(f)
-			if err then
-				return false, err
-			end
-			fn = f
-		end
-		print(fn)
-		local args = {...}
-		com.send(chan, msgpack.pack({
-			["f"] = string.dump(fn),
-			["args"] = args,
-		}))
-		return true
 	end
+end)
+
+function call(f, ...)
+	com.send(rpc, msgpack.pack({
+		f = f,
+		args = {...}
+	}))
+end
+
 	local function recieve()
-		local res = com.receive(chan)
-		return true, unpack(res)
+		return unpack(msgpack.unpack(com.receive(rpc)))
 	end
 
 	return {
 		["call_async"] = call,
 		["call"] = (function(f, ...)
-			local suc, err = call(f, ...)
-			if not suc then
-				return false, err
-			end
+			call(f, ...)
 			return recieve()
 		end),
 		["recieve"] = recieve,
