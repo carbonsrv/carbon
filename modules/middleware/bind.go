@@ -307,7 +307,7 @@ func BindNet(L *lua.State) {
 				}
 			}()
 			for {
-				line <- input
+				line := <- input
 				fmt.Fprintf(con, line.(string))
 			}
 		}),
