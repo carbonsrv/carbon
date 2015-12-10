@@ -286,6 +286,18 @@ func BindComs(L *lua.State) {
 		"cap": (func(c chan interface{}) int {
 			return cap(c)
 		}),
+		"pipe": (func(a, b chan interface{}) {
+			for {
+				b <- <-a
+			}
+		}),
+		"pipe_background": (func(a, b chan interface{}) {
+			scheduler.Add(func() {
+				for {
+					b <- <-a
+				}
+			})
+		}),
 	})
 }
 
@@ -307,7 +319,7 @@ func BindNet(L *lua.State) {
 				}
 			}()
 			for {
-				line := <- input
+				line := <-input
 				fmt.Fprintf(con, line.(string))
 			}
 		}),
@@ -319,9 +331,9 @@ func BindNet(L *lua.State) {
 					output <- line
 				}
 			})
-			scheduler.Add(func(){
+			scheduler.Add(func() {
 				for {
-					line := <- input
+					line := <-input
 					fmt.Fprintf(con, line.(string))
 				}
 			})
