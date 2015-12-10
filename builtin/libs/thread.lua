@@ -33,18 +33,18 @@ end
 
 function thread.rpcthread() -- not working, issues with binding or something .-.
 	local rpc = thread.spawn(function()
-	local msgpack = require("msgpack")
-	while true do
-		local src = com.receive(threadcom)
-		local args = msgpack.unpack(src)
-		local f, err = loadstring(args.f)
-		if not err then
-			com.send(threadcom, msgpack.pack({pcall(f, unpack(args.args))}))
-		else
-			com.send(threadcom, msgpack.pack({false, err}))
+		local msgpack = require("msgpack")
+		while true do
+			local src = com.receive(threadcom)
+			local args = msgpack.unpack(src)
+			local f, err = loadstring(args.f)
+			if not err then
+				com.send(threadcom, msgpack.pack({pcall(f, unpack(args.args))}))
+			else
+				com.send(threadcom, msgpack.pack({false, err}))
+			end
 		end
-	end
-end)
+	end)
 
 function call(f, ...)
 	com.send(rpc, msgpack.pack({
