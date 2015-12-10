@@ -319,7 +319,7 @@ func BindNet(L *lua.State) {
 					output <- line
 				}
 			})
-			scheduler.Add(function(){
+			scheduler.Add(func(){
 				for {
 					line := <- input
 					fmt.Fprintf(con, line.(string))
