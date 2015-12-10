@@ -298,6 +298,19 @@ func BindNet(L *lua.State) {
 		"readline": (func(con net.Conn) (string, error) {
 			return bufio.NewReader(con).ReadString('\n')
 		}),
+		"pipe_com": (func(con net.Conn, input, output chan interface{}) {
+			go func() {
+				reader := bufio.NewReader(con)
+				for {
+					line, _ := reader.ReadString('\n')
+					output <- line
+				}
+			}()
+			for {
+				line <- input
+				fmt.Fprintf(con, line.(string))
+			}
+		}),
 	})
 }
 

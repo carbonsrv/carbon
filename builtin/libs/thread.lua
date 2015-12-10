@@ -26,7 +26,7 @@ function thread.spawn(fn, bindings, buffer)
 		ch, err = thread._spawn(code, false, {["s"]="v"}, buffer)
 	end
 	if err ~= nil then
-		return false, error(err)
+		error(err)
 	end
 	return ch
 end
