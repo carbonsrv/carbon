@@ -311,6 +311,21 @@ func BindNet(L *lua.State) {
 				fmt.Fprintf(con, line.(string))
 			}
 		}),
+		"pipe_com_background": (func(con net.Conn, input, output chan interface{}) {
+			scheduler.Add(func() {
+				reader := bufio.NewReader(con)
+				for {
+					line, _ := reader.ReadString('\n')
+					output <- line
+				}
+			})
+			scheduler.Add(function(){
+				for {
+					line := <- input
+					fmt.Fprintf(con, line.(string))
+				}
+			})
+		}),
 	})
 }
 
