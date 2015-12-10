@@ -304,15 +304,15 @@ func BindComs(L *lua.State) {
 func BindNet(L *lua.State) {
 	luar.Register(L, "net", luar.Map{
 		"dial": net.Dial,
-		"write": (func(con net.Conn, str string) {
-			fmt.Fprintf(con, str)
+		"write": (func(con interface{}, str string) {
+			fmt.Fprintf(con.(net.Conn), str)
 		}),
-		"readline": (func(con net.Conn) (string, error) {
-			return bufio.NewReader(con).ReadString('\n')
+		"readline": (func(con interface{}) (string, error) {
+			return bufio.NewReader(con.(net.Conn)).ReadString('\n')
 		}),
-		"pipe_com": (func(con net.Conn, input, output chan interface{}) {
+		"pipe_com": (func(con interface{}, input, output chan interface{}) {
 			go func() {
-				reader := bufio.NewReader(con)
+				reader := bufio.NewReader(con.(net.Conn))
 				for {
 					line, _ := reader.ReadString('\n')
 					output <- line
@@ -323,9 +323,9 @@ func BindNet(L *lua.State) {
 				fmt.Fprintf(con, line.(string))
 			}
 		}),
-		"pipe_com_background": (func(con net.Conn, input, output chan interface{}) {
+		"pipe_com_background": (func(con interface{}, input, output chan interface{}) {
 			scheduler.Add(func() {
-				reader := bufio.NewReader(con)
+				reader := bufio.NewReader(con.(net.Conn))
 				for {
 					line, _ := reader.ReadString('\n')
 					output <- line
