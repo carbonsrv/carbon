@@ -241,7 +241,7 @@ func BindThread(L *lua.State) {
 
 			scheduler.Add(func() {
 				if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
-					// Silently error because reasons. ._.
+					fmt.Println("thread error: " + L.ToString(-1))
 				}
 			})
 			return ch, nil

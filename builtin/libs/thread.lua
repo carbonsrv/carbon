@@ -1,6 +1,8 @@
 -- Threads
 -- Has a buttload of issues, mostly bindings. Gotta looooove broken shit.
 
+local msgpack = require("msgpack")
+
 function thread.spawn(fn, bindings, buffer)
 	local code = ""
 	if type(fn) == "function" then
@@ -30,8 +32,8 @@ function thread.spawn(fn, bindings, buffer)
 end
 
 function thread.rpcthread() -- not working, issues with binding or something .-.
-
 	local chan = thread.spawn(function()
+		local msgpack = require("msgpack")
 		local function pushback(...)
 			com.send(chan, msgpack.pack({...}))
 		end
@@ -87,6 +89,7 @@ end
 
 function thread.kvstore() -- doesn't work either .-.
 	local chan = thread.spawn(function()
+		local msgpack = require("msgpack")
 		local store = {}
 		while true do
 			local suc, cmd = pcall(msgpack.unpack, com.receive(threadcom))
