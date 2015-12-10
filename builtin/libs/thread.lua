@@ -46,12 +46,12 @@ function thread.rpcthread() -- not working, issues with binding or something .-.
 		end
 	end)
 
-function call(f, ...)
-	com.send(rpc, msgpack.pack({
-		f = f,
-		args = {...}
-	}))
-end
+	function call(f, ...)
+		com.send(rpc, msgpack.pack({
+			f = f,
+			args = {...}
+		}))
+	end
 
 	local function recieve()
 		return unpack(msgpack.unpack(com.receive(rpc)))
