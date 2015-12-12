@@ -289,6 +289,7 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 			fmt.Println("Websocket error: " + err.Error()) // silent error.
 		}
 		luar.Register(L, "ws", luar.Map{
+			"con":           conn,
 			"BinaryMessage": websocket.BinaryMessage,
 			"TextMessage":   websocket.TextMessage,
 			//"read":          conn.ReadMessage,
@@ -300,8 +301,18 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 				}
 				return messageType, string(p), nil
 			}),
+			"read_con": (func(con *websocket.Conn) (int, string, error) {
+				messageType, p, err := con.ReadMessage()
+				if err != nil {
+					return -1, "", err
+				}
+				return messageType, string(p), nil
+			}),
 			"send": (func(t int, cnt string) error {
 				return conn.WriteMessage(t, []byte(cnt))
+			}),
+			"send_con": (func(con *websocket.Conn, t int, cnt string) error {
+				return con.WriteMessage(t, []byte(cnt))
 			}),
 		})
 		L.LoadBuffer(bcode, len(bcode), "route")
