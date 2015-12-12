@@ -98,7 +98,7 @@ function kvstore.get(name)
 	end
 end
 
-function kvstore._inc(name, number)
+function kvstore.inc(name, number)
 	if name and tonumber(number) then
 		kvstore._inc(tostring(name), tonumber(value))
 	else
@@ -106,7 +106,7 @@ function kvstore._inc(name, number)
 	end
 end
 
-function kvstore._dec(name, number)
+function kvstore.dec(name, number)
 	if name and tonumber(number) then
 		kvstore._dec(tostring(name), tonumber(value))
 	else
