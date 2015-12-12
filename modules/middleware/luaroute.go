@@ -314,6 +314,12 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 			"send_con": (func(con *websocket.Conn, t int, cnt string) error {
 				return con.WriteMessage(t, []byte(cnt))
 			}),
+			"close": (func() error {
+				return conn.Close()
+			}),
+			"close_con": (func(con *websocket.Conn) error {
+				return con.Close()
+			}),
 		})
 		L.LoadBuffer(bcode, len(bcode), "route")
 		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
