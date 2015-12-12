@@ -99,18 +99,18 @@ function kvstore.get(name)
 end
 
 function kvstore.inc(name, number)
-	if name and tonumber(number) then
-		kvstore._inc(tostring(name), tonumber(value))
+	if name then
+		kvstore._inc(tostring(name), tonumber(number) or 1)
 	else
 		error("No name or number given.")
 	end
 end
 
 function kvstore.dec(name, number)
-	if name and tonumber(number) then
-		kvstore._dec(tostring(name), tonumber(value))
+	if name then
+		kvstore._dec(tostring(name), tonumber(number) or 1)
 	else
-		error("No name or number given.")
+		error("No name given.")
 	end
 end
 
