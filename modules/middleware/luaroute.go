@@ -329,6 +329,6 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 		}
 		schan <- L
 		// Close websocket.
-		con.Close()
+		conn.Close()
 	}, nil
 }
