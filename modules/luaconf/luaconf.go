@@ -6,6 +6,7 @@ import (
 	//"github.com/vifino/golua/lua"
 	"github.com/carbonsrv/carbon/modules/middleware"
 	"github.com/carbonsrv/carbon/modules/repl"
+	"github.com/carbonsrv/carbon/modules/scheduler"
 	"github.com/pmylund/go-cache"
 	"github.com/vifino/luar"
 )
@@ -28,9 +29,19 @@ func Configure(script string, args []string, cfe *cache.Cache, webroot string, u
 		srv.Use(gin.Recovery())
 	}
 	L := luar.Init()
+
+	var didnt_run_yet = true
 	luar.Register(L, "carbon", luar.Map{ // srv and the state
 		"srv": srv,
 		"L":   L,
+		"launch_server": func() {
+			if !runrepl && didnt_run_yet {
+				scheduler.Add(func() {
+					finalizer(srv)
+				})
+				didnt_run_yet = false
+			}
+		},
 	})
 	luar.Register(L, "var", luar.Map{ // Vars
 		"root": webroot,
@@ -42,7 +53,7 @@ func Configure(script string, args []string, cfe *cache.Cache, webroot string, u
 	middleware.BindStatic(L, cfe)
 	L.DoString(glue.MainGlue())
 	L.DoString(glue.ConfGlue())
-	go finalizer(srv)
+
 	err := L.DoFile(script)
 	if err != nil {
 		return err
@@ -67,9 +78,19 @@ func Eval(script string, args []string, cfe *cache.Cache, webroot string, useRec
 		srv.Use(gin.Recovery())
 	}
 	L := luar.Init()
+
+	var didnt_run_yet = true
 	luar.Register(L, "carbon", luar.Map{ // srv and the state
 		"srv": srv,
 		"L":   L,
+		"launch_server": func() {
+			if !runrepl && didnt_run_yet {
+				scheduler.Add(func() {
+					finalizer(srv)
+				})
+				didnt_run_yet = false
+			}
+		},
 	})
 	luar.Register(L, "var", luar.Map{ // Vars
 		"root": webroot,
@@ -81,7 +102,7 @@ func Eval(script string, args []string, cfe *cache.Cache, webroot string, useRec
 	middleware.BindStatic(L, cfe)
 	L.DoString(glue.MainGlue())
 	L.DoString(glue.ConfGlue())
-	go finalizer(srv)
+
 	err := L.DoString(script)
 	if err != nil {
 		return err
@@ -106,9 +127,19 @@ func REPL(args []string, cfe *cache.Cache, webroot string, useRecovery bool, use
 		srv.Use(gin.Recovery())
 	}
 	L := luar.Init()
+
+	var didnt_run_yet = true
 	luar.Register(L, "carbon", luar.Map{ // srv and the state
 		"srv": srv,
 		"L":   L,
+		"launch_server": func() {
+			if !runrepl && didnt_run_yet {
+				scheduler.Add(func() {
+					finalizer(srv)
+				})
+				didnt_run_yet = false
+			}
+		},
 	})
 	luar.Register(L, "var", luar.Map{ // Vars
 		"root": webroot,
@@ -120,7 +151,6 @@ func REPL(args []string, cfe *cache.Cache, webroot string, useRecovery bool, use
 	middleware.BindStatic(L, cfe)
 	L.DoString(glue.MainGlue())
 	L.DoString(glue.ConfGlue())
-	go finalizer(srv)
 
 	repl.Run(L)
 	L.DoString(checker_code)

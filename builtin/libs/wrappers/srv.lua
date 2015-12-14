@@ -5,6 +5,10 @@ local M = srv or {}
 
 -- Track if used or not.
 M.used = false
+function M._setused()
+	M.used = true
+	carbon.launch_server()
+end
 
 -- Prefix related stuff...
 M._prefix = M._prefix or "" -- defaults to none.
@@ -76,7 +80,7 @@ end
 -- General things.
 function M.Use(middleware)
 	if tostring(middleware) == "gin.HandlerFunc" or tostring(middleware) == "func(*gin.Context)" then
-		M.used = true
+		M._setused()
 		M.finish_handler("Use", "", middleware)
 		--carbon.srv.Use(middleware)
 	else
@@ -86,7 +90,7 @@ end
 
 function M.DefaultRoute(handler)
 	if tostring(handler) == "func(*gin.Context)" then
-		M.used = true
+		M._setused()
 		--carbon.srv.NoRoute(handler)
 		M.finish_handler("Default", "", handler)
 	else
@@ -101,10 +105,10 @@ function M.GET(pattern, ...)
 		local h = {}
 		for _, handler in pairs(handlers) do
 			if tostring(handler) == "func(*gin.Context)" then
-				M.used = true
+				M._setused()
 				table.insert(h, handler)
 			elseif type(handler) == "function" then
-				M.used = true
+				M._setused()
 				table.insert(h, mw.new(handler))
 			else
 				error("Invalid handler.")
@@ -122,10 +126,10 @@ function M.POST(pattern, ...)
 		local h = {}
 		for _, handler in pairs(handlers) do
 			if tostring(handler) == "func(*gin.Context)" then
-				M.used = true
+				M._setused()
 				table.insert(h, handler)
 			elseif type(handler) == "function" then
-				M.used = true
+				M._setused()
 				table.insert(h, mw.new(handler))
 			else
 				error("Invalid handler.")
@@ -143,10 +147,10 @@ function M.PUT(pattern, ...)
 		local h = {}
 		for _, handler in pairs(handlers) do
 			if tostring(handler) == "func(*gin.Context)" then
-				M.used = true
+				M._setused()
 				table.insert(h, handler)
 			elseif type(handler) == "function" then
-				M.used = true
+				M._setused()
 				table.insert(h, mw.new(handler))
 			else
 				error("Invalid handler.")
@@ -164,10 +168,10 @@ function M.DELETE(pattern, ...)
 		local h = {}
 		for _, handler in pairs(handlers) do
 			if tostring(handler) == "func(*gin.Context)" then
-				M.used = true
+				M._setused()
 				table.insert(h, handler)
 			elseif type(handler) == "function" then
-				M.used = true
+				M._setused()
 				table.insert(h, mw.new(handler))
 			else
 				error("Invalid handler.")
@@ -185,10 +189,10 @@ function M.PATCH(pattern, ...)
 		local h = {}
 		for _, handler in pairs(handlers) do
 			if tostring(handler) == "func(*gin.Context)" then
-				M.used = true
+				M._setused()
 				table.insert(h, handler)
 			elseif type(handler) == "function" then
-				M.used = true
+				M._setused()
 				table.insert(h, mw.new(handler))
 			else
 				error("Invalid handler.")
@@ -206,10 +210,10 @@ function M.HEAD(pattern, ...)
 		local h = {}
 		for _, handler in pairs(handlers) do
 			if tostring(handler) == "func(*gin.Context)" then
-				M.used = true
+				M._setused()
 				table.insert(h, handler)
 			elseif type(handler) == "function" then
-				M.used = true
+				M._setused()
 				table.insert(h, mw.new(handler))
 			else
 				error("Invalid handler.")
@@ -227,10 +231,10 @@ function M.OPTIONS(pattern, ...)
 		local h = {}
 		for _, handler in pairs(handlers) do
 			if tostring(handler) == "func(*gin.Context)" then
-				M.used = true
+				M._setused()
 				table.insert(h, handler)
 			elseif type(handler) == "function" then
-				M.used = true
+				M._setused()
 				table.insert(h, mw.new(handler))
 			else
 				error("Invalid handler.")

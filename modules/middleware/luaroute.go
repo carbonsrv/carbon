@@ -263,6 +263,9 @@ func DLR_RUS(bcode string, instances int, dobind bool, vals map[string]interface
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool { // Because it breaks some things.
+		return true
+	},
 }
 
 func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but for websockets. Not working because?!
