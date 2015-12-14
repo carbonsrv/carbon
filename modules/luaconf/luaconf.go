@@ -35,7 +35,7 @@ func Configure(script string, args []string, cfe *cache.Cache, webroot string, u
 		"srv": srv,
 		"L":   L,
 		"launch_server": func() {
-			if !runrepl && didnt_run_yet {
+			if didnt_run_yet {
 				scheduler.Add(func() {
 					finalizer(srv)
 				})
@@ -84,7 +84,7 @@ func Eval(script string, args []string, cfe *cache.Cache, webroot string, useRec
 		"srv": srv,
 		"L":   L,
 		"launch_server": func() {
-			if !runrepl && didnt_run_yet {
+			if didnt_run_yet {
 				scheduler.Add(func() {
 					finalizer(srv)
 				})
@@ -133,7 +133,7 @@ func REPL(args []string, cfe *cache.Cache, webroot string, useRecovery bool, use
 		"srv": srv,
 		"L":   L,
 		"launch_server": func() {
-			if !runrepl && didnt_run_yet {
+			if didnt_run_yet {
 				scheduler.Add(func() {
 					finalizer(srv)
 				})
