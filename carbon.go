@@ -134,7 +134,9 @@ func serve(srv http.Handler, en_http bool, en_https bool, en_http2 bool, bind st
 		go serveHTTP(srv, bind, en_http2)
 	}
 	if en_https {
-		go serveHTTPS(srv, binds, en_http2, filepath.Abs(cert), filepath.Abs(key))
+		cert, _ := filepath.Abs(cert)
+		key, _ := filepath.Abs(key)
+		go serveHTTPS(srv, binds, en_http2, cert, key)
 	}
 	<-end
 }
