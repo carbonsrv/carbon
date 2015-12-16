@@ -94,10 +94,7 @@ func Preloader() {
 	for {
 		//fmt.Println("preloading")
 		L := luar.Init()
-		luar.Register(L, "var", luar.Map{ // Vars
-			"root": webroot,
-		})
-		Bind(L)
+		Bind(L, webroot)
 		err := L.DoString(glue.MainGlue())
 		if err != nil {
 			panic(err)

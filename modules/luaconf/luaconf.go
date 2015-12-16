@@ -43,13 +43,10 @@ func Configure(script string, args []string, cfe *cache.Cache, webroot string, u
 			}
 		},
 	})
-	luar.Register(L, "var", luar.Map{ // Vars
-		"root": webroot,
-	})
 	luar.Register(L, "", luar.Map{
 		"args": args,
 	})
-	middleware.Bind(L)
+	middleware.Bind(L, webroot)
 	middleware.BindStatic(L, cfe)
 	L.DoString(glue.MainGlue())
 	L.DoString(glue.ConfGlue())
@@ -92,13 +89,10 @@ func Eval(script string, args []string, cfe *cache.Cache, webroot string, useRec
 			}
 		},
 	})
-	luar.Register(L, "var", luar.Map{ // Vars
-		"root": webroot,
-	})
 	luar.Register(L, "", luar.Map{
 		"args": args,
 	})
-	middleware.Bind(L)
+	middleware.Bind(L, webroot)
 	middleware.BindStatic(L, cfe)
 	L.DoString(glue.MainGlue())
 	L.DoString(glue.ConfGlue())
@@ -141,13 +135,10 @@ func REPL(args []string, cfe *cache.Cache, webroot string, useRecovery bool, use
 			}
 		},
 	})
-	luar.Register(L, "var", luar.Map{ // Vars
-		"root": webroot,
-	})
 	luar.Register(L, "", luar.Map{
 		"args": args,
 	})
-	middleware.Bind(L)
+	middleware.Bind(L, webroot)
 	middleware.BindStatic(L, cfe)
 	L.DoString(glue.MainGlue())
 	L.DoString(glue.ConfGlue())

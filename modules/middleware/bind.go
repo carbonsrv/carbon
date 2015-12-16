@@ -24,7 +24,16 @@ import (
 	"time"
 )
 
-func Bind(L *lua.State) {
+// Vars
+var webroot string
+
+func Bind(L *lua.State, root string) {
+	webroot = root
+
+	luar.Register(L, "var", luar.Map{ // Vars
+		"root": root,
+	})
+
 	BindCarbon(L)
 	BindMiddleware(L)
 	BindRedis(L)
@@ -221,7 +230,7 @@ func BindThread(L *lua.State) {
 			}
 
 			L := luar.Init()
-			Bind(L)
+			Bind(L, webroot)
 			err := L.DoString(glue.MainGlue())
 			if err != nil {
 				panic(err)
