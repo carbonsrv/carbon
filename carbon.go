@@ -15,7 +15,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/namsral/flag"
 	"github.com/pmylund/go-cache"
-	"github.com/vifino/contrib/gzip"
 	"log"
 	"net/http"
 	"os"
@@ -206,7 +205,6 @@ func main() {
 	// Middleware options
 	useRecovery := flag.Bool("recovery", false, "Recover from Panics")
 	useLogger := flag.Bool("logger", true, "Log Request information")
-	useGzip := flag.Bool("gzip", false, "Use GZIP")
 
 	flag.Parse()
 

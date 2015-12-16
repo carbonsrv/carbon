@@ -18,11 +18,14 @@ RUN \
 		pkgconf \
 		libluajit-5.1-dev \
 		libphysfs-dev \
+		upx \
 	&& rm -rf /var/lib/apt/lists/* \
 	&& mkdir -p /go/src/github.com/carbonsrv \
 	&& cd /go/src/github.com/carbonsrv/carbon && go get -t -d -v ./... \
 	&& go build -v -o /go/bin/carbon \
-	&& apt-get remove -y pkgconf
+	&& strip --strip-all /go/bin/carbon \
+	&& upx -9 /go/bin/carbon \
+	&& apt-get remove -y pkgconf upx
 
 # Run the carbon repl by default!
 ENTRYPOINT ["/go/bin/carbon"]
