@@ -14,4 +14,4 @@ srv.GET("/", mw.echo(doctype()(
 )))
 
 -- Serve files.
-srv.GET("/*path", mw.static())
+srv.DefaultRoute(mw.static())
