@@ -224,9 +224,9 @@ func main() {
 	root, _ := filepath.Abs(*webroot)
 	filesystem = initPhysFS(root)
 	defer physfs.Deinit()
-	go scheduler.Run()                   // Run the scheduler.
-	go middleware.Preloader()            // Run the Preloader.
-	middleware.Init(*jobs, cfe, kvstore) // Run init sequence.
+	go scheduler.Run()                         // Run the scheduler.
+	go middleware.Preloader()                  // Run the Preloader.
+	middleware.Init(*jobs, cfe, kvstore, root) // Run init sequence.
 
 	var script string
 	if *script_flag == "" {

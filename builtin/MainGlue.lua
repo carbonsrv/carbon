@@ -1,5 +1,11 @@
 -- Main Glue
 
+-- Add webroot to path and cpath.
+local webroot_path = var.root .. (var.root:match("/$") and "" or "/")
+
+package.path = webroot_path.."?.lua;"..webroot_path.."?/init.lua;"..package.path
+package.cpath = webroot_path.."?.so;"..webroot_path.."loadall.so;"..package.cpath
+
 -- Custom package loaders so that you can require the libraries built into Carbon.
 local function loadasset_libs(name)
 	local location = "libs/" .. tostring(name):gsub("%.", "/") .. ".lua"
@@ -34,7 +40,6 @@ local function loadasset_thirdparty(name)
 	end
 	return "\n\tno thirdparty asset '/" .. location .. "' (not compiled in)\n\tno thirdparty asset '/" .. location_init .. "' (not compiled in)"
 end
-
 
 -- Install the loader so that it's called just before the normal Lua loaders
 table.insert(package.loaders, 2, loadasset_libs)

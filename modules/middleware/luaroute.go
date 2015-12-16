@@ -17,6 +17,9 @@ import (
 	"time"
 )
 
+// Vars
+var webroot string
+
 // Cache
 var kvstore *cache.Cache
 var cbc *cache.Cache
@@ -91,6 +94,9 @@ func Preloader() {
 	for {
 		//fmt.Println("preloading")
 		L := luar.Init()
+		luar.Register(L, "var", luar.Map{ // Vars
+			"root": webroot,
+		})
 		Bind(L)
 		err := L.DoString(glue.MainGlue())
 		if err != nil {
@@ -111,7 +117,8 @@ func GetInstance() *lua.State {
 }
 
 // Init
-func Init(j int, cfe_new *cache.Cache, kvstore_new *cache.Cache) {
+func Init(j int, cfe_new *cache.Cache, kvstore_new *cache.Cache, root string) {
+	webroot = root
 	cfe = cfe_new
 	kvstore = kvstore_new
 	jobs = j
