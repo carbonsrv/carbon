@@ -17,9 +17,6 @@ import (
 	"time"
 )
 
-// Vars
-var webroot string
-
 // Cache
 var kvstore *cache.Cache
 var cbc *cache.Cache
