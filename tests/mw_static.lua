@@ -1,1 +1,1 @@
-srv.GET("/*path", mw.static("/tests"))
+srv.GET("/*path", mw.static())

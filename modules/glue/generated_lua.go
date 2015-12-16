@@ -4,6 +4,7 @@
 // builtin/MainGlue.lua
 // builtin/NOTICE.txt
 // builtin/RouteGlue.lua
+// builtin/bootscript.lua
 // builtin/gluetest
 // builtin/3rdparty/MessagePack.lua
 // builtin/3rdparty/csv.lua
@@ -160,6 +161,26 @@ func routeglueLua() (*asset, error) {
 	}
 
 	info := bindataFileInfo{name: "RouteGlue.lua", size: 1095, mode: os.FileMode(420), modTime: time.Unix(1448815808, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var _bootscriptLua = []byte("\x1f\x8b\x08\x00\x00\x09\x6e\x88\x00\xff\x4c\x90\x41\x6e\xe4\x20\x10\x45\xd7\xed\x53\xfc\x61\x65\x8f\xdc\x1e\xcd\x19\xa2\x28\xca\x3a\x7d\x01\x0c\x65\x83\x82\x29\x0b\x8a\x76\xf7\xed\x83\xed\x28\x8a\xc4\xa2\xa8\x7a\xc5\xff\xfc\xeb\x15\x23\xb3\x64\x93\xfc\x2a\x43\x28\xba\xa9\x9d\x9b\xf3\x19\x33\x49\x06\x3d\xc8\x14\x21\x0b\x3f\x41\x1c\x25\x42\x9d\x44\xc6\xc9\x63\xf6\x77\x8a\x43\xb3\xef\x7c\x2c\x3a\x04\x4c\x89\xa3\xac\x7a\xa6\xa1\xc9\xe9\x3e\xbc\xbd\xde\x5a\xf5\x4f\xf5\x58\xb6\x81\x8c\xe3\xd6\xb2\x91\xe7\x4a\x6d\xd7\x36\x17\xd1\xb3\x72\xa4\xad\xaa\xf5\x71\x11\x2f\x81\x14\xd4\x8b\x4e\x23\x47\xd5\x5c\xba\xfe\xa4\x46\xb6\xcf\x1f\xca\xfd\xaf\xc8\xbb\x60\xe3\xf4\x99\xff\xa8\xfe\xbb\x3d\xa6\xa3\x54\x87\xf7\x85\x74\xcc\x78\x72\x41\xd0\x25\x1a\x57\x3f\x50\xdd\xc3\xd2\xa4\x4b\x10\x98\x43\x00\x86\xe3\xe4\xe7\x92\xb4\x78\x8e\x3d\x36\xe7\x8d\x43\xa6\x74\xa7\x0c\x5d\x0f\xb2\x5f\xd6\x40\xc8\x52\x09\x83\x8d\xc6\x63\x98\xb0\x79\x71\x7b\x0a\xba\x08\xfb\x68\xe9\x01\x4e\x48\x64\x7d\x22\xb3\xbf\x35\xec\xde\x9b\xae\xeb\xce\x64\xf6\x25\x4c\x3e\x50\xfe\x9d\xca\xdf\x55\x8b\x3b\xa3\x39\x05\xda\xca\x7f\x05\x00\x00\xff\xff\x9d\x12\xab\x99\x8f\x01\x00\x00")
+
+func bootscriptLuaBytes() ([]byte, error) {
+	return bindataRead(
+		_bootscriptLua,
+		"bootscript.lua",
+	)
+}
+
+func bootscriptLua() (*asset, error) {
+	bytes, err := bootscriptLuaBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "bootscript.lua", size: 399, mode: os.FileMode(420), modTime: time.Unix(1450261584, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -480,6 +501,7 @@ var _bindata = map[string]func() (*asset, error){
 	"MainGlue.lua":             mainglueLua,
 	"NOTICE.txt":               noticeTxt,
 	"RouteGlue.lua":            routeglueLua,
+	"bootscript.lua":           bootscriptLua,
 	"gluetest":                 gluetest,
 	"3rdparty/MessagePack.lua": _3rdpartyMessagepackLua,
 	"3rdparty/csv.lua":         _3rdpartyCsvLua,
@@ -540,11 +562,12 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		"MessagePack.lua": &bintree{_3rdpartyMessagepackLua, map[string]*bintree{}},
 		"csv.lua":         &bintree{_3rdpartyCsvLua, map[string]*bintree{}},
 	}},
-	"ConfGlue.lua":  &bintree{confglueLua, map[string]*bintree{}},
-	"MainGlue.lua":  &bintree{mainglueLua, map[string]*bintree{}},
-	"NOTICE.txt":    &bintree{noticeTxt, map[string]*bintree{}},
-	"RouteGlue.lua": &bintree{routeglueLua, map[string]*bintree{}},
-	"gluetest":      &bintree{gluetest, map[string]*bintree{}},
+	"ConfGlue.lua":   &bintree{confglueLua, map[string]*bintree{}},
+	"MainGlue.lua":   &bintree{mainglueLua, map[string]*bintree{}},
+	"NOTICE.txt":     &bintree{noticeTxt, map[string]*bintree{}},
+	"RouteGlue.lua":  &bintree{routeglueLua, map[string]*bintree{}},
+	"bootscript.lua": &bintree{bootscriptLua, map[string]*bintree{}},
+	"gluetest":       &bintree{gluetest, map[string]*bintree{}},
 	"libs": &bintree{nil, map[string]*bintree{
 		"escapist.lua":       &bintree{libsEscapistLua, map[string]*bintree{}},
 		"globalwrappers.lua": &bintree{libsGlobalwrappersLua, map[string]*bintree{}},

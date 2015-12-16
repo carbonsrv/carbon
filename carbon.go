@@ -264,19 +264,13 @@ func main() {
 				os.Exit(1)
 			}
 		} else {
-			srv := new_server()
-			if *useLogger {
-				doLog = true
-				srv.Use(gin.Logger())
+			err := luaconf.Eval(glue.GetGlue("bootscript.lua"), args, cfe, root, *useRecovery, *useLogger, *run_repl, func(srv *gin.Engine) {
+				serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
+			})
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
 			}
-			if *useRecovery {
-				srv.Use(gin.Recovery())
-			}
-			if *useGzip {
-				srv.Use(gzip.Gzip(gzip.DefaultCompression))
-			}
-			bootstrap(srv, "", cfe)
-			serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 		}
 	} else {
 		if *useLogger {
