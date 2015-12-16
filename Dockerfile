@@ -33,5 +33,5 @@ CMD ["-repl"]
 
 # Expose default ports.
 
-EXPOSE 8080
-EXPOSE 8443
+EXPOSE 80
+EXPOSE 443

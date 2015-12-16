@@ -184,8 +184,8 @@ func main() {
 	var licenses = flag.Bool("licenses", false, "Show licenses")
 
 	var host = flag.String("host", "", "IP of Host to bind the Webserver on")
-	var port = flag.Int("port", 8080, "Port to run Webserver on (HTTP)")
-	var ports = flag.Int("ports", 8443, "Port to run Webserver on (HTTPS)")
+	var port = flag.Int("port", 80, "Port to run Webserver on (HTTP)")
+	var ports = flag.Int("ports", 443, "Port to run Webserver on (HTTPS)")
 	var cert = flag.String("cert", "", "Certificate File for HTTPS")
 	var key = flag.String("key", "", "Key File for HTTPS")
 	var en_http = flag.Bool("http", true, "Listen HTTP")
