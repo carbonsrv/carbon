@@ -12,7 +12,7 @@ VOLUME ["/app"]
 WORKDIR /app
 
 # Put the source in that directory.
-COPY . /go/src/github.com/carbonsrv/carbon
+COPY ../../ /go/src/github.com/carbonsrv/carbon
 
 RUN \
 	apt-get update && apt-get install -y --no-install-recommends \

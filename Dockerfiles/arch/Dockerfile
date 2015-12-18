@@ -11,11 +11,11 @@ MAINTAINER Adrian "vifino" Pistol
 VOLUME ["/app"]
 WORKDIR /app
 
+# Put the source in that directory.
+COPY ../../ /usr/local/go/src/github.com/carbonsrv/carbon
+
 # Set the Go Path
 ENV GOPATH /usr/local/go
-
-# Put the source in that directory.
-COPY . /usr/local/go/src/github.com/carbonsrv/carbon
 
 RUN \
 	pacman -Syy --noconfirm \
