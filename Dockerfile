@@ -34,6 +34,7 @@ RUN \
 		upx \
 		go \
 	&& rm -rf "$GOPATH" \
+	&& rm -rf /var/cache/pacman/pkg/ \
 	&& rm -rf /usr/share/man/* \
 
 # Run the carbon repl by default!
