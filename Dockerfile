@@ -7,6 +7,10 @@ FROM masm/archlinux
 
 MAINTAINER Adrian "vifino" Pistol
 
+# Run the carbon repl by default!
+ENTRYPOINT ["/usr/bin/carbon"]
+CMD ["-repl"]
+
 # Make /app a volume, for mounting for example `pwd` to easily run stuff.
 VOLUME ["/app"]
 WORKDIR /app
@@ -35,13 +39,9 @@ RUN \
 		go \
 	&& rm -rf "$GOPATH" \
 	&& rm -rf /var/cache/pacman/pkg/ \
-	&& rm -rf /usr/share/man/* \
+	&& rm -rf /usr/share/man/*
 
-# Run the carbon repl by default!
-ENTRYPOINT ["/usr/bin/carbon"]
-CMD ["-repl"]
 
 # Expose default ports.
-
 EXPOSE 80
 EXPOSE 443
