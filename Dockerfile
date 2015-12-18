@@ -33,7 +33,7 @@ RUN \
 	&& cd $GOPATH/src/github.com/carbonsrv/carbon && go get -t -d -v ./... \
 	&& go build -v -o /usr/bin/carbon \
 	&& strip --strip-all /usr/bin/carbon \
-	&& upx -9 /usr/bin/carbon \
+	&& upx --lzma -9 /usr/bin/carbon \
 	&& pacman -R --noconfirm \
 		upx \
 		go \
