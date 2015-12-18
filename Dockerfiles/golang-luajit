@@ -1,6 +1,7 @@
-#####################
-# Carbon Dockerfile #
-#####################
+#######################
+#  Carbon Dockerfile  #
+# Ubuntu Golang Base. #
+#######################
 
 FROM golang
 
