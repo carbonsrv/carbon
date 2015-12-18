@@ -12,7 +12,7 @@ VOLUME ["/app"]
 WORKDIR /app
 
 # Put the source in that directory.
-COPY ../../ /usr/local/go/src/github.com/carbonsrv/carbon
+COPY . /usr/local/go/src/github.com/carbonsrv/carbon
 
 # Set the Go Path
 ENV GOPATH /usr/local/go
