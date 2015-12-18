@@ -28,14 +28,12 @@ RUN \
 		physfs \
 		upx ucl \
 		go \
-	&& mkdir -p "$GOPATH" \
-	&& mkdir -p $GOPATH/src/github.com/carbonsrv \
 	&& cd $GOPATH/src/github.com/carbonsrv/carbon && go get -t -d -v ./... \
 	&& go build -v -o /usr/bin/carbon \
 	&& strip --strip-all /usr/bin/carbon \
 	&& upx --lzma -9 /usr/bin/carbon \
 	&& pacman -R --noconfirm \
-		upx \
+		upx ucl \
 		go \
 	&& rm -rf "$GOPATH" \
 	&& rm -rf /var/cache/pacman/pkg/ \
