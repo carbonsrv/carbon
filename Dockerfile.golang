@@ -27,9 +27,10 @@ RUN \
 	&& rm -rf /var/lib/apt/lists/* \
 	&& mkdir -p /go/src/github.com/carbonsrv \
 	&& cd /go/src/github.com/carbonsrv/carbon && go get -t -d -v ./... \
-	&& go build -v -o /go/bin/carbon \
-	&& strip --strip-all /go/bin/carbon \
-	&& upx -9 /go/bin/carbon \
+	&& go build -v -o /usr/bin/carbon \
+	&& strip --strip-all /usr/bin/carbon \
+	&& rm -rf "$GOPATH" \
+	&& upx -9 /usr/bin/carbon \
 	&& apt-get remove -y pkgconf upx
 
 # Expose default ports.
