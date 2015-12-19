@@ -1,24 +1,18 @@
-language: go
+on:
+  tags: true
 
-go:
-  - 1.3
-  - 1.4
-  - 1.5
-  - tip
+sudo: required
 
-addons:
-  apt:
-    packages:
-      - libluajit-5.1-dev
-      - libphysfs-dev
+services:
+  - docker
 
-#notifications:
-#  irc:
-#    on_success: change
-#    on_failure: change
-#    channels:
-#      - "irc.esper.net#vifino"
-#    template:
-#      - "\x0303%{repository_slug}\x0302#%{build_number} (\x0308%{branch}\x0F: \x0303%{commit}\x0F): %{author} - %{message}"
-#      - "Change view: %{compare_url}"
-#      - "Build details: %{build_url}"
+before_install:
+  - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USER" -p="$DOCKER_PASSWORD"
+
+script:
+  - docker build -t "carbonsrv/carbon:${TRAVIS_TAG:latest}" -f Dockerfile . # Build with Alpine
+  - docker build -t "carbonsrv/carbon:arch-${TRAVIS_TAG:latest}" -f Dockerfile.arch . # Build with Arch
+  - docker build -t "carbonsrv/carbon:golang-${TRAVIS_TAG:latest}" -f Dockerfile.golang . # Build with Golang
+
+after_success:
+  - docker push carbonsrv/carbon
