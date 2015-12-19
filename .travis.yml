@@ -10,7 +10,9 @@ before_install:
   - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USER" -p="$DOCKER_PASSWORD"
 
 script:
-  - docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}" -f Dockerfile . # Build with Alpine
+  - ALPINE_ID=$(docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}" -f Dockerfile .) # Build with Alpine
+  - docker tag $ALPINE_ID "carbonsrv/carbon:${TRAVIS_TAG:-latest}-alpine"
+  - docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-alpine_edge" -f Dockerfile .
   - docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-arch" -f Dockerfile.arch . # Build with Arch
   - docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-golang" -f Dockerfile.golang . # Build with Golang
 
