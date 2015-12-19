@@ -1,9 +1,9 @@
 #####################
 # Carbon Dockerfile #
-# Alpine Linux Base #
+# Arch Linux Base.  #
 #####################
 
-FROM alpine
+FROM masm/archlinux
 
 MAINTAINER Adrian "vifino" Pistol
 
@@ -22,20 +22,23 @@ COPY . /usr/local/go/src/github.com/carbonsrv/carbon
 ENV GOPATH /usr/local/go
 
 RUN \
-	echo http://dl-4.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories \
-	&& apk update \
-	&& apk upgrade \
-	&& apk add --update \
-		build-base git bash \
-		luajit-dev physfs-dev \
+	pacman -Syy --noconfirm \
+		base-devel git \
+		luajit \
+		physfs \
+		upx ucl \
 		go \
 	&& cd $GOPATH/src/github.com/carbonsrv/carbon && go get -t -d -v ./... \
 	&& go build -v -o /usr/bin/carbon \
 	&& strip --strip-all /usr/bin/carbon \
+	&& upx --lzma -9 /usr/bin/carbon \
+	&& pacman -R --noconfirm \
+		upx ucl \
+		go \
 	&& rm -rf "$GOPATH" \
-	&& apk del --purge \
-		build-base go git \
-	&& rm -rf /var/cache/apk/*
+	&& rm -rf /var/cache/pacman/pkg/ \
+	&& rm -rf /usr/share/man/*
+
 
 # Expose default ports.
 EXPOSE 80
