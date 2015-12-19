@@ -12,7 +12,7 @@ before_install:
 script:
   - ALPINE_ID=$(docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}" -f Dockerfile . | tee /dev/stderr | tail -1 | sed 's/.*Successfully built \(.*\)$/\1/') # Build with Alpine
   - docker tag $ALPINE_ID "carbonsrv/carbon:${TRAVIS_TAG:-latest}-alpine"
-  - docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-alpine_edge" -f Dockerfile .
+  - docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-alpine_edge" -f Dockerfile.alpine-edge .
   - docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-arch" -f Dockerfile.arch . # Build with Arch
   - docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-golang" -f Dockerfile.golang . # Build with Golang
 
