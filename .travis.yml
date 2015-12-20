@@ -11,10 +11,17 @@ before_install:
 
 script:
   - ALPINE_ID=$(docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}" -f Dockerfile . | tee /dev/stderr | tail -1 | sed 's/.*Successfully built \(.*\)$/\1/') # Build with Alpine
+  - docker export $ALPINE_ID | docker import - "carbonsrv/carbon:${TRAVIS_TAG:-latest}-alpine"
   - docker tag $ALPINE_ID "carbonsrv/carbon:${TRAVIS_TAG:-latest}-alpine"
-  - docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-alpine_edge" -f Dockerfile.alpine-edge .
-  - docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-arch" -f Dockerfile.arch . # Build with Arch
-  - docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-golang" -f Dockerfile.golang . # Build with Golang
+
+  - ALPINE_EDGE_ID=$(docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}" -f Dockerfile . | tee /dev/stderr | tail -1 | sed 's/.*Successfully built \(.*\)$/\1/') # Build with Alpine Edge
+  - docker export $ALPINE_EDGE_ID | docker import - "carbonsrv/carbon:${TRAVIS_TAG:-latest}-alpine-edge"
+
+  - ARCH_ID=$(docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-arch" -f Dockerfile.arch . | tee /dev/stderr | tail -1 | sed 's/.*Successfully built \(.*\)$/\1/') # Build with Arch
+  - docker export $ARCH_ID | docker import - "carbonsrv/carbon:${TRAVIS_TAG:-latest}-arch"
+
+  - GOLANG_ID=$(docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-golang" -f Dockerfile.golang . | tee /dev/stderr | tail -1 | sed 's/.*Successfully built \(.*\)$/\1/') # Build with Arch
+  - docker export $GOLANG_ID | docker import - "carbonsrv/carbon:${TRAVIS_TAG:-latest}-golang"
 
 after_success:
   - docker push carbonsrv/carbon
