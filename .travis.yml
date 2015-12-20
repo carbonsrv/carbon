@@ -11,12 +11,25 @@ before_install:
 
 script:
   - ALPINE_IMGID=$(docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}" -f Dockerfile . | tee /dev/stderr | tail -1 | sed 's/.*Successfully built \(.*\)$/\1/') # Build with Alpine
+  - ALPINE_CNTID=$(docker run -d --entrypoint /bin/sh "$ALPINE_IMGID" true) # Flattening of Alpine image
+  - docker export $ALPINE_CNTID | docker import - "carbonsrv/carbon:${TRAVIS_TAG:-latest}-flat"
+  - docker export $ALPINE_CNTID | docker import - "carbonsrv/carbon:${TRAVIS_TAG:-latest}-alpine-flat"
+  - docker rm $ALPINE_CNTID
 
   - ALPINE_EDGE_IMGID=$(docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-alpine_edge" -f Dockerfile.alpine-edge . | tee /dev/stderr | tail -1 | sed 's/.*Successfully built \(.*\)$/\1/') # Build with Alpine Edge
+  - ALPINE_EDGE_CNTID=$(docker run -d --entrypoint /bin/sh "$ALPINE_EDGE_IMGID" true) # Flattening of Alpine Edge image
+  - docker export $ALPINE_EDGE_CNTID | docker import - "carbonsrv/carbon:${TRAVIS_TAG:-latest}-alpine_edge-flat"
+  - docker rm $ALPINE_EDGE_CNTID
 
   - ARCH_IMGID=$(docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-arch" -f Dockerfile.arch . | tee /dev/stderr | tail -1 | sed 's/.*Successfully built \(.*\)$/\1/') # Build with Arch
+  - ARCH_CNTID=$(docker run -d --entrypoint /bin/sh "$ARCH_IMGID" true) # Flattening of Arch image
+  - docker export $ARCH_CNTID | docker import - "carbonsrv/carbon:${TRAVIS_TAG:-latest}-arch-flat"
+  - docker rm $ARCH_CNTID
 
   - GOLANG_IMGID=$(docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-golang" -f Dockerfile.golang . | tee /dev/stderr | tail -1 | sed 's/.*Successfully built \(.*\)$/\1/') # Build with Golang
+  - GOLANG_CNTID=$(docker run -d --entrypoint /bin/sh "$GOLANG_IMGID" true) # Flattening of Arch image
+  - docker export $GOLANG_CNTID | docker import - "carbonsrv/carbon:${TRAVIS_TAG:-latest}-golang-flat"
+  - docker rm $GOLANG_CNTID
 
 after_success:
   - docker push carbonsrv/carbon
