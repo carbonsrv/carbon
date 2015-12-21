@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"bufio"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
@@ -313,13 +314,17 @@ func BindComs(L *lua.State) {
 func BindNet(L *lua.State) {
 	luar.Register(L, "net", luar.Map{
 		"dial": net.Dial,
+		"dial_tls": func(proto, addr string) (net.Conn, error) {
+			config := tls.Config{InsecureSkipVerify: true} // Because I'm not gonna bother with auth.
+			return tls.Dial(proto, addr, &config)
+		},
 		"write": (func(con interface{}, str string) {
 			fmt.Fprintf(con.(net.Conn), str)
 		}),
 		"readline": (func(con interface{}) (string, error) {
 			return bufio.NewReader(con.(net.Conn)).ReadString('\n')
 		}),
-		"pipe_com": (func(con interface{}, input, output chan interface{}) {
+		"pipe_conn": (func(con interface{}, input, output chan interface{}) {
 			go func() {
 				reader := bufio.NewReader(con.(net.Conn))
 				for {
@@ -332,7 +337,7 @@ func BindNet(L *lua.State) {
 				fmt.Fprintf(con.(net.Conn), line.(string))
 			}
 		}),
-		"pipe_com_background": (func(con interface{}, input, output chan interface{}) {
+		"pipe_conn_background": (func(con interface{}, input, output chan interface{}) {
 			scheduler.Add(func() {
 				reader := bufio.NewReader(con.(net.Conn))
 				for {
