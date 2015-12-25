@@ -273,6 +273,10 @@ func DLRWS_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin
 	return func(context *gin.Context) {
 		L := GetInstance()
 		BindContext(L, context)
+		if dobind {
+			luar.Register(L, "", vals)
+		}
+
 		conn, err := upgrader.Upgrade(context.Writer, context.Request, nil)
 		if err != nil {
 			fmt.Println("Websocket error: " + err.Error()) // silent error.
