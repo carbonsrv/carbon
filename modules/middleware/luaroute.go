@@ -269,7 +269,61 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but for websockets. Not working because?!
+func DLRWS_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but for websockets.
+	return func(context *gin.Context) {
+		L := GetInstance()
+		BindContext(L, context)
+		conn, err := upgrader.Upgrade(context.Writer, context.Request, nil)
+		if err != nil {
+			fmt.Println("Websocket error: " + err.Error()) // silent error.
+		}
+		luar.Register(L, "ws", luar.Map{
+			"con":           conn,
+			"BinaryMessage": websocket.BinaryMessage,
+			"TextMessage":   websocket.TextMessage,
+			//"read":          conn.ReadMessage,
+			//"send":          conn.SendMessage,
+			"read": (func() (int, string, error) {
+				messageType, p, err := conn.ReadMessage()
+				if err != nil {
+					return -1, "", err
+				}
+				return messageType, string(p), nil
+			}),
+			"read_con": (func(con *websocket.Conn) (int, string, error) {
+				messageType, p, err := con.ReadMessage()
+				if err != nil {
+					return -1, "", err
+				}
+				return messageType, string(p), nil
+			}),
+			"send": (func(t int, cnt string) error {
+				return conn.WriteMessage(t, []byte(cnt))
+			}),
+			"send_con": (func(con *websocket.Conn, t int, cnt string) error {
+				return con.WriteMessage(t, []byte(cnt))
+			}),
+			"close": (func() error {
+				return conn.Close()
+			}),
+			"close_con": (func(con *websocket.Conn) error {
+				return con.Close()
+			}),
+		})
+		L.LoadBuffer(bcode, len(bcode), "route")
+		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
+			fmt.Println("Websocket Lua error: " + L.ToString(-1))
+			context.Abort()
+			return
+		}
+		// Close websocket.
+		conn.Close()
+
+		L.close()
+	}, nil
+}
+
+func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but reusing states.
 	insts := instances
 	if instances < 0 {
 		insts = 2

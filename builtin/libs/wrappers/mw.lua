@@ -48,11 +48,18 @@ function mw.ws(fn, bindings, instances)
 	end
 	local r
 	local err
-	local instances = instances or -1
 	if type(bindings) == "table" then
-		r, err = mw.DLRWS_RUS(code, instances, true, bindings)
+		if instances then
+			r, err = mw.DLRWS_RUS(code, instances, true, bindings)
+		else
+			r, err = mw.DLRWS_NS(code, true, bindings)
+		end
 	else
-		r, err = mw.DLRWS_RUS(code, instances, false, {["s"]="v"})
+		if instances then
+			r, err = mw.DLRWS_RUS(code, instances, false, {["s"]="v"})
+		else
+			r, err = mw.DLRWS_NS(code, false, {["s"]="v"})
+		end
 	end
 	if err ~= nil then
 		error(err)

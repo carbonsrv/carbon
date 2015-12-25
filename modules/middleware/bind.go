@@ -72,6 +72,7 @@ func BindMiddleware(L *lua.State) {
 		"Lua":       Lua,
 		"DLR_NS":    DLR_NS,
 		"DLR_RUS":   DLR_RUS,
+		"DLRWS_NS":  DLRWS_NS,
 		"DLRWS_RUS": DLRWS_RUS,
 
 		// Custom sub-routers.
