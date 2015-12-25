@@ -319,7 +319,7 @@ func DLRWS_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin
 		// Close websocket.
 		conn.Close()
 
-		L.close()
+		L.Close()
 	}, nil
 }
 
