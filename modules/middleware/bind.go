@@ -182,6 +182,7 @@ func BindOSEnhancements(L *lua.State) {
 		}),
 		"_os_chdir":   os.Chdir,
 		"_os_abspath": filepath.Abs,
+		"_os_pwd":     os.Getwd,
 	})
 }
 

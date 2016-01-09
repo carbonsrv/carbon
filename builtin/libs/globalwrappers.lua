@@ -64,6 +64,14 @@ function os.sleep(secs)
 	end
 end
 
+function os.pwd()
+	local pwd, err = carbon._os_pwd()
+	if err then
+		error(err)
+	end
+	return pwd
+end
+
 -- kvstore
 kvstore = kvstore or {}
 function kvstore.set(name, value)
