@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
@@ -20,9 +19,7 @@ type flushWriter struct {
 
 func (fw flushWriter) Write(p []byte) (n int, err error) {
 	n, err = fw.orig_writer.Write(p)
-	fmt.Println("Flushing or nah?")
 	if fw.f != nil {
-		fmt.Println("Flushin!")
 		fw.f.Flush()
 	}
 	return
@@ -70,7 +67,6 @@ func CGI_Dynamic(path, dir string, args, env []string) func(*gin.Context) {
 			}
 			fw := flushWriter{c.Writer, flushfields{orig_writer: c.Writer}}
 			if f, ok := c.Writer.(http.Flusher); ok {
-				fmt.Println("Flusher found! Yay!")
 				fw.f = f
 			}
 			handler.ServeHTTP(fw, c.Request)
