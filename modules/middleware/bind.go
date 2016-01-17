@@ -1,8 +1,12 @@
+// Big monolithic binding file.
+// Binds a ton of things.
+
 package middleware
 
 import (
 	"bufio"
 	"crypto/tls"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
@@ -127,6 +131,13 @@ func BindMiddleware(L *lua.State) {
 		}),
 	})
 	L.DoString(glue.RouteGlue())
+}
+func BindStatic(L *lua.State, cfe *cache.Cache) {
+	luar.Register(L, "carbon", luar.Map{
+		"_staticserve": (func(path, prefix string) func(*gin.Context) {
+			return staticServe.ServeCached(prefix, staticServe.PhysFS(path, prefix, true, true), cfe)
+		}),
+	})
 }
 
 func BindPhysFS(L *lua.State) {
@@ -385,10 +396,15 @@ func BindContext(L *lua.State, context *gin.Context) {
 		"_queryfunc":  context.Query,
 	})
 }
-func BindStatic(L *lua.State, cfe *cache.Cache) {
+
+func BindEncoding(L *lua.State) {
 	luar.Register(L, "carbon", luar.Map{
-		"_staticserve": (func(path, prefix string) func(*gin.Context) {
-			return staticServe.ServeCached(prefix, staticServe.PhysFS(path, prefix, true, true), cfe)
+		"_enc_base64_enc": (func(str string) string {
+			return base64.StdEncoding.EncodeToString([]byte(str))
+		}),
+		"_enc_base64_dec": (func(str string, err error) string {
+			data, err := base64.StdEncoding.DecodeString(str)
+			return string(data), err
 		}),
 	})
 }

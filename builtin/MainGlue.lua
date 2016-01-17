@@ -46,7 +46,8 @@ table.insert(package.loaders, 2, loadasset_libs)
 table.insert(package.loaders, 3, loadasset_thirdparty)
 
 -- Load a few builtin libs.
-require("globalwrappers")
+require("wrappers.globalwrappers")
+require("thread")
 require("tags")
 
 thread = thread or require("thread")

@@ -119,7 +119,7 @@ function mw.CGI_Dynamic(path, args, env, cwd)
 	local args = args or {}
 
 	local env = env or {}
-	env["SERVER_SOFTWARE"] = "Carbon" -- Proudness ahead. :3
+	env["SERVER_SOFTWARE"] = "Carbon/git" -- Proudness ahead. :3
 	env["DOCUMENT_ROOT"] = var.root
 	--env["SCRIPT_FILENAME"] = os.abspath(path)
 	local preparedenv = {}

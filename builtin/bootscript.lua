@@ -15,3 +15,4 @@ srv.GET("/", mw.echo(doctype()(
 
 -- Serve files.
 srv.DefaultRoute(mw.static())
+print("Default Carbon page running. You probably want to change this.")
