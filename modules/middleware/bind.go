@@ -50,6 +50,7 @@ func Bind(L *lua.State, root string) {
 	BindNet(L)
 	BindConversions(L)
 	BindComs(L)
+	BindEncoding(L)
 	BindMarkdown(L)
 	BindOther(L)
 }
