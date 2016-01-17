@@ -402,7 +402,7 @@ func BindEncoding(L *lua.State) {
 		"_enc_base64_enc": (func(str string) string {
 			return base64.StdEncoding.EncodeToString([]byte(str))
 		}),
-		"_enc_base64_dec": (func(str string, err error) string {
+		"_enc_base64_dec": (func(str string) (string, error) {
 			data, err := base64.StdEncoding.DecodeString(str)
 			return string(data), err
 		}),
