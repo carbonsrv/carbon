@@ -15,7 +15,7 @@ function thread.spawn(code, bindings, buffer, dontusemsgpack)
 	end
 	local buffer = tonumber(buffer) or -1
 
-	if not dontusemsgpack then
+	if dontusemsgpack then
 		local ch
 		local err
 		if type(bindings) == "table" then
