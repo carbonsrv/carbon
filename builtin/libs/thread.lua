@@ -3,32 +3,57 @@
 
 local msgpack = require("msgpack")
 
-function thread.spawn(fn, bindings, buffer)
-	local code = ""
+function thread.spawn(code, bindings, buffer, dontusemsgpack)
+	local fn
 	if type(fn) == "function" then
-		code = string.dump(fn)
+		fn = code
 	elseif type(fn) == "string" then
 		fn, err = loadstring(code)
-		if not err then
-			code = string.dump(fn)
-		else
+		if err then
 			error(err)
 		end
 	end
-
 	local buffer = tonumber(buffer) or -1
 
-	local ch
-	local err
-	if type(bindings) == "table" then
-		ch, err = thread._spawn(code, true, bindings, buffer)
+	if not dontusemsgpack then
+		local ch
+		local err
+		if type(bindings) == "table" then
+			ch, err = thread._spawn(fn, true, bindings, buffer)
+		else
+			ch, err = thread._spawn(fn, false, {["s"]="v"}, buffer)
+		end
+		if err ~= nil then
+			error(err)
+		end
+		return ch
 	else
-		ch, err = thread._spawn(code, false, {["s"]="v"}, buffer)
+		mpfn = string.dump(function()
+			--THREAD
+			msgpack = require("msgpack")
+			local args = msgpack.unpack(THREADARGS)
+			THREADARGS=nil
+			for k, v in pairs(args.args) do
+				_G[k] = v
+			end
+			local threadf = args.fn
+			args = nil
+			threadfn()
+		end)
+		local mpbinds_raw, err = msgpack.pack({
+			threadfn = fn,
+			["bindings"] = bindings
+		})
+		if err ~= nil then
+			error(err)
+		end
+		mpbindings = {THREAD_ARGS=mpbinds_raw}
+		local ch, err = thread._spawn(mpfn, true, mpbindings, buffer)
+		if err ~= nil then
+			error(err)
+		end
+		return ch
 	end
-	if err ~= nil then
-		error(err)
-	end
-	return ch
 end
 
 function thread.rpcthread() -- not working, issues with binding or something .-.
