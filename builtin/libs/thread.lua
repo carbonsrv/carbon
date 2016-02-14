@@ -5,9 +5,9 @@ local msgpack = require("msgpack")
 
 function thread.spawn(code, bindings, buffer, dontusemsgpack)
 	local fn
-	if type(fn) == "function" then
+	if type(code) == "function" then
 		fn = code
-	elseif type(fn) == "string" then
+	elseif type(code) == "string" then
 		fn, err = loadstring(code)
 		if err then
 			error(err)
