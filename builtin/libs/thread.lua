@@ -39,12 +39,12 @@ function thread.spawn(code, bindings, buffer, dontusemsgpack)
 					_G[k] = v
 				end
 			end
-			local threadf = args.fn
+			local threadfn = args.fn
 			args = nil
 			threadfn()
 		end)
 		local mpbinds_raw, err = msgpack.pack({
-			threadfn = fn,
+			["fn"] = fn,
 			["bindings"] = bindings
 		})
 		if err ~= nil then
