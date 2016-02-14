@@ -31,7 +31,7 @@ function thread.spawn(code, bindings, buffer, dontusemsgpack)
 		mpfn = string.dump(function()
 			--THREAD
 			msgpack = require("msgpack")
-			local args = msgpack.unpack(THREADARGS)
+			local args = msgpack.unpack(THREAD_ARGS)
 			THREADARGS=nil
 			for k, v in pairs(args.args) do
 				_G[k] = v
