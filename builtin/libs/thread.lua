@@ -19,9 +19,9 @@ function thread.spawn(code, bindings, buffer, dontusemsgpack)
 		local ch
 		local err
 		if type(bindings) == "table" then
-			ch, err = thread._spawn(fn, true, bindings, buffer)
+			ch, err = thread._spawn(string.dump(fn), true, bindings, buffer)
 		else
-			ch, err = thread._spawn(fn, false, {["s"]="v"}, buffer)
+			ch, err = thread._spawn(string.dump(fn), false, {["s"]="v"}, buffer)
 		end
 		if err ~= nil then
 			error(err)
