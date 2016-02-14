@@ -32,9 +32,12 @@ function thread.spawn(code, bindings, buffer, dontusemsgpack)
 			--THREAD
 			msgpack = require("msgpack")
 			local args = msgpack.unpack(THREAD_ARGS)
-			THREADARGS=nil
-			for k, v in pairs(args["bindings"]) do
-				_G[k] = v
+			THREAD_ARGS=nil
+			local binds = args["bindings"]
+			if binds then
+				for k, v in pairs(binds) do
+					_G[k] = v
+				end
 			end
 			local threadf = args.fn
 			args = nil
