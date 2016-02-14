@@ -1,5 +1,7 @@
 -- Global wrappers
 
+-- Not only wrappers, but also enhancements.
+
 -- io
 function io.list(path)
 	local path = path or "."
@@ -270,6 +272,31 @@ end
 function encoding.base64.encode(str)
 	if str then
 		return carbon._enc_base64_enc(str)
+	end
+end
+
+-- debug
+function debug.getallupvals(f)
+	local i = 1
+	local r = {}
+	while true do
+		local n, v = debug.getupvalue(f, i)
+		if not n then
+			if r == {} then
+				return nil
+			end
+			return r
+		end
+		if n ~= "_ENV" then
+			r[i] = {name=n, value=v}
+		end
+		i = i + 1
+	end
+end
+
+function debug.setallupvals(f, vals)
+	for i, pair in pairs(vals) do
+		debug.setupvalue(f, i, pair["value"])
 	end
 end
 
