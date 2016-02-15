@@ -34,6 +34,17 @@ msgpack.packers['table'] = function(buffer, t)
 	end
 end
 
+-- Userdata
+msgpack.packers['userdata'] = function(buffer, ud)
+	-- Hack. A big one, too.
+	local idpool = "tmp:msgpack:ud-tmp"
+	kvstore.inc(idpool)
+	local numid = kvstore.get(idpool)
+	local id = idpool..":"..tostring(numid)
+	kvstore.set(id, ud)
+	msgpack.packers['ext'](buffer, 43, tostring(numid))
+end
+
 -- Unpacker for both
 msgpack.build_ext = function (tag, data)
 	if tag == 7 then -- Function
@@ -49,6 +60,11 @@ msgpack.build_ext = function (tag, data)
 		local _, t = f()
 		local _, mt = f()
 		return setmetatable(t, mt)
+	elseif tag == 43 then -- Userdata. Big hack.
+		local id = "tmp:msgpack:ud-tmp:"..data
+		local ud = kvstore.get(id)
+		kvstore.del(id)
+		return ud
 	end
 end
 

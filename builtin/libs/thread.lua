@@ -10,7 +10,7 @@ function thread.spawn(code, bindings, buffer, dontusemsgpack)
 	elseif type(code) == "string" then
 		fn, err = loadstring(code)
 		if err then
-			error(err)
+			error(err, 0)
 		end
 	end
 	local buffer = tonumber(buffer) or -1
