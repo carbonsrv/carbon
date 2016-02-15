@@ -22,9 +22,9 @@ script:
   - docker rm $ALPINE_EDGE_CNTID
 
   - ALPINE_TORCH_IMGID=$(docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-torch" -f Dockerfile.alpine-torch . | tee /dev/stderr | tail -1 | sed 's/.*Successfully built \(.*\)$/\1/') # Build with Alpine using Torch
-  - ALPINE_TORCH_CNTID=$(docker run -d --entrypoint /bin/sh "$ALPINE_IMGID" true) # Flattening of Alpine image
+  - ALPINE_TORCH_CNTID=$(docker run -d --entrypoint /bin/sh "$ALPINE_TORCH_IMGID" true) # Flattening of Alpine image
   - docker export $ALPINE_CNTID | docker import - "carbonsrv/carbon:${TRAVIS_TAG:-latest}-torch-flat"
-  - docker rm $ALPINE_CNTID
+  - docker rm $ALPINE_TORCH_CNTID
 
 
 
