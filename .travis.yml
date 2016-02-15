@@ -21,6 +21,13 @@ script:
   - docker export $ALPINE_EDGE_CNTID | docker import - "carbonsrv/carbon:${TRAVIS_TAG:-latest}-alpine_edge-flat"
   - docker rm $ALPINE_EDGE_CNTID
 
+  - ALPINE_TORCH_IMGID=$(docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-torch" -f Dockerfile.alpine-torch . | tee /dev/stderr | tail -1 | sed 's/.*Successfully built \(.*\)$/\1/') # Build with Alpine using Torch
+  - ALPINE_TORCH_CNTID=$(docker run -d --entrypoint /bin/sh "$ALPINE_IMGID" true) # Flattening of Alpine image
+  - docker export $ALPINE_CNTID | docker import - "carbonsrv/carbon:${TRAVIS_TAG:-latest}-torch-flat"
+  - docker rm $ALPINE_CNTID
+
+
+
   - ARCH_IMGID=$(docker build -t "carbonsrv/carbon:${TRAVIS_TAG:-latest}-arch" -f Dockerfile.arch . | tee /dev/stderr | tail -1 | sed 's/.*Successfully built \(.*\)$/\1/') # Build with Arch
   - ARCH_CNTID=$(docker run -d --entrypoint /bin/sh "$ARCH_IMGID" true) # Flattening of Arch image
   - docker export $ARCH_CNTID | docker import - "carbonsrv/carbon:${TRAVIS_TAG:-latest}-arch-flat"
