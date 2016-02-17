@@ -44,7 +44,7 @@ func Configure(script string, args []string, cfe *cache.Cache, webroot string, u
 		},
 	})
 	luar.Register(L, "", luar.Map{
-		"args": args,
+		"arg": args,
 	})
 	middleware.Bind(L, webroot)
 	middleware.BindStatic(L, cfe)
@@ -90,7 +90,7 @@ func Eval(script string, args []string, cfe *cache.Cache, webroot string, useRec
 		},
 	})
 	luar.Register(L, "", luar.Map{
-		"args": args,
+		"arg": args,
 	})
 	middleware.Bind(L, webroot)
 	middleware.BindStatic(L, cfe)
@@ -136,7 +136,7 @@ func REPL(args []string, cfe *cache.Cache, webroot string, useRecovery bool, use
 		},
 	})
 	luar.Register(L, "", luar.Map{
-		"args": args,
+		"arg": args,
 	})
 	middleware.Bind(L, webroot)
 	middleware.BindStatic(L, cfe)

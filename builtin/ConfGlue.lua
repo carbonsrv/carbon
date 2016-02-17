@@ -1,6 +1,7 @@
 -- Config Glue
 
-args = args and luar.slice2table(args)
+arg = arg and luar.slice2table(arg)
+args = arg
 
 srv = srv or require("wrappers.srv")
 
