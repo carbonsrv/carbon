@@ -151,6 +151,17 @@ func BindPhysFS(L *lua.State) {
 		"delete":      physfs.Delete,
 		"setWriteDir": physfs.SetWriteDir,
 		"getWriteDir": physfs.GetWriteDir,
+		"list":        physfs.EnumerateFiles,
+		"readfile": func(name) (string, error) {
+			file, err := physfs.Open(name)
+			if err != nil {
+				return "", err
+			}
+			buf := bytes.NewBuffer(nil)
+			io.Copy(buf, file)
+			f.Close()
+			return string(buf.Bytes())
+		},
 	})
 }
 

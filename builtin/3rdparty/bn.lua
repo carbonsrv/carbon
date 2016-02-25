@@ -134,6 +134,7 @@ local mt={
 	end,
 	__pow=function(a,b)
 		a,b=bn(a),bn(b)
+		-- the reason i dont have ,true on these is because they are going to be modified later so it will copy them
 		if b.neg then
 			return bn(0)
 		end
@@ -157,6 +158,25 @@ local mt={
 	end,
 	__mod=function(a,b)
 		a,b=bn(a,true),bn(b,true)
+		--[[if bn.ispo2(b) then
+			bn.clampbits(a,bn.log2(b))
+		end]]
+		if #b==1 then
+			local l=0
+			local r=a
+			local m
+			while l<r do
+				m=bn.brshift(l+r,1)
+				if a-m*b>=b then
+					l=m+1
+				else
+					r=m
+				end
+			end
+			return a-(l*b)
+		else
+
+		end
 	end,
 	__unm=function(a)
 		local o=bn(a)
@@ -272,6 +292,12 @@ function bnmt.__call(s,num,pass)
 	end
 end
 
+function bn.abs(n)
+	n=bn(n)
+	n.neg=false
+	return n
+end
+
 function bn.brshift(a,b)
 	a,b=bn(a),bn(b,true)
 	if #b>1 then
@@ -292,6 +318,7 @@ function bn.brshift(a,b)
 end
 
 function bn.modexp(b,e,m)
+	b,e,m=bn(b),bn(e),bn(m,true)
 	if m==1 then
 		return bn(0)
 	end
@@ -300,7 +327,7 @@ function bn.modexp(b,e,m)
 		b=b-m
 	end
 	while e>0 do
-		if e%2==1 then
+		if e[0]%2==1 then
 			result=(result*b)%m
 		end
 		e=e/2
@@ -383,19 +410,11 @@ function bn.tohex(n,noffi)
 	end
 end
 
-local function splitfmt(s)
-	local o={}
-	for c in ("%.0f"):format(s):reverse():gmatch(".") do
-		table.insert(o,tonumber(c))
-	end
-	return o
-end
-
 local function carry(n,base)
 	local i=1
 	while n[i] do
 		if n[i]>=base then
-			n[i+1]=(n[i+1] or 0)+(math.floor(n[i]/10))
+			n[i+1]=(n[i+1] or 0)+(math.floor(n[i]/base))
 			n[i]=n[i]%base
 		end
 		i=i+1
@@ -405,32 +424,41 @@ end
 
 function bn.tostring(n)
 	n=bn(n,true)
-	local q={}
+	local mx=10^15
+	--local c={n[1]%mx,math.floor(n[1]/mx)}
+	--local cmul={2^53}
+	--carry(cmul,mx)
+	local c={}
+	local cmul={1}
+	local mnidx=1
+	--for l1=2,#n do
 	for l1=1,#n do
-		q[l1]=n[l1]
-	end
-	local c=splitfmt(n[1] or 0)
-	local cmul=splitfmt(2^52)
-	for l1=2,#n do
+		--print(">>"..math.floor((l1/#n)*100).." - "..mnidx.." - "..#cmul..","..#c)
 		local cn=n[l1]
+		while cmul[mnidx]==0 do
+			mnidx=mnidx+1
+		end
 		for l2=1,52 do
-			if (math.floor(cn/(2^(l2-1)))%2)==1 then
-				for l1=1,#cmul do
+			if math.floor(cn/(2^(l2-1)))%2==1 then
+				for l1=mnidx,#cmul do
 					c[l1]=(c[l1] or 0)+cmul[l1]
 				end
-				carry(c,10)
+				carry(c,mx)
 			end
 			if l1~=#n or l2~=52 then
-				for l1=1,#cmul do
+				for l1=mnidx,#cmul do
 					cmul[l1]=cmul[l1]*2
 				end
-				carry(cmul,10)
+				carry(cmul,mx)
 			end
 		end
 	end
-	local o=n.neg and "-" or ""
-	for l1=1,#c do
-		o=c[l1]..o
+	while c[#c]==0 do
+		c[#c]=nil
+	end
+	local o=(n.neg and "-" or "")..string.format("%.0f",c[#c] or 0)
+	for l1=#c-1,1,-1 do
+		o=o..string.format("%015.0f",c[l1])
 	end
 	return o
 end
@@ -446,14 +474,21 @@ function bn.tonumber(txt)
 		neg=true
 		txt=txt:sub(2)
 	end
-	local cmul=bn(1)
-	for l1=#txt,1,-1 do
-		o=o+(cmul*tonumber(txt:sub(l1,l1)))
-		if l1~=1 then
-			cmul=cmul*10
+	if txt:sub(1,2)=="0x" then
+		txt=txt:sub(3)
+		for l1=#txt,1,-13 do
+			o[math.floor((#txt-l1)/13)+1]=tonumber("0x"..txt:sub(math.max(1,l1-12),l1))
 		end
+	else
+		local cmul=bn(1)
+		for l1=#txt,1,-1 do
+			o=o+(cmul*tonumber(txt:sub(l1,l1)))
+			if l1~=1 then
+				cmul=cmul*10
+			end
+		end
+		o.neg=neg
 	end
-	o.neg=neg
 	return o
 end
 
