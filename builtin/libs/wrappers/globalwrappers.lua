@@ -33,6 +33,110 @@ function io.modtime(path)
 	end
 end
 
+-- fs
+fs = {}
+function fs.mount(dir, mp, app)
+	if dir then
+		local err = carbon._fs_mount(dir, mp or "/", app or false)
+		if err then
+			error(err, 0)
+		end
+	else
+		error("No dir given.")
+	end
+end
+
+function fs.exists(file)
+	if file then
+		return carbon._fs_exists(file)
+	else
+		error("No file given.")
+	end
+end
+
+function fs.mkdir(path)
+	if path then
+		local err = carbon._fs_mkdir(path)
+		if err then
+			error(err, 0)
+		end
+	else
+		error("No path given.")
+	end
+end
+
+function fs.umount(path)
+	if path then
+		local err = carbon._fs_umount(path)
+		if err then
+			error(err, 0)
+		end
+	else
+		error("No path given.")
+	end
+end
+
+function fs.delete(path)
+	if path then
+		local err = carbon._fs_delete(path)
+		if err then
+			error(err, 0)
+		end
+	else
+		error("No path given.")
+	end
+end
+
+function fs.setWriteDir(path)
+	if path then
+		local err = carbon._fs_setWriteDir(path)
+		if err then
+			error(err, 0)
+		end
+	else
+		error("No path given.")
+	end
+end
+
+function fs.delete(path)
+	if path then
+		local err = carbon._fs_delete(path)
+		if err then
+			error(err, 0)
+		end
+	else
+		error("No path given.")
+	end
+end
+
+function fs.getWriteDir()
+	return carbon._fs_getWriteDir()
+end
+
+function fs.list(path)
+	if path then
+		local list, err = carbon._fs_list(path)
+		if err then
+			error(err, 0)
+		end
+		return luar.slice2table(list)
+	else
+		error("No path given.")
+	end
+end
+
+function fs.readfile(path)
+	if path then
+		local content, err = carbon._fs_readfile(path)
+		if err then
+			error(err, 0)
+		end
+		return content
+	else
+		error("No path given.")
+	end
+end
+
 -- os
 function os.exists(path)
 	if path then

@@ -144,17 +144,17 @@ func BindStatic(L *lua.State, cfe *cache.Cache) {
 }
 
 func BindPhysFS(L *lua.State) {
-	luar.Register(L, "fs", luar.Map{ // PhysFS
-		"mount":       physfs.Mount,
-		"exits":       physfs.Exists,
-		"getFS":       physfs.FileSystem,
-		"mkdir":       physfs.Mkdir,
-		"umount":      physfs.RemoveFromSearchPath,
-		"delete":      physfs.Delete,
-		"setWriteDir": physfs.SetWriteDir,
-		"getWriteDir": physfs.GetWriteDir,
-		"list":        physfs.EnumerateFiles,
-		"readfile": func(name string) (string, error) {
+	luar.Register(L, "carbon", luar.Map{ // PhysFS
+		"_fs_mount":       physfs.Mount,
+		"_fs_exits":       physfs.Exists,
+		"_fs_getFS":       physfs.FileSystem,
+		"_fs_mkdir":       physfs.Mkdir,
+		"_fs_umount":      physfs.RemoveFromSearchPath,
+		"_fs_delete":      physfs.Delete,
+		"_fs_setWriteDir": physfs.SetWriteDir,
+		"_fs_getWriteDir": physfs.GetWriteDir,
+		"_fs_list":        physfs.EnumerateFiles,
+		"_fs_readfile": func(name string) (string, error) {
 			file, err := physfs.Open(name)
 			if err != nil {
 				return "", err
