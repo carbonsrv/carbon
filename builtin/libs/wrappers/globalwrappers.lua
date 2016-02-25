@@ -1,6 +1,7 @@
 -- Global wrappers
 
 -- Not only wrappers, but also enhancements.
+-- Pretty much the lua version of bind.go.
 
 -- io
 function io.list(path)
@@ -98,17 +99,6 @@ function fs.setWriteDir(path)
 	end
 end
 
-function fs.delete(path)
-	if path then
-		local err = carbon._fs_delete(path)
-		if err then
-			error(err, 0)
-		end
-	else
-		error("No path given.")
-	end
-end
-
 function fs.getWriteDir()
 	return carbon._fs_getWriteDir()
 end
@@ -117,7 +107,7 @@ function fs.list(path)
 	if path then
 		local list, err = carbon._fs_list(path)
 		if err then
-			error(err, 0)
+			return nil, err
 		end
 		return luar.slice2table(list)
 	else
@@ -129,7 +119,7 @@ function fs.readfile(path)
 	if path then
 		local content, err = carbon._fs_readfile(path)
 		if err then
-			error(err, 0)
+			return nil, err
 		end
 		return content
 	else

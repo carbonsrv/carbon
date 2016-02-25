@@ -41,9 +41,27 @@ local function loadasset_thirdparty(name)
 	return "\n\tno thirdparty asset '/" .. location .. "' (not compiled in)\n\tno thirdparty asset '/" .. location_init .. "' (not compiled in)"
 end
 
--- Install the loader so that it's called just before the normal Lua loaders
+local function loadphysfs(name)
+	local location = tostring(name):gsub("%.", "/") .. ".lua"
+	local src, err1 = fs.readfile(location)
+	if src then
+		-- Compile and return the module
+		return assert(loadstring(src, location))
+	end
+
+	local location_init = tostring(name):gsub("%.", "/") .. "/init.lua"
+	local src, err2 = fs.readfile(location_init)
+	if src then
+		-- Compile and return the module
+		return assert(loadstring(src, location_init))
+	end
+	return "\n\tno file '" .. location .. "' in webroot ("..err1..")\n\tno file '" .. location_init .. "' in webroot ("..err2..")"
+end
+
+-- Install the loaders so that it's called just before the normal Lua loaders
 table.insert(package.loaders, 2, loadasset_libs)
 table.insert(package.loaders, 3, loadasset_thirdparty)
+table.insert(package.loaders, 4, loadphysfs)
 
 -- Load a few builtin libs.
 require("wrappers.globalwrappers")
