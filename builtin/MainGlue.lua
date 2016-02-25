@@ -1,9 +1,9 @@
 -- Main Glue
 
--- Add webroot to path and cpath.
+-- Add webroot to path and cpath. (OLD)
 local webroot_path = var.root .. (var.root:match("/$") and "" or "/")
 
-package.path = webroot_path.."?.lua;"..webroot_path.."?/init.lua;"..package.path
+--package.path = webroot_path.."?.lua;"..webroot_path.."?/init.lua;"..package.path
 package.cpath = webroot_path.."?.so;"..webroot_path.."loadall.so;"..package.cpath
 
 -- Custom package loaders so that you can require the libraries built into Carbon.
