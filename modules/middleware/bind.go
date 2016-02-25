@@ -5,6 +5,7 @@ package middleware
 
 import (
 	"bufio"
+	"bytes"
 	"crypto/tls"
 	"encoding/base64"
 	"errors"
@@ -21,6 +22,7 @@ import (
 	"github.com/vifino/contrib/gzip"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
+	"io"
 	"io/ioutil"
 	"net"
 	"os"
@@ -152,15 +154,15 @@ func BindPhysFS(L *lua.State) {
 		"setWriteDir": physfs.SetWriteDir,
 		"getWriteDir": physfs.GetWriteDir,
 		"list":        physfs.EnumerateFiles,
-		"readfile": func(name) (string, error) {
+		"readfile": func(name string) (string, error) {
 			file, err := physfs.Open(name)
 			if err != nil {
 				return "", err
 			}
 			buf := bytes.NewBuffer(nil)
 			io.Copy(buf, file)
-			f.Close()
-			return string(buf.Bytes())
+			file.Close()
+			return string(buf.Bytes()), nil
 		},
 	})
 }
