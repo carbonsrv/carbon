@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
+	"github.com/GeertJohan/go.linenoise"
 	"github.com/carbonsrv/carbon/modules/glue"
 	"github.com/carbonsrv/carbon/modules/helpers"
 	"github.com/carbonsrv/carbon/modules/scheduler"
@@ -54,6 +55,7 @@ func Bind(L *lua.State, root string) {
 	BindComs(L)
 	BindEncoding(L)
 	BindMarkdown(L)
+	BindLinenoise(L)
 	BindOther(L)
 }
 
@@ -393,24 +395,6 @@ func BindConversions(L *lua.State) {
 	})
 }
 
-func BindContext(L *lua.State, context *gin.Context) {
-	luar.Register(L, "", luar.Map{
-		"context": context,
-		"req":     context.Request,
-
-		"host":   context.Request.URL.Host,
-		"path":   context.Request.URL.Path,
-		"scheme": context.Request.URL.Scheme,
-	})
-	luar.Register(L, "carbon", luar.Map{
-		"_header_set": context.Header,
-		"_header_get": context.Request.Header.Get,
-		"_paramfunc":  context.Param,
-		"_formfunc":   context.PostForm,
-		"_queryfunc":  context.Query,
-	})
-}
-
 func BindEncoding(L *lua.State) {
 	luar.Register(L, "carbon", luar.Map{
 		"_enc_base64_enc": (func(str string) string {
@@ -431,6 +415,17 @@ func BindMarkdown(L *lua.State) {
 	})
 }
 
+func BindLinenoise(L *lua.State) {
+	luar.Register(L, "linenoise", luar.Map{
+		"line":         linenoise.Line,
+		"clear":        linenoise.Clear,
+		"addHistory":   linenoise.AddHistory,
+		"saveHistory":  linenoise.SaveHistory,
+		"loadHistory":  linenoise.LoadHistory,
+		"setMultiline": linenoise.SetMultiline,
+	})
+}
+
 func BindOther(L *lua.State) {
 	luar.Register(L, "", luar.Map{
 		"unixtime": (func() int {
@@ -440,5 +435,23 @@ func BindOther(L *lua.State) {
 	})
 	luar.Register(L, "carbon", luar.Map{
 		"_syntaxhl": helpers.SyntaxHL,
+	})
+}
+
+func BindContext(L *lua.State, context *gin.Context) {
+	luar.Register(L, "", luar.Map{
+		"context": context,
+		"req":     context.Request,
+
+		"host":   context.Request.URL.Host,
+		"path":   context.Request.URL.Path,
+		"scheme": context.Request.URL.Scheme,
+	})
+	luar.Register(L, "carbon", luar.Map{
+		"_header_set": context.Header,
+		"_header_get": context.Request.Header.Get,
+		"_paramfunc":  context.Param,
+		"_formfunc":   context.PostForm,
+		"_queryfunc":  context.Query,
 	})
 }
