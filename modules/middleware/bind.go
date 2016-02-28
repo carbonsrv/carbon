@@ -168,9 +168,9 @@ func BindPhysFS(L *lua.State) {
 				if physfs.IsDirectory(name) {
 					return physfs.EnumerateFiles(name)
 				}
-				return nil, "readdirent: not a directory"
+				return nil, errors.New("readdirent: not a directory")
 			}
-			return nil, "open " + name + ": no such file or directory"
+			return nil, errors.New("open " + name + ": no such file or directory")
 		},
 		"_fs_readfile": func(name string) (string, error) {
 
