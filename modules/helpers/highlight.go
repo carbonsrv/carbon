@@ -59,16 +59,15 @@ li.L7,
 li.L9 { background: #eee }
 `
 
+// SyntaxHL highlights code generically to html.
 func SyntaxHL(s string, customcss string) (string, error) {
 	src := []byte(s)
 	highlighted, err := syntaxhighlight.AsHTML(src)
-	if err != nil {
-		return "", err
-	} else {
+	if err == nil {
 		if customcss == "" {
 			return `<style>` + css + `</style><pre><code>` + string(highlighted) + `</code></pre>`, nil
-		} else {
-			return `<style>` + customcss + `</style><pre><code>` + string(highlighted) + `</code></pre>`, nil
 		}
+		return `<style>` + customcss + `</style><pre><code>` + string(highlighted) + `</code></pre>`, nil
 	}
+	return "", err
 }

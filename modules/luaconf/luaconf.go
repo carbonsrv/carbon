@@ -52,20 +52,19 @@ func Configure(script string, args []string, cfe *cache.Cache, webroot string, u
 	L.DoString(glue.ConfGlue())
 
 	err := L.DoFile(script)
-	if err != nil {
-		return err
-	} else {
+	if err == nil {
 		if runrepl {
 			repl.Run(L)
 		}
 		L.DoString(checker_code)
 		c := make(chan bool)
 		<-c
+		return nil
 	}
-	return nil
+	return err
 }
 
-// Configure the server based on a lua string.
+// Eval lua string to Configure the server
 func Eval(script string, args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, runrepl bool, finalizer func(srv *gin.Engine)) error {
 	srv := gin.New()
 	if useLogger {
@@ -98,20 +97,19 @@ func Eval(script string, args []string, cfe *cache.Cache, webroot string, useRec
 	L.DoString(glue.ConfGlue())
 
 	err := L.DoString(script)
-	if err != nil {
-		return err
-	} else {
+	if err == nil {
 		if runrepl {
 			repl.Run(L)
 		}
 		L.DoString(checker_code)
 		c := make(chan bool)
 		<-c
+		return nil
 	}
-	return nil
+	return err
 }
 
-// Run REPL
+// REPL runs a lua repl
 func REPL(args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, finalizer func(srv *gin.Engine)) error {
 	srv := gin.New()
 	if useLogger {

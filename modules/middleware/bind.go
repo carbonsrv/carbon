@@ -35,6 +35,7 @@ import (
 // Vars
 var webroot string
 
+// Bind all things
 func Bind(L *lua.State, root string) {
 	webroot = root
 
@@ -59,18 +60,21 @@ func Bind(L *lua.State, root string) {
 	BindOther(L)
 }
 
+// BindCarbon binds glue func
 func BindCarbon(L *lua.State) {
 	luar.Register(L, "carbon", luar.Map{ // Carbon specific API
 		"glue": glue.GetGlue,
 	})
 }
 
+// BindEngine binds the engine creation.
 func BindEngine(L *lua.State) {
 	luar.Register(L, "carbon", luar.Map{
 		"_gin_new": gin.New,
 	})
 }
 
+// BindMiddleware binds the middleware
 func BindMiddleware(L *lua.State) {
 	luar.Register(L, "mw", luar.Map{
 		// Essentials
@@ -137,6 +141,8 @@ func BindMiddleware(L *lua.State) {
 	})
 	L.DoString(glue.RouteGlue())
 }
+
+// BindStatic binds the static file server thing.
 func BindStatic(L *lua.State, cfe *cache.Cache) {
 	luar.Register(L, "carbon", luar.Map{
 		"_staticserve": (func(path, prefix string) func(*gin.Context) {
@@ -145,6 +151,7 @@ func BindStatic(L *lua.State, cfe *cache.Cache) {
 	})
 }
 
+// BindPhysFS binds the physfs library functions.
 func BindPhysFS(L *lua.State) {
 	luar.Register(L, "carbon", luar.Map{ // PhysFS
 		"_fs_mount":       physfs.Mount,
@@ -169,6 +176,7 @@ func BindPhysFS(L *lua.State) {
 	})
 }
 
+// BindIOEnhancements binds small functions to enhance the IO library
 func BindIOEnhancements(L *lua.State) {
 	luar.Register(L, "carbon", luar.Map{ // Small enhancements to the io stuff.
 		"_io_list": (func(path string) ([]string, error) {
@@ -195,6 +203,7 @@ func BindIOEnhancements(L *lua.State) {
 	})
 }
 
+// BindOSEnhancements does the same as above, but for the OS library
 func BindOSEnhancements(L *lua.State) {
 	luar.Register(L, "carbon", luar.Map{ // Small enhancements to the io stuff.
 		"_os_exists": (func(path string) bool {
@@ -213,6 +222,7 @@ func BindOSEnhancements(L *lua.State) {
 	})
 }
 
+// BindRedis binds the redis library
 func BindRedis(L *lua.State) {
 	luar.Register(L, "redis", luar.Map{
 		"connectTimeout": (func(host string, timeout int) (*redis.Client, error) {
@@ -224,6 +234,7 @@ func BindRedis(L *lua.State) {
 	})
 }
 
+// BindKVStore binds the kv store for internal carbon cache or similar.
 func BindKVStore(L *lua.State) { // Thread safe Key Value Store that doesn't persist.
 	luar.Register(L, "kvstore", luar.Map{
 		"_set": (func(k string, v interface{}) {
@@ -249,6 +260,7 @@ func BindKVStore(L *lua.State) { // Thread safe Key Value Store that doesn't per
 	})
 }
 
+// BindThread binds state creation and stuff.
 func BindThread(L *lua.State) {
 	luar.Register(L, "thread", luar.Map{
 		"_spawn": (func(bcode string, dobind bool, vals map[string]interface{}, buffer int) (chan interface{}, error) {
@@ -288,6 +300,7 @@ func BindThread(L *lua.State) {
 	})
 }
 
+// BindComs binds the com.* funcs.
 func BindComs(L *lua.State) {
 	luar.Register(L, "com", luar.Map{
 		"create": (func() chan interface{} {
@@ -340,6 +353,7 @@ func BindComs(L *lua.State) {
 	})
 }
 
+// BindNet binds sockets, not really that good. needs rework.
 func BindNet(L *lua.State) {
 	luar.Register(L, "net", luar.Map{
 		"dial": net.Dial,
@@ -384,6 +398,7 @@ func BindNet(L *lua.State) {
 	})
 }
 
+// BindConversions binds helpers to convert between go types.
 func BindConversions(L *lua.State) {
 	luar.Register(L, "convert", luar.Map{
 		"stringtocharslice": (func(x string) []byte {
@@ -395,6 +410,7 @@ func BindConversions(L *lua.State) {
 	})
 }
 
+// BindEncoding binds functions to encode and decode between things.
 func BindEncoding(L *lua.State) {
 	luar.Register(L, "carbon", luar.Map{
 		"_enc_base64_enc": (func(str string) string {
@@ -407,6 +423,7 @@ func BindEncoding(L *lua.State) {
 	})
 }
 
+// BindMarkdown binds a markdown renderer.
 func BindMarkdown(L *lua.State) {
 	luar.Register(L, "markdown", luar.Map{
 		"github": (func(source string) string {
@@ -415,6 +432,7 @@ func BindMarkdown(L *lua.State) {
 	})
 }
 
+// BindLinenoise binds the linenoise library.
 func BindLinenoise(L *lua.State) {
 	luar.Register(L, "linenoise", luar.Map{
 		"line":         linenoise.Line,
@@ -426,6 +444,7 @@ func BindLinenoise(L *lua.State) {
 	})
 }
 
+// BindOther binds misc things
 func BindOther(L *lua.State) {
 	luar.Register(L, "", luar.Map{
 		"unixtime": (func() int {
@@ -438,6 +457,7 @@ func BindOther(L *lua.State) {
 	})
 }
 
+// BindContext binds the gin context.
 func BindContext(L *lua.State, context *gin.Context) {
 	luar.Register(L, "", luar.Map{
 		"context": context,

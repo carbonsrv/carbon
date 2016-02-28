@@ -8,21 +8,22 @@ import (
 	"strings"
 )
 
+// Dummy struct for the Run method
 type Dummy struct {
 	Name string
 }
 
 const (
-	LUA_PROMPT1 = "> "
-	LUA_PROMPT2 = ">> "
-	BANNER      = `
+	Lua_Prompt1 = "> "
+	Lua_Prompt2 = ">> "
+	Banner      = `
   ⡎⠑ | Carbon
   ⠣⠔ | (c) 2015 vifino
 `
 )
 
 // modified https://github.com/vifino/luar/blob/master/examples/luar.go
-
+// Run the repl
 func Run(L *lua.State) {
 	luar.Register(L, "", luar.Map{
 		"__DUMMY__": &Dummy{"me"},
@@ -42,16 +43,15 @@ func Run(L *lua.State) {
 		val, err := complete.Callf(str_slice, in)
 		if err != nil || len(val) == 1 && val[0] == nil {
 			return []string{}
-		} else {
-			return val[0].([]string)
 		}
+		return val[0].([]string)
 	})
 
-	fmt.Println(BANNER)
+	fmt.Println(Banner)
 	L.DoString(`print(jit.version)`)
 	fmt.Println("")
 
-	prompt := LUA_PROMPT1
+	prompt := Lua_Prompt1
 	code := ""
 
 	for {
@@ -90,10 +90,10 @@ func Run(L *lua.State) {
 				}
 			}
 			if continuing { // prompt must reflect continuing state
-				prompt = LUA_PROMPT2
+				prompt = Lua_Prompt2
 				code = code + "\n"
 			} else {
-				prompt = LUA_PROMPT1
+				prompt = Lua_Prompt1
 				code = ""
 			}
 		}

@@ -47,7 +47,7 @@ func cacheRead(c *cache.Cache, file string) (string, error) {
 	return res, nil
 }
 
-// File sytem functions
+// File system functions
 var filesystem http.FileSystem
 
 func initPhysFS(path string) http.FileSystem {

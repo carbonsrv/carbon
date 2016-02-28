@@ -5,7 +5,7 @@ import (
 	"regexp"
 )
 
-// Dynamic routing based on host given by a map.
+// VHOST does dynamic routing based on host given by a map.
 func VHOST(plan Plan) func(*gin.Context) {
 	portmatch := regexp.MustCompile(":.*$")
 	return func(c *gin.Context) {
@@ -24,6 +24,7 @@ func VHOST(plan Plan) func(*gin.Context) {
 	}
 }
 
+// VHOST_Middleware does the same as above, but for middleware and not for route handlers.
 func VHOST_Middleware(plan Plan) gin.HandlerFunc {
 	portmatch := regexp.MustCompile(":.*$")
 	return func(c *gin.Context) {

@@ -13,6 +13,7 @@ import (
 	"github.com/pmylund/go-cache"
 )
 
+// ServeFileSystem is a small wrapper
 type ServeFileSystem interface {
 	http.FileSystem
 	Exists(prefix string, path string) bool
@@ -27,6 +28,7 @@ type localFileSystem struct {
 	physfs  bool
 }
 
+// OwnFS returns the fs wrapper using an existing filesystem
 func OwnFS(fs http.FileSystem, root, prefix string, indexes bool) *localFileSystem {
 	return &localFileSystem{
 		FileSystem: fs,
@@ -38,6 +40,7 @@ func OwnFS(fs http.FileSystem, root, prefix string, indexes bool) *localFileSyst
 	}
 }
 
+// PhysFS returns the fs wrapper using physfs
 func PhysFS(root, prefix string, indexes bool, alreadyinitialized bool) *localFileSystem {
 	if !alreadyinitialized {
 		root, err := filepath.Abs(root)
@@ -66,6 +69,7 @@ func PhysFS(root, prefix string, indexes bool, alreadyinitialized bool) *localFi
 	}
 }
 
+// Open is the function the wrapper is about
 func (l *localFileSystem) Open(name string) (http.File, error) {
 	//if !l.physfs {
 	newname := name
@@ -86,6 +90,7 @@ func (l *localFileSystem) Open(name string) (http.File, error) {
 	}*/
 }
 
+// Exists is also a function for the wrapper
 func (l *localFileSystem) Exists(prefix string, filepath string) bool {
 	if p := strings.TrimPrefix(filepath, prefix); len(p) <= len(filepath) {
 		p = path.Join(l.root, p)
@@ -118,6 +123,7 @@ func (f neuteredReaddirFile) Readdir(count int) ([]os.FileInfo, error) {
 	return nil, nil
 }
 
+// ServeCached takes a fs wrapper and serves stuff.
 func ServeCached(prefix string, fs ServeFileSystem, cfe *cache.Cache) gin.HandlerFunc {
 	//cfe := cache.New(5*time.Minute, 30*time.Second) // File-Exists Cache
 	var fileserver http.Handler

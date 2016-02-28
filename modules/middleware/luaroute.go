@@ -23,6 +23,7 @@ var cbc *cache.Cache
 var cfe *cache.Cache
 var LDumper *lua.State
 
+// cacheDump dumps the source bytecode cached
 func cacheDump(file string) (string, error, bool) {
 	data_tmp, found := cbc.Get(file)
 	if found == false {
@@ -41,6 +42,8 @@ func cacheDump(file string) (string, error, bool) {
 		return data_tmp.(string), nil, false
 	}
 }
+
+// bcdump actually dumps the bytecode
 func bcdump(data string) (string, error) {
 	if LDumper.LoadString(data) != 0 {
 		return "", errors.New(LDumper.ToString(-1))
@@ -84,8 +87,11 @@ func fileRead(file string) (string, error) {
 
 // Preloader/Starter
 var jobs int
+
+// Preloaded is the chan that contains the preloaded states
 var Preloaded chan *lua.State
 
+// Preloader is the function that preloads the states
 func Preloader() {
 	Preloaded = make(chan *lua.State, jobs)
 	for {
@@ -103,6 +109,8 @@ func Preloader() {
 		Preloaded <- L
 	}
 }
+
+// GetInstance grabs an instance from the preloaded list
 func GetInstance() *lua.State {
 	//fmt.Println("grabbing instance")
 	L := <-Preloaded
@@ -121,7 +129,7 @@ func Init(j int, cfe_new *cache.Cache, kvstore_new *cache.Cache, root string) {
 	LDumper = luar.Init()
 }
 
-// PHP-like lua scripts
+// Lua behaves PHP-like, but for Lua
 func Lua() func(*gin.Context) {
 	//LDumper := luar.Init()
 	return func(context *gin.Context) {
@@ -181,7 +189,7 @@ func Lua() func(*gin.Context) {
 	}
 }
 
-// Route creation by lua
+// DLR_NS does Route creation by lua
 func DLR_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) {
 	/*code, err := bcdump(code)
 	if err != nil {
@@ -222,6 +230,8 @@ func DLR_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.C
 		}
 	}, nil
 }
+
+// DLR_RUS does the same as above, but reuses states
 func DLR_RUS(bcode string, instances int, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but reuses states. Much faster. Higher memory use though, because more states.
 	insts := instances
 	if instances < 0 {
@@ -269,6 +279,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+// DLRWS_NS does the same as the first one, but for websockets.
 func DLRWS_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but for websockets.
 	return func(context *gin.Context) {
 		L := GetInstance()
@@ -327,6 +338,7 @@ func DLRWS_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin
 	}, nil
 }
 
+// DLRWS_RUS also does the thing for websockets, but reuses states, not quite handy given how many connections a websocket could take and how long the connection could keep alive.
 func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but reusing states.
 	insts := instances
 	if instances < 0 {
