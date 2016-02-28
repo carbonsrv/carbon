@@ -162,8 +162,14 @@ func BindPhysFS(L *lua.State) {
 		"_fs_delete":      physfs.Delete,
 		"_fs_setWriteDir": physfs.SetWriteDir,
 		"_fs_getWriteDir": physfs.GetWriteDir,
-		"_fs_list":        physfs.EnumerateFiles,
+		"_fs_list": func(name string) (fl []string, err error) {
+			if physfs.Exists(name) {
+				return physfs.EnumerateFiles(name)
+			}
+			return nil, "open " + name + ": no such file or directory"
+		},
 		"_fs_readfile": func(name string) (string, error) {
+
 			file, err := physfs.Open(name)
 			if err != nil {
 				return "", err
