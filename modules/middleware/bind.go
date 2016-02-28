@@ -156,6 +156,7 @@ func BindPhysFS(L *lua.State) {
 	luar.Register(L, "carbon", luar.Map{ // PhysFS
 		"_fs_mount":       physfs.Mount,
 		"_fs_exists":      physfs.Exists,
+		"_fs_isDir":       physfs.IsDirectory,
 		"_fs_getFS":       physfs.FileSystem,
 		"_fs_mkdir":       physfs.Mkdir,
 		"_fs_umount":      physfs.RemoveFromSearchPath,
@@ -164,7 +165,10 @@ func BindPhysFS(L *lua.State) {
 		"_fs_getWriteDir": physfs.GetWriteDir,
 		"_fs_list": func(name string) (fl []string, err error) {
 			if physfs.Exists(name) {
-				return physfs.EnumerateFiles(name)
+				if physfs.IsDirectory(name) {
+					return physfs.EnumerateFiles(name)
+				}
+				return nil, "readdirent: not a directory"
 			}
 			return nil, "open " + name + ": no such file or directory"
 		},

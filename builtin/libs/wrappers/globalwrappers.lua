@@ -55,6 +55,14 @@ function fs.exists(file)
 	end
 end
 
+function fs.isDir(path)
+	if path then
+		return carbon._fs_isDir(path)
+	else
+		error("No path given.")
+	end
+end
+
 function fs.mkdir(path)
 	if path then
 		local err = carbon._fs_mkdir(path)
