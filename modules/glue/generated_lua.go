@@ -624,31 +624,31 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"3rdparty": &bintree{nil, map[string]*bintree{
-		"MessagePack.lua": &bintree{_3rdpartyMessagepackLua, map[string]*bintree{}},
-		"bn.lua":          &bintree{_3rdpartyBnLua, map[string]*bintree{}},
-		"csv.lua":         &bintree{_3rdpartyCsvLua, map[string]*bintree{}},
-		"ltn12.lua":       &bintree{_3rdpartyLtn12Lua, map[string]*bintree{}},
+	"3rdparty": {nil, map[string]*bintree{
+		"MessagePack.lua": {_3rdpartyMessagepackLua, map[string]*bintree{}},
+		"bn.lua":          {_3rdpartyBnLua, map[string]*bintree{}},
+		"csv.lua":         {_3rdpartyCsvLua, map[string]*bintree{}},
+		"ltn12.lua":       {_3rdpartyLtn12Lua, map[string]*bintree{}},
 	}},
-	"ConfGlue.lua":   &bintree{confglueLua, map[string]*bintree{}},
-	"MainGlue.lua":   &bintree{mainglueLua, map[string]*bintree{}},
-	"NOTICE.txt":     &bintree{noticeTxt, map[string]*bintree{}},
-	"RouteGlue.lua":  &bintree{routeglueLua, map[string]*bintree{}},
-	"bootscript.lua": &bintree{bootscriptLua, map[string]*bintree{}},
-	"gluetest":       &bintree{gluetest, map[string]*bintree{}},
-	"libs": &bintree{nil, map[string]*bintree{
-		"escapist.lua":  &bintree{libsEscapistLua, map[string]*bintree{}},
-		"msgpack.lua":   &bintree{libsMsgpackLua, map[string]*bintree{}},
-		"prettify.lua":  &bintree{libsPrettifyLua, map[string]*bintree{}},
-		"serialize.lua": &bintree{libsSerializeLua, map[string]*bintree{}},
-		"tags.lua":      &bintree{libsTagsLua, map[string]*bintree{}},
-		"template.lua":  &bintree{libsTemplateLua, map[string]*bintree{}},
-		"thread.lua":    &bintree{libsThreadLua, map[string]*bintree{}},
-		"wrappers": &bintree{nil, map[string]*bintree{
-			"globalwrappers.lua": &bintree{libsWrappersGlobalwrappersLua, map[string]*bintree{}},
-			"init.lua":           &bintree{libsWrappersInitLua, map[string]*bintree{}},
-			"mw.lua":             &bintree{libsWrappersMwLua, map[string]*bintree{}},
-			"srv.lua":            &bintree{libsWrappersSrvLua, map[string]*bintree{}},
+	"ConfGlue.lua":   {confglueLua, map[string]*bintree{}},
+	"MainGlue.lua":   {mainglueLua, map[string]*bintree{}},
+	"NOTICE.txt":     {noticeTxt, map[string]*bintree{}},
+	"RouteGlue.lua":  {routeglueLua, map[string]*bintree{}},
+	"bootscript.lua": {bootscriptLua, map[string]*bintree{}},
+	"gluetest":       {gluetest, map[string]*bintree{}},
+	"libs": {nil, map[string]*bintree{
+		"escapist.lua":  {libsEscapistLua, map[string]*bintree{}},
+		"msgpack.lua":   {libsMsgpackLua, map[string]*bintree{}},
+		"prettify.lua":  {libsPrettifyLua, map[string]*bintree{}},
+		"serialize.lua": {libsSerializeLua, map[string]*bintree{}},
+		"tags.lua":      {libsTagsLua, map[string]*bintree{}},
+		"template.lua":  {libsTemplateLua, map[string]*bintree{}},
+		"thread.lua":    {libsThreadLua, map[string]*bintree{}},
+		"wrappers": {nil, map[string]*bintree{
+			"globalwrappers.lua": {libsWrappersGlobalwrappersLua, map[string]*bintree{}},
+			"init.lua":           {libsWrappersInitLua, map[string]*bintree{}},
+			"mw.lua":             {libsWrappersMwLua, map[string]*bintree{}},
+			"srv.lua":            {libsWrappersSrvLua, map[string]*bintree{}},
 		}},
 	}},
 }}
