@@ -155,7 +155,7 @@ func BindStatic(L *lua.State, cfe *cache.Cache) {
 func BindPhysFS(L *lua.State) {
 	luar.Register(L, "carbon", luar.Map{ // PhysFS
 		"_fs_mount":       physfs.Mount,
-		"_fs_exits":       physfs.Exists,
+		"_fs_exists":      physfs.Exists,
 		"_fs_getFS":       physfs.FileSystem,
 		"_fs_mkdir":       physfs.Mkdir,
 		"_fs_umount":      physfs.RemoveFromSearchPath,
