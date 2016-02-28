@@ -13,7 +13,7 @@ modules/glue/generated_glue.go: $(LUA_GLUE)
 	$(GO) generate
 
 fmt:
-	$(GOFMT) -w .
+	$(GOFMT) -w -s .
 
 test:
 	$(GO) test -v ./...
