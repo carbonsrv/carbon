@@ -34,6 +34,14 @@ function io.modtime(path)
 	end
 end
 
+function io.isDir(path)
+	if path then
+		return carbon._io_isDir(path)
+	else
+		error("No path given.")
+	end
+end
+
 -- fs
 fs = {}
 function fs.mount(dir, mp, app)
@@ -118,6 +126,18 @@ function fs.list(path)
 			return nil, err
 		end
 		return luar.slice2table(list)
+	else
+		error("No path given.")
+	end
+end
+
+function fs.modtime(path)
+	if path then
+		local mt, err = carbon._fs_modtime(path)
+		if err then
+			return nil, err
+		end
+		return mt
 	else
 		error("No path given.")
 	end

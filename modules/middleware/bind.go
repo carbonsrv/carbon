@@ -183,6 +183,13 @@ func BindPhysFS(L *lua.State) {
 			file.Close()
 			return string(buf.Bytes()), nil
 		},
+		"_fs_modtime": func(name string) (int, error) {
+			mt, err := physfs.GetLastModTime(name)
+			if err != nil {
+				return -1, err
+			}
+			return int(mt.UTC().Unix()), nil
+		},
 	})
 }
 
@@ -206,10 +213,16 @@ func BindIOEnhancements(L *lua.State) {
 			info, err := os.Stat(path)
 			if err != nil {
 				return -1, err
-			} else {
-				return int(info.ModTime().UTC().Unix()), nil
 			}
+			return int(info.ModTime().UTC().Unix()), nil
 		}),
+		"_io_isDir": func(path string) bool {
+			info, err := os.Stat(path)
+			if err != nil {
+				return false
+			}
+			return info.IsDir()
+		},
 	})
 }
 
