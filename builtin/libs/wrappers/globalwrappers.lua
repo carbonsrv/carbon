@@ -424,7 +424,11 @@ end
 -- mime
 mime = {}
 function mime.byext(ext)
-	return carbon._mime_byext(ext)
+	local t = carbon._mime_byext(ext)
+	if t == "" then
+		return nil
+	end
+	return t
 end
 
 function mime.bytype(type)
