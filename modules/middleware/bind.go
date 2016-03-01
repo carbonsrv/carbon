@@ -442,8 +442,9 @@ func BindNet(L *lua.State) {
 }
 
 func BindMime(L *lua.State) {
-	luar.Register(L, "mime", luar.Map{
-		"byext": mime.TypeByExtension,
+	luar.Register(L, "carbon", luar.Map{
+		"_mime_byext":  mime.TypeByExtension,
+		"_mime_bytype": mime.ExtensionsByType,
 	})
 }
 

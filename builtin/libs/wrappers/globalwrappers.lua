@@ -421,6 +421,20 @@ function encoding.base64.encode(str)
 	end
 end
 
+-- mime
+mine = {}
+function mime.byext(ext)
+	return carbon._mime_byext(ext)
+end
+
+function mime.bytype(type)
+	local exts, err = carbon._mime_bytype(type)
+	if err then
+		return nil, err
+	end
+	return luar.slice2table(exts)
+end
+
 -- debug
 function debug.getallupvals(f)
 	local i = 1
