@@ -152,12 +152,12 @@ func Lua() func(*gin.Context) {
 					return
 				} else {
 					helpers.HTMLString(context, http.StatusInternalServerError, `<html>
-					<head><title>Syntax Error in `+context.Request.URL.Path+`</title>
-					<body>
-						<h1>Syntax Error in file `+context.Request.URL.Path+`:</h1>
-						<code>`+string(err.Error())+`</code>
-					</body>
-					</html>`)
+<head><title>Syntax Error in `+context.Request.URL.Path+`</title>
+<body>
+	<h1>Syntax Error in file `+context.Request.URL.Path+`:</h1>
+	<pre>`+string(err.Error())+`</pre>
+</body>
+</html>`)
 					context.Abort()
 					return
 				}
@@ -166,12 +166,12 @@ func Lua() func(*gin.Context) {
 			L.LoadBuffer(code, len(code), file) // This shouldn't error, was checked earlier.
 			if L.Pcall(0, 0, 0) != 0 {          // != 0 means error in execution
 				helpers.HTMLString(context, http.StatusInternalServerError, `<html>
-				<head><title>Runtime Error in `+context.Request.URL.Path+`</title>
-				<body>
-					<h1>Runtime Error in file `+context.Request.URL.Path+`:</h1>
-					<code>`+L.ToString(-1)+`</code>
-				</body>
-				</html>`)
+<head><title>Runtime Error in `+context.Request.URL.Path+`</title>
+<body>
+	<h1>Runtime Error in file `+context.Request.URL.Path+`:</h1>
+	<pre>`+L.ToString(-1)+`</pre>
+</body>
+</html>`)
 				context.Abort()
 				return
 			}
@@ -219,12 +219,12 @@ func DLR_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.C
 		L.LoadBuffer(bcode, len(bcode), "route")
 		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
 			helpers.HTMLString(context, http.StatusInternalServerError, `<html>
-			<head><title>Runtime Error on `+context.Request.URL.Path+`</title>
-			<body>
-				<h1>Runtime Error in Lua Route on `+context.Request.URL.Path+`:</h1>
-				<code>`+L.ToString(-1)+`</code>
-			</body>
-			</html>`)
+<head><title>Runtime Error on `+context.Request.URL.Path+`</title>
+<body>
+	<h1>Runtime Error in Lua Route on `+context.Request.URL.Path+`:</h1>
+	<pre>`+L.ToString(-1)+`</pre>
+</body>
+</html>`)
 			context.Abort()
 			return
 		}
@@ -257,12 +257,12 @@ func DLR_RUS(bcode string, instances int, dobind bool, vals map[string]interface
 		BindContext(L, context)
 		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
 			helpers.HTMLString(context, http.StatusInternalServerError, `<html>
-			<head><title>Runtime Error on `+context.Request.URL.Path+`</title>
-			<body>
-				<h1>Runtime Error in Lua Route on `+context.Request.URL.Path+`:</h1>
-				<code>`+L.ToString(-1)+`</code>
-			</body>
-			</html>`)
+<head><title>Runtime Error on `+context.Request.URL.Path+`</title>
+<body>
+	<h1>Runtime Error in Lua Route on `+context.Request.URL.Path+`:</h1>
+	<pre>`+L.ToString(-1)+`</pre>
+</body>
+</html>`)
 			context.Abort()
 			return
 		}
