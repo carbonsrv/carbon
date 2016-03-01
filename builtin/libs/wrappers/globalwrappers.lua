@@ -422,7 +422,7 @@ function encoding.base64.encode(str)
 end
 
 -- mime
-mine = {}
+mime = {}
 function mime.byext(ext)
 	return carbon._mime_byext(ext)
 end
