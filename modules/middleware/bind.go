@@ -190,6 +190,17 @@ func BindPhysFS(L *lua.State) {
 			}
 			return int(mt.UTC().Unix()), nil
 		},
+		"_fs_size": func(path string) (int64, error) {
+			f, err := physfs.Open(path)
+			if err != nil {
+				return -1, err
+			}
+			info, err := f.Stat(path)
+			if err != nil {
+				return -1, err
+			}
+			return info.Size(), nil
+		},
 	})
 }
 
@@ -222,6 +233,13 @@ func BindIOEnhancements(L *lua.State) {
 				return false
 			}
 			return info.IsDir()
+		},
+		"_io_size": func(path string) (int64, error) {
+			info, err := os.Stat(path)
+			if err != nil {
+				return -1, err
+			}
+			return info.Size(), nil
 		},
 	})
 }

@@ -42,6 +42,18 @@ function io.isDir(path)
 	end
 end
 
+function io.size(path)
+	if path then
+		local size, err = carbon._io_size(path)
+		if err then
+			return nil, err
+		end
+		return size
+	else
+		error("No path given.")
+	end
+end
+
 -- fs
 fs = {}
 function fs.mount(dir, mp, app)
@@ -150,6 +162,18 @@ function fs.readfile(path)
 			return nil, err
 		end
 		return content
+	else
+		error("No path given.")
+	end
+end
+
+function fs.size(path)
+	if path then
+		local size, err = carbon._fs_size(path)
+		if err then
+			return nil, err
+		end
+		return size
 	else
 		error("No path given.")
 	end
