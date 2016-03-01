@@ -195,7 +195,7 @@ func BindPhysFS(L *lua.State) {
 			if err != nil {
 				return -1, err
 			}
-			info, err := f.Stat(path)
+			info, err := f.Stat()
 			if err != nil {
 				return -1, err
 			}
