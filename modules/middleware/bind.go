@@ -25,6 +25,7 @@ import (
 	"github.com/vifino/luar"
 	"io"
 	"io/ioutil"
+	"mime"
 	"net"
 	"os"
 	"path/filepath"
@@ -53,6 +54,7 @@ func Bind(L *lua.State, root string) {
 	BindThread(L)
 	BindNet(L)
 	BindConversions(L)
+	BindMime(L)
 	BindComs(L)
 	BindEncoding(L)
 	BindMarkdown(L)
@@ -436,6 +438,12 @@ func BindNet(L *lua.State) {
 				}
 			})
 		}),
+	})
+}
+
+func BindMime(L *lua.State) {
+	luar.Register(L, "mime", luar.Map{
+		"byext": mime.TypeByExtension,
 	})
 }
 
