@@ -175,8 +175,8 @@ func BindPhysFS(L *lua.State) {
 			return nil, errors.New("open " + name + ": no such file or directory")
 		},
 		"_fs_readfile": func(name string) (string, error) {
-
 			file, err := physfs.Open(name)
+			defer file.Close()
 			if err != nil {
 				return "", err
 			}
@@ -194,6 +194,7 @@ func BindPhysFS(L *lua.State) {
 		},
 		"_fs_size": func(path string) (int64, error) {
 			f, err := physfs.Open(path)
+			defer f.Close()
 			if err != nil {
 				return -1, err
 			}

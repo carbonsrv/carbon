@@ -4,6 +4,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/carbonsrv/carbon/modules/glue"
@@ -69,22 +70,25 @@ func initPhysFS(path string) http.FileSystem {
 	return true
 }*/
 func fileRead(file string) (string, error) {
-	f, err := filesystem.Open(file)
-	defer f.Close()
-	if err != nil {
-		return "", err
+	if physfs.Exists(file) {
+		f, err := filesystem.Open(file)
+		defer f.Close()
+		if err != nil {
+			return "", err
+		}
+		fi, err := f.Stat()
+		if err != nil {
+			return "", err
+		}
+		r := bufio.NewReader(f)
+		buf := make([]byte, fi.Size())
+		_, err = r.Read(buf)
+		if err != nil {
+			return "", err
+		}
+		return string(buf), err
 	}
-	fi, err := f.Stat()
-	if err != nil {
-		return "", err
-	}
-	r := bufio.NewReader(f)
-	buf := make([]byte, fi.Size())
-	_, err = r.Read(buf)
-	if err != nil {
-		return "", err
-	}
-	return string(buf), err
+	return "", errors.New("no such file or directory.")
 }
 func fileExists(file string) bool {
 	return physfs.Exists(file)
@@ -181,6 +185,7 @@ func main() {
 	var script_flag = flag.String("script", "", "Parse Lua Script as initialization")
 	var run_repl = flag.Bool("repl", false, "Run REPL")
 	var eval = flag.String("eval", "", "Eval Lua Code")
+	var is_app = flag.Bool("app", false, "Script is bundle")
 	var licenses = flag.Bool("licenses", false, "Show licenses")
 
 	var host = flag.String("host", "", "IP of Host to bind the Webserver on")
@@ -219,21 +224,26 @@ func main() {
 		os.Exit(0)
 	}
 
-	runtime.GOMAXPROCS(*workers)
-
-	root, _ := filepath.Abs(*webroot)
-	filesystem = initPhysFS(root)
-	defer physfs.Deinit()
-	go scheduler.Run()                         // Run the scheduler.
-	go middleware.Preloader()                  // Run the Preloader.
-	middleware.Init(*jobs, cfe, kvstore, root) // Run init sequence.
-
 	var script string
 	if *script_flag == "" {
 		script = flag.Arg(0)
 	} else {
 		script = *script_flag
 	}
+
+	runtime.GOMAXPROCS(*workers)
+
+	root, _ := filepath.Abs(*webroot)
+	physroot_path := root
+	if *is_app {
+		physroot_path = script
+	}
+	filesystem = initPhysFS(physroot_path)
+
+	defer physfs.Deinit()
+	go scheduler.Run()                         // Run the scheduler.
+	go middleware.Preloader()                  // Run the Preloader.
+	middleware.Init(*jobs, cfe, kvstore, root) // Run init sequence.
 
 	if *doDebug == false {
 		gin.SetMode(gin.ReleaseMode)
@@ -280,12 +290,35 @@ func main() {
 		} else {
 			args = args[1:]
 		}
-		err := luaconf.Configure(script, args, cfe, root, *useRecovery, *useLogger, *run_repl, func(srv *gin.Engine) {
-			serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
-		})
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+		if *is_app {
+			script_base := filepath.Base(script)
+			script_name := script_base[:len(script_base)-len(filepath.Ext(script))]
+			script_src, err := fileRead(script_name)
+			if err != nil {
+				script_src, err = fileRead("app.lua")
+				if err != nil {
+					script_src, err = fileRead("init.lua")
+					if err != nil {
+						fmt.Println("Error: App Bundle does not contain '" + script_name + "', 'app.lua' or 'init.lua'. No idea what to run. Aborting.")
+						os.Exit(1)
+					}
+				}
+			}
+			err = luaconf.Eval(script_src, args, cfe, script, *useRecovery, *useLogger, *run_repl, func(srv *gin.Engine) {
+				serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
+			})
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+		} else {
+			err := luaconf.Configure(script, args, cfe, root, *useRecovery, *useLogger, *run_repl, func(srv *gin.Engine) {
+				serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
+			})
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		}
 	}
 }
