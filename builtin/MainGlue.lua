@@ -7,53 +7,83 @@ local webroot_path = var.root .. (var.root:match("/$") and "" or "/")
 package.cpath = webroot_path.."?.so;"..webroot_path.."loadall.so;"..package.cpath
 
 -- Custom package loaders so that you can require the libraries built into Carbon.
+local cache_key_prefix = "carbon:tmp:lua_module_bytecode:"
+local cache_key_asset = cache_key_prefix .. "asset:"
+local cache_key_asset_location = cache_key_prefix .. "asset_location:"
+
 local function loadasset_libs(name)
-	local location = "libs/" .. tostring(name):gsub("%.", "/") .. ".lua"
+	local modname = tostring(name):gsub("%.", "/")
+	local location = "libs/" .. modname .. ".lua"
+	local f_bc = kvstore._get(cache_key_asset..modname)
+	if f_bc then
+		return assert(loadstring(f_bc, kvstore._get(cache_key_asset_location..modname)))
+	end
+
 	local src = carbon.glue(location)
 	if src ~= "" then
 		-- Compile and return the module
-		return assert(loadstring(src, location))
+		local f = assert(loadstring(src, location))
+		kvstore._set(cache_key_asset..modname, string.dump(f))
+		kvstore._set(cache_key_asset_location..modname, location)
+		return f
 	end
 
-	local location_init = "libs/" .. tostring(name):gsub("%.", "/") .. "/init.lua"
+	local location_init = "libs/" .. modname .. "/init.lua"
 	local src = carbon.glue(location_init)
 	if src ~= "" then
 		-- Compile and return the module
-		return assert(loadstring(src, location_init))
+		local f = assert(loadstring(src, location_init))
+		kvstore._set(cache_key_asset..modname, string.dump(f))
+		kvstore._set(cache_key_asset_location..modname, location_init)
+		return f
 	end
 	return "\n\tno lib asset '/" .. location .. "' (not compiled in)\n\tno lib asset '/" .. location_init .. "' (not compiled in)"
 end
 
 local function loadasset_thirdparty(name)
-	local location = "3rdparty/" .. tostring(name):gsub("%.", "/") .. ".lua"
+	local modname = tostring(name):gsub("%.", "/")
+	local location = "3rdparty/" .. modname .. ".lua"
 	local src = carbon.glue(location)
 	if src ~= "" then
 		-- Compile and return the module
-		return assert(loadstring(src, location))
+		local f = assert(loadstring(src, location))
+		kvstore._set(cache_key_asset..modname, string.dump(f))
+		kvstore._set(cache_key_asset_location..modname, location)
+		return f
 	end
 
-	local location_init = "3rdparty/" .. tostring(name):gsub("%.", "/") .. "/init.lua"
+	local location_init = "3rdparty/" .. modname .. "/init.lua"
 	local src = carbon.glue(location_init)
 	if src ~= "" then
 		-- Compile and return the module
-		return assert(loadstring(src, location_init))
+		local f = assert(loadstring(src, location_init))
+		kvstore._set(cache_key_asset..modname, string.dump(f))
+		kvstore._set(cache_key_asset_location..modname, location_init)
+		return f
 	end
 	return "\n\tno thirdparty asset '/" .. location .. "' (not compiled in)\n\tno thirdparty asset '/" .. location_init .. "' (not compiled in)"
 end
 
 local function loadphysfs(name)
-	local location = tostring(name):gsub("%.", "/") .. ".lua"
+	local modname = tostring(name):gsub("%.", "/")
+	local location = modname .. ".lua"
 	local src, err1 = fs.readfile(location)
 	if src then
 		-- Compile and return the module
-		return assert(loadstring(src, location))
+		local f = assert(loadstring(src, location_init))
+		kvstore._set(cache_key_asset..modname, string.dump(f))
+		kvstore._set(cache_key_asset_location..modname, location_init)
+		return f
 	end
 
-	local location_init = tostring(name):gsub("%.", "/") .. "/init.lua"
+	local location_init = modname .. "/init.lua"
 	local src, err2 = fs.readfile(location_init)
 	if src then
 		-- Compile and return the module
-		return assert(loadstring(src, location_init))
+		local f = assert(loadstring(src, location_init))
+		kvstore.set(cache_key_asset..modname, string.dump(f))
+		kvstore.set(cache_key_asset_location..modname, location_init)
+		return f
 	end
 	return "\n\tno file '" .. location .. "' in webroot ("..err1..")\n\tno file '" .. location_init .. "' in webroot ("..err2..")"
 end
