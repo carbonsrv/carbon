@@ -85,7 +85,7 @@ local function loadphysfs(name)
 		kvstore.set(cache_key_asset_location..modname, location_init)
 		return f
 	end
-	return "\n\tno file '" .. location .. "' in webroot ("..err1..")\n\tno file '" .. location_init .. "' in webroot ("..err2..")"
+	return "\n\tno file '" .. location .. "' in webroot\n\tno file '" .. location_init .. "' in webroot"
 end
 
 -- Install the loaders so that it's called just before the normal Lua loaders
