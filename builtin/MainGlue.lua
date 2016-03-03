@@ -7,17 +7,22 @@ local webroot_path = var.root .. (var.root:match("/$") and "" or "/")
 package.cpath = webroot_path.."?.so;"..webroot_path.."loadall.so;"..package.cpath
 
 -- Custom package loaders so that you can require the libraries built into Carbon.
-local cache_key_prefix = "carbon:tmp:lua_module_bytecode:"
+local cache_key_prefix = "carbon:lua_module:"
 local cache_key_asset = cache_key_prefix .. "asset:"
 local cache_key_asset_location = cache_key_prefix .. "asset_location:"
 
-local function loadasset_libs(name)
+function loadcache(name)
 	local modname = tostring(name):gsub("%.", "/")
-	local location = "libs/" .. modname .. ".lua"
 	local f_bc = kvstore._get(cache_key_asset..modname)
 	if f_bc then
 		return assert(loadstring(f_bc, kvstore._get(cache_key_asset_location..modname)))
 	end
+	return "\n\tno stored bytecode in kvstore under '"..cache_key_asset..modname.."'"
+end
+
+local function loadasset_libs(name)
+	local modname = tostring(name):gsub("%.", "/")
+	local location = "libs/" .. modname .. ".lua"
 
 	local src = carbon.glue(location)
 	if src ~= "" then
@@ -89,9 +94,10 @@ local function loadphysfs(name)
 end
 
 -- Install the loaders so that it's called just before the normal Lua loaders
-table.insert(package.loaders, 2, loadasset_libs)
-table.insert(package.loaders, 3, loadasset_thirdparty)
-table.insert(package.loaders, 4, loadphysfs)
+table.insert(package.loaders, 2, loadcache)
+table.insert(package.loaders, 3, loadasset_libs)
+table.insert(package.loaders, 4, loadasset_thirdparty)
+table.insert(package.loaders, 5, loadphysfs)
 
 -- Load a few builtin libs.
 require("wrappers.globalwrappers")
