@@ -5,7 +5,6 @@ package middleware
 
 import (
 	"bufio"
-	"bytes"
 	"crypto/tls"
 	"encoding/base64"
 	"errors"
@@ -23,7 +22,6 @@ import (
 	"github.com/vifino/contrib/gzip"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
-	"io"
 	"io/ioutil"
 	"mime"
 	"net"
@@ -174,16 +172,26 @@ func BindPhysFS(L *lua.State) {
 			}
 			return nil, errors.New("open " + name + ": no such file or directory")
 		},
-		"_fs_readfile": func(name string) (string, error) {
-			file, err := physfs.Open(name)
-			defer file.Close()
-			if err != nil {
-				return "", err
+		"_fs_readfile": func(file string) (string, error) {
+			if physfs.Exists(file) {
+				f, err := physfs.Open(file)
+				defer f.Close()
+				if err != nil {
+					return "", err
+				}
+				fi, err := f.Stat()
+				if err != nil {
+					return "", err
+				}
+				r := bufio.NewReader(f)
+				buf := make([]byte, fi.Size())
+				_, err = r.Read(buf)
+				if err != nil {
+					return "", err
+				}
+				return string(buf), err
 			}
-			buf := bytes.NewBuffer(nil)
-			io.Copy(buf, file)
-			file.Close()
-			return string(buf.Bytes()), nil
+			return "", errors.New(file + ": No such file or directory")
 		},
 		"_fs_modtime": func(name string) (int, error) {
 			mt, err := physfs.GetLastModTime(name)

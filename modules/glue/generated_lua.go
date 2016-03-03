@@ -124,7 +124,7 @@ func mainglueLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "MainGlue.lua", size: 2551, mode: os.FileMode(420), modTime: time.Unix(1456442170, 0)}
+	info := bindataFileInfo{name: "MainGlue.lua", size: 2551, mode: os.FileMode(420), modTime: time.Unix(1456984007, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -464,7 +464,7 @@ func libsWrappersGlobalwrappersLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "libs/wrappers/globalwrappers.lua", size: 8163, mode: os.FileMode(420), modTime: time.Unix(1456865239, 0)}
+	info := bindataFileInfo{name: "libs/wrappers/globalwrappers.lua", size: 8163, mode: os.FileMode(420), modTime: time.Unix(1456983487, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
