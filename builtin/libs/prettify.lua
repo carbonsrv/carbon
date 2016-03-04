@@ -23,7 +23,7 @@ return function(...) -- Almost JSON(tm)
 						line(k .. ': ' .. tostring(v))
 					else
 						tabify(k .. ': ')
-						prettifyrecursive(v, tab + #k + 2, true)
+						prettifyrecursive(v, tab + 2, true)
 					end
 				else
 					line(k .. ': ' .. tostring(v))
