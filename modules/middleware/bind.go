@@ -5,6 +5,7 @@ package middleware
 
 import (
 	"bufio"
+	"bytes"
 	"crypto/tls"
 	"encoding/base64"
 	"errors"
@@ -22,6 +23,7 @@ import (
 	"github.com/vifino/contrib/gzip"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
+	"io"
 	"io/ioutil"
 	"mime"
 	"net"
@@ -187,6 +189,13 @@ func BindPhysFS(L *lua.State) {
 				buf := make([]byte, fi.Size())
 				_, err = r.Read(buf)
 				if err != nil {
+					if err.Error() == "EOF" { // Hack. Sometimes, things just don't work. No idea why.
+						f2, _ := physfs.Open(file)
+						buf := bytes.NewBuffer(nil)
+						io.Copy(buf, f2)
+						f.Close()
+						return string(buf.Bytes()), nil
+					}
 					return "", err
 				}
 				return string(buf), err

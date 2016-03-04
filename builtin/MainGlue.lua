@@ -75,20 +75,14 @@ local function loadphysfs(name)
 	local src, err1 = fs.readfile(location)
 	if src then
 		-- Compile and return the module
-		local f = assert(loadstring(src, location_init))
-		kvstore._set(cache_key_asset..modname, string.dump(f))
-		kvstore._set(cache_key_asset_location..modname, location_init)
-		return f
+		return assert(loadstring(src, location))
 	end
 
 	local location_init = modname .. "/init.lua"
 	local src, err2 = fs.readfile(location_init)
 	if src then
 		-- Compile and return the module
-		local f = assert(loadstring(src, location_init))
-		kvstore.set(cache_key_asset..modname, string.dump(f))
-		kvstore.set(cache_key_asset_location..modname, location_init)
-		return f
+		return assert(loadstring(src, location_init))
 	end
 	return "\n\tno file '" .. location .. "' in webroot\n\tno file '" .. location_init .. "' in webroot"
 end
