@@ -291,15 +291,15 @@ func main() {
 			args = args[1:]
 		}
 		if *is_app {
-			script_src, err := fileRead("app.lua")
+			script_base := filepath.Base(script)
+			script_name := script_base[:len(script_base)-len(filepath.Ext(script))]
+			script_src, err := fileRead(script_name + ".lua")
 			if err != nil {
-				script_base := filepath.Base(script)
-				script_name := script_base[:len(script_base)-len(filepath.Ext(script))]
-				script_src, err = fileRead(script_name + ".lua")
+				script_src, err = fileRead("app.lua")
 				if err != nil {
 					script_src, err = fileRead("init.lua")
 					if err != nil {
-						fmt.Println("Error: App Bundle does not contain 'app.lua', '" + script_name + ".lua' or 'init.lua'. No idea what to run. Aborting.")
+						fmt.Println("Error: App Bundle does not contain '" + script_name + ".lua', 'app.lua' or 'init.lua'. No idea what to run. Aborting.")
 						os.Exit(1)
 					}
 				}
