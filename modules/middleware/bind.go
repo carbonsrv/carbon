@@ -18,6 +18,8 @@ import (
 	"github.com/carbonsrv/carbon/modules/static"
 	"github.com/fzzy/radix/redis"
 	"github.com/gin-gonic/gin"
+	"github.com/mattn/go-runewidth"
+	"github.com/nsf/termbox-go"
 	"github.com/pmylund/go-cache"
 	"github.com/shurcooL/github_flavored_markdown"
 	"github.com/vifino/contrib/gzip"
@@ -59,6 +61,7 @@ func Bind(L *lua.State, root string) {
 	BindEncoding(L)
 	BindMarkdown(L)
 	BindLinenoise(L)
+	BindTermbox(L)
 	BindOther(L)
 }
 
@@ -509,6 +512,175 @@ func BindLinenoise(L *lua.State) {
 		"saveHistory":  linenoise.SaveHistory,
 		"loadHistory":  linenoise.LoadHistory,
 		"setMultiline": linenoise.SetMultiline,
+	})
+}
+
+// BindTermbox binds the termbox-go library.
+func BindTermbox(L *lua.State) {
+	luar.Register(L, "termbox", luar.Map{
+		// Functions
+		"CellBuffer": termbox.CellBuffer,
+		"Clear":      termbox.Clear,
+		"Close":      termbox.Close,
+		"Flush":      termbox.Flush,
+		"HideCursor": termbox.HideCursor,
+		"Init":       termbox.Init,
+		"Interrupt":  termbox.Interrupt,
+		"SetCell": func(x, y int, ch string, fg, bg termbox.Attribute) {
+			termbox.SetCell(x, y, []rune(ch)[0], fg, bg)
+		},
+		"SetCursor":     termbox.SetCursor,
+		"Size":          termbox.Size,
+		"Sync":          termbox.Sync,
+		"SetInputMode":  termbox.SetInputMode,
+		"SetOutputMode": termbox.SetOutputMode,
+		"PollEvent": func() map[string]interface{} {
+			e := termbox.PollEvent()
+			return map[string]interface{}{
+				"Type":   e.Type,
+				"Mod":    e.Mod,
+				"Key":    e.Key,
+				"Ch":     string(e.Ch),
+				"Width":  e.Width,
+				"Height": e.Height,
+				"Err":    e.Err,
+				"MouseX": e.MouseX,
+				"MouseY": e.MouseY,
+				"N":      e.N,
+			}
+		},
+		"PollRawEvent": termbox.PollRawEvent,
+		"ParseEvent":   termbox.ParseEvent,
+
+		"TBPrint": func(x, y int, fg, bg termbox.Attribute, msg string) {
+			for _, c := range msg {
+				termbox.SetCell(x, y, c, fg, bg)
+				x += runewidth.RuneWidth(c)
+			}
+		},
+
+		// Constants:
+		// Colors
+		"ColorDefault": termbox.ColorDefault,
+		"ColorBlack":   termbox.ColorBlack,
+		"ColorRed":     termbox.ColorRed,
+		"ColorGreen":   termbox.ColorGreen,
+		"ColorYellow":  termbox.ColorYellow,
+		"ColorBlue":    termbox.ColorBlue,
+		"ColorMagenta": termbox.ColorMagenta,
+		"ColorCyan":    termbox.ColorCyan,
+		"ColorWhite":   termbox.ColorWhite,
+		// Attributes
+		"AttrBold":      termbox.AttrBold,
+		"AttrUnderline": termbox.AttrUnderline,
+		"AttrReverse":   termbox.AttrReverse,
+		// Events
+		"EventKey":       termbox.EventKey,
+		"EventResize":    termbox.EventResize,
+		"EventMouse":     termbox.EventMouse,
+		"EventError":     termbox.EventError,
+		"EventInterrupt": termbox.EventInterrupt,
+		"EventRaw":       termbox.EventRaw,
+		"EventNone":      termbox.EventNone,
+
+		// Input Modes
+		"InputEsc":     termbox.InputEsc,
+		"InputAlt":     termbox.InputAlt,
+		"InputMouse":   termbox.InputMouse,
+		"InputCurrent": termbox.InputCurrent,
+
+		// Output modes
+		"OutputCurrent":   termbox.OutputCurrent,
+		"OutputNormal":    termbox.OutputNormal,
+		"Output256":       termbox.Output256,
+		"Output216":       termbox.Output216,
+		"OutputGrayscale": termbox.OutputGrayscale,
+
+		// Keys
+		"KeyEsc":        termbox.KeyEsc,
+		"KeySpace":      termbox.KeySpace,
+		"KeyTab":        termbox.KeyTab,
+		"KeyEnter":      termbox.KeyEnter,
+		"KeyF1":         termbox.KeyF1,
+		"KeyF2":         termbox.KeyF2,
+		"KeyF3":         termbox.KeyF3,
+		"KeyF4":         termbox.KeyF4,
+		"KeyF5":         termbox.KeyF5,
+		"KeyF6":         termbox.KeyF6,
+		"KeyF7":         termbox.KeyF7,
+		"KeyF8":         termbox.KeyF8,
+		"KeyF9":         termbox.KeyF9,
+		"KeyF10":        termbox.KeyF10,
+		"KeyF11":        termbox.KeyF11,
+		"KeyF12":        termbox.KeyF12,
+		"KeyInsert":     termbox.KeyInsert,
+		"KeyDelete":     termbox.KeyDelete,
+		"KeyHome":       termbox.KeyHome,
+		"KeyEnd":        termbox.KeyEnd,
+		"KeyPgup":       termbox.KeyPgup,
+		"KeyPgdn":       termbox.KeyPgdn,
+		"KeyArrowUp":    termbox.KeyArrowUp,
+		"KeyArrowDown":  termbox.KeyArrowDown,
+		"KeyArrowLeft":  termbox.KeyArrowLeft,
+		"KeyArrowRight": termbox.KeyArrowRight,
+
+		// More Keys
+		"KeyCtrlTilde":         termbox.KeyCtrlTilde,
+		"KeyCtrlSpace":         termbox.KeyCtrlSpace,
+		"KeyBackspace":         termbox.KeyBackspace,
+		"KeyBackspace2":        termbox.KeyBackspace2,
+		"KeyCtrlSlash":         termbox.KeyCtrlSlash,
+		"KeyCtrlBackslash":     termbox.KeyCtrlBackslash,
+		"KeyCtrlLsqBracket":    termbox.KeyCtrlLsqBracket,
+		"KeyKeyCtrlRsqBracket": termbox.KeyCtrlRsqBracket,
+		"KeyCtrlUnderscore":    termbox.KeyCtrlUnderscore,
+
+		// Ctrl everything
+		"KeyCtrl2": termbox.KeyCtrl2,
+		"KeyCtrl3": termbox.KeyCtrl3,
+		"KeyCtrl4": termbox.KeyCtrl4,
+		"KeyCtrl5": termbox.KeyCtrl5,
+		"KeyCtrl6": termbox.KeyCtrl6,
+		"KeyCtrl7": termbox.KeyCtrl7,
+		"KeyCtrl8": termbox.KeyCtrl8,
+		"KeyCtrlA": termbox.KeyCtrlA,
+		"KeyCtrlB": termbox.KeyCtrlB,
+		"KeyCtrlC": termbox.KeyCtrlC,
+		"KeyCtrlD": termbox.KeyCtrlD,
+		"KeyCtrlE": termbox.KeyCtrlE,
+		"KeyCtrlF": termbox.KeyCtrlF,
+		"KeyCtrlG": termbox.KeyCtrlG,
+		"KeyCtrlH": termbox.KeyCtrlH,
+		"KeyCtrlI": termbox.KeyCtrlI,
+		"KeyCtrlJ": termbox.KeyCtrlJ,
+		"KeyCtrlK": termbox.KeyCtrlK,
+		"KeyCtrlL": termbox.KeyCtrlL,
+		"KeyCtrlM": termbox.KeyCtrlM,
+		"KeyCtrlN": termbox.KeyCtrlN,
+		"KeyCtrlO": termbox.KeyCtrlO,
+		"KeyCtrlP": termbox.KeyCtrlP,
+		"KeyCtrlQ": termbox.KeyCtrlQ,
+		"KeyCtrlR": termbox.KeyCtrlR,
+		"KeyCtrlS": termbox.KeyCtrlS,
+		"KeyCtrlT": termbox.KeyCtrlT,
+		"KeyCtrlU": termbox.KeyCtrlU,
+		"KeyCtrlV": termbox.KeyCtrlV,
+		"KeyCtrlW": termbox.KeyCtrlW,
+		"KeyCtrlX": termbox.KeyCtrlX,
+		"KeyCtrlY": termbox.KeyCtrlY,
+		"KeyCtrlZ": termbox.KeyCtrlZ,
+
+		// Modifiers
+		"ModAlt":    termbox.ModAlt,
+		"ModMotion": termbox.ModMotion,
+
+		// Mouse
+		"MouseLeft":      termbox.MouseLeft,
+		"MouseMiddle":    termbox.MouseMiddle,
+		"MouseRight":     termbox.MouseRight,
+		"MouseRelease":   termbox.MouseRelease,
+		"MouseWheelUp":   termbox.MouseWheelUp,
+		"MouseWheelDown": termbox.MouseWheelDown,
 	})
 }
 
