@@ -59,6 +59,43 @@ function thread.spawn(code, bindings, buffer, dontusemsgpack)
 	end
 end
 
+-- Primitive interface to threads.
+function thread.run(fn, ...)
+	msgpack = require("msgpack")
+	mpfn = string.dump(function()
+		msgpack = require("msgpack")
+		local args = msgpack.unpack(THREAD_ARGS)
+		THREAD_ARGS=nil
+		local thrcom = threadcom
+		local threadfn = args.fn
+		local thread_args = args.args
+		args = nil
+		com.send(thrcom, msgpack.pack({threadfn(unpack(thread_args))}))
+	end)
+	local mpbinds_raw, err = msgpack.pack({
+		["fn"] = fn,
+		["args"] = {...}
+		})
+	if err ~= nil then
+		error(err)
+	end
+	mpbindings = {THREAD_ARGS=mpbinds_raw}
+	local ch, err = thread._spawn(mpfn, true, mpbindings, -1)
+	if err ~= nil then
+		error(err)
+	end
+	local resgot = false
+	return function()
+		if not resgot then
+			resgot = true
+			local res = unpack(msgpack.unpack(com.receive(ch)))
+			ch = nil
+			return res
+		end
+	end
+end
+
+
 function thread.rpcthread() -- not working, issues with binding or something .-.
 	local rpc = thread.spawn(function()
 		local msgpack = require("msgpack")
