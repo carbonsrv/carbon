@@ -104,7 +104,7 @@ func confglueLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "ConfGlue.lua", size: 151, mode: os.FileMode(420), modTime: time.Unix(1455748119, 0)}
+	info := bindataFileInfo{name: "ConfGlue.lua", size: 151, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -124,7 +124,7 @@ func mainglueLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "MainGlue.lua", size: 3597, mode: os.FileMode(420), modTime: time.Unix(1457119478, 0)}
+	info := bindataFileInfo{name: "MainGlue.lua", size: 3597, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -144,7 +144,7 @@ func noticeTxt() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "NOTICE.txt", size: 6278, mode: os.FileMode(420), modTime: time.Unix(1456981753, 0)}
+	info := bindataFileInfo{name: "NOTICE.txt", size: 6278, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -164,7 +164,7 @@ func routeglueLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "RouteGlue.lua", size: 1095, mode: os.FileMode(420), modTime: time.Unix(1448815808, 0)}
+	info := bindataFileInfo{name: "RouteGlue.lua", size: 1095, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -184,7 +184,7 @@ func bootscriptLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "bootscript.lua", size: 470, mode: os.FileMode(420), modTime: time.Unix(1453056152, 0)}
+	info := bindataFileInfo{name: "bootscript.lua", size: 470, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -204,7 +204,7 @@ func gluetest() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "gluetest", size: 13, mode: os.FileMode(420), modTime: time.Unix(1448831954, 0)}
+	info := bindataFileInfo{name: "gluetest", size: 13, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -224,7 +224,7 @@ func _3rdpartyMessagepackLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "3rdparty/MessagePack.lua", size: 33654, mode: os.FileMode(420), modTime: time.Unix(1449228506, 0)}
+	info := bindataFileInfo{name: "3rdparty/MessagePack.lua", size: 33654, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -244,7 +244,7 @@ func _3rdpartyBnLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "3rdparty/bn.lua", size: 9059, mode: os.FileMode(420), modTime: time.Unix(1456438437, 0)}
+	info := bindataFileInfo{name: "3rdparty/bn.lua", size: 9059, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -264,7 +264,7 @@ func _3rdpartyCsvLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "3rdparty/csv.lua", size: 15480, mode: os.FileMode(420), modTime: time.Unix(1449256690, 0)}
+	info := bindataFileInfo{name: "3rdparty/csv.lua", size: 15480, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -284,7 +284,7 @@ func _3rdpartyDkjsonLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "3rdparty/dkjson.lua", size: 22415, mode: os.FileMode(420), modTime: time.Unix(1456981816, 0)}
+	info := bindataFileInfo{name: "3rdparty/dkjson.lua", size: 22415, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -304,7 +304,7 @@ func _3rdpartyLtn12Lua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "3rdparty/ltn12.lua", size: 8632, mode: os.FileMode(420), modTime: time.Unix(1455421347, 0)}
+	info := bindataFileInfo{name: "3rdparty/ltn12.lua", size: 8632, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -324,7 +324,7 @@ func libsEscapistLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "libs/escapist.lua", size: 708, mode: os.FileMode(420), modTime: time.Unix(1447984775, 0)}
+	info := bindataFileInfo{name: "libs/escapist.lua", size: 708, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -344,7 +344,7 @@ func libsMsgpackLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "libs/msgpack.lua", size: 1898, mode: os.FileMode(420), modTime: time.Unix(1455494649, 0)}
+	info := bindataFileInfo{name: "libs/msgpack.lua", size: 1898, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -364,7 +364,7 @@ func libsPrettifyLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "libs/prettify.lua", size: 1164, mode: os.FileMode(420), modTime: time.Unix(1457129480, 0)}
+	info := bindataFileInfo{name: "libs/prettify.lua", size: 1164, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -384,7 +384,7 @@ func libsSerializeLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "libs/serialize.lua", size: 3915, mode: os.FileMode(420), modTime: time.Unix(1449072330, 0)}
+	info := bindataFileInfo{name: "libs/serialize.lua", size: 3915, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -404,7 +404,7 @@ func libsTagsLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "libs/tags.lua", size: 3660, mode: os.FileMode(420), modTime: time.Unix(1447982406, 0)}
+	info := bindataFileInfo{name: "libs/tags.lua", size: 3660, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -424,7 +424,7 @@ func libsTemplateLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "libs/template.lua", size: 3283, mode: os.FileMode(420), modTime: time.Unix(1449156544, 0)}
+	info := bindataFileInfo{name: "libs/template.lua", size: 3283, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -444,7 +444,7 @@ func libsThreadLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "libs/thread.lua", size: 3693, mode: os.FileMode(420), modTime: time.Unix(1457986214, 0)}
+	info := bindataFileInfo{name: "libs/thread.lua", size: 3693, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -464,7 +464,7 @@ func libsWrappersGlobalwrappersLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "libs/wrappers/globalwrappers.lua", size: 8350, mode: os.FileMode(420), modTime: time.Unix(1457982829, 0)}
+	info := bindataFileInfo{name: "libs/wrappers/globalwrappers.lua", size: 8350, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -484,7 +484,7 @@ func libsWrappersInitLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "libs/wrappers/init.lua", size: 67, mode: os.FileMode(420), modTime: time.Unix(1455494253, 0)}
+	info := bindataFileInfo{name: "libs/wrappers/init.lua", size: 67, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -504,7 +504,7 @@ func libsWrappersMwLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "libs/wrappers/mw.lua", size: 3061, mode: os.FileMode(420), modTime: time.Unix(1453054504, 0)}
+	info := bindataFileInfo{name: "libs/wrappers/mw.lua", size: 3061, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -524,7 +524,7 @@ func libsWrappersSrvLua() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "libs/wrappers/srv.lua", size: 5744, mode: os.FileMode(420), modTime: time.Unix(1450133858, 0)}
+	info := bindataFileInfo{name: "libs/wrappers/srv.lua", size: 5744, mode: os.FileMode(420), modTime: time.Unix(1459005495, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
