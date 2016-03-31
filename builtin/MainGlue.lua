@@ -15,7 +15,9 @@ function loadcache(name)
 	local modname = tostring(name):gsub("%.", "/")
 	local f_bc = kvstore._get(cache_key_asset..modname)
 	if f_bc then
-		return assert(loadstring(f_bc, kvstore._get(cache_key_asset_location..modname)))
+		local f, err = loadstring(f_bc, kvstore._get(cache_key_asset_location..modname))
+		if err then error(err, 0) end
+		return f
 	end
 	return "\n\tno stored bytecode in kvstore under '"..cache_key_asset..modname.."'"
 end
@@ -27,7 +29,8 @@ local function loadasset_libs(name)
 	local src = carbon.glue(location)
 	if src ~= "" then
 		-- Compile and return the module
-		local f = assert(loadstring(src, location))
+		local f, err = loadstring(src, location)
+		if err then error(err, 0) end
 		kvstore._set(cache_key_asset..modname, string.dump(f))
 		kvstore._set(cache_key_asset_location..modname, location)
 		return f
@@ -37,7 +40,8 @@ local function loadasset_libs(name)
 	local src = carbon.glue(location_init)
 	if src ~= "" then
 		-- Compile and return the module
-		local f = assert(loadstring(src, location_init))
+		local f, err = loadstring(src, location)
+		if err then error(err, 0) end
 		kvstore._set(cache_key_asset..modname, string.dump(f))
 		kvstore._set(cache_key_asset_location..modname, location_init)
 		return f
@@ -51,7 +55,8 @@ local function loadasset_thirdparty(name)
 	local src = carbon.glue(location)
 	if src ~= "" then
 		-- Compile and return the module
-		local f = assert(loadstring(src, location))
+		local f, err = loadstring(src, location)
+		if err then error(err, 0) end
 		kvstore._set(cache_key_asset..modname, string.dump(f))
 		kvstore._set(cache_key_asset_location..modname, location)
 		return f
@@ -61,7 +66,8 @@ local function loadasset_thirdparty(name)
 	local src = carbon.glue(location_init)
 	if src ~= "" then
 		-- Compile and return the module
-		local f = assert(loadstring(src, location_init))
+		local f, err = loadstring(src, location)
+		if err then error(err, 0) end
 		kvstore._set(cache_key_asset..modname, string.dump(f))
 		kvstore._set(cache_key_asset_location..modname, location_init)
 		return f
@@ -75,14 +81,18 @@ local function loadphysfs(name)
 	local src, err1 = fs.readfile(location)
 	if src then
 		-- Compile and return the module
-		return assert(loadstring(src, location))
+		local f, err = loadstring(src, location)
+		if err then error(err, 0) end
+		return f
 	end
 
 	local location_init = modname .. "/init.lua"
 	local src, err2 = fs.readfile(location_init)
 	if src then
 		-- Compile and return the module
-		return assert(loadstring(src, location_init))
+		local f, err = loadstring(src, location)
+		if err then error(err, 0) end
+		return f
 	end
 	return "\n\tno file '" .. location .. "' in webroot\n\tno file '" .. location_init .. "' in webroot"
 end

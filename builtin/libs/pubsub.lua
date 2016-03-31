@@ -36,12 +36,8 @@ _M.dispatcher = kvstore.get("pubsub:dispatcher_thread") or thread.spawn(function
 		elseif msg.type == "pub" then
 			local path = msg.path
 			local message = msg.msg
-			kvstore.set("pubsub:coms:"..msg.path, compaths[msg.path])
 			local sender = function()
-				local compath = kvstore.get("pubsub:coms:"..path)
-				if not compath then
-					compath = {}
-				end
+				local compath = compaths[msg.path]
 				if compath then
 					for i, chan in pairs(compath) do
 						com.send(chan, message)
@@ -49,10 +45,7 @@ _M.dispatcher = kvstore.get("pubsub:dispatcher_thread") or thread.spawn(function
 				end
 			end
 			if #(kvstore.get("pubsub:coms:"..path) or {}) >= 3 then
-				thread.spawn(sender, {
-					path = msg.path,
-					message = msg.msg
-				})
+				thread.spawn(sender)
 			else
 				sender()
 			end
