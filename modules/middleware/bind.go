@@ -10,6 +10,16 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"math/rand"
+	"mime"
+	"net"
+	"os"
+	"path/filepath"
+	"regexp"
+	"time"
+
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/GeertJohan/go.linenoise"
 	"github.com/carbonsrv/carbon/modules/glue"
@@ -25,14 +35,6 @@ import (
 	"github.com/vifino/contrib/gzip"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
-	"io"
-	"io/ioutil"
-	"mime"
-	"net"
-	"os"
-	"path/filepath"
-	"regexp"
-	"time"
 )
 
 // Vars
@@ -694,6 +696,35 @@ func BindOther(L *lua.State) {
 	})
 	luar.Register(L, "carbon", luar.Map{
 		"_syntaxhl": helpers.SyntaxHL,
+	})
+}
+
+func BindRandomString(L *lua.State) {
+	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	const (
+		letterIdxBits = 6                    // 6 bits to represent a letter index
+		letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+		letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+	)
+	var random_src = rand.NewSource(time.Now().UnixNano())
+	luar.Register(L, "carbon", luar.Map{
+		"randomstring": func(n int) string {
+			b := make([]byte, n)
+			// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
+			for i, cache, remain := n-1, random_src.Int63(), letterIdxMax; i >= 0; {
+				if remain == 0 {
+					cache, remain = random_src.Int63(), letterIdxMax
+				}
+				if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
+					b[i] = letterBytes[idx]
+					i--
+				}
+				cache >>= letterIdxBits
+				remain--
+			}
+
+			return string(b)
+		},
 	})
 }
 

@@ -39,10 +39,10 @@ msgpack.packers['userdata'] = function(buffer, ud)
 	-- Hack. A big one, too.
 	local idpool = "tmp:msgpack:ud-tmp"
 	kvstore.inc(idpool)
-	local numid = kvstore.get(idpool)
-	local id = idpool..":"..tostring(numid)
+	local tmpid = tostring(kvstore.get(idpool))..":"..carbon.randomstring(16)
+	local id = idpool..":"..tmpid
 	kvstore.set(id, ud)
-	msgpack.packers['ext'](buffer, 43, tostring(numid))
+	msgpack.packers['ext'](buffer, 43, tmpid)
 end
 
 -- Unpacker for both
