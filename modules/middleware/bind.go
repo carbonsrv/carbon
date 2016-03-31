@@ -65,6 +65,7 @@ func Bind(L *lua.State, root string) {
 	BindLinenoise(L)
 	BindTermbox(L)
 	BindOther(L)
+	BindRandomString(L)
 }
 
 // BindCarbon binds glue func
