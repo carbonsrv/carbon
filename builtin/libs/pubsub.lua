@@ -102,12 +102,14 @@ function _M.subscriber(name) -- ltn12 compatible subscriber source
 	local retcom = com.create()
 	_M.sub(name, retcom)
 	return function()
-		local src = com.receive(retcom)
-		if src then
-			retcom = nil -- just to help the GC in case this function is kept somewhere
-			return src
-		else
-			return nil
+		if retcom then
+			local src = com.receive(retcom)
+			if src then
+				retcom = nil -- just to help the GC in case this function is kept somewhere
+				return src
+			else
+				return nil
+			end
 		end
 	end
 end
