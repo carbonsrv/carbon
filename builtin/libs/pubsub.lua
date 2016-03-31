@@ -105,9 +105,9 @@ function _M.subscriber(name) -- ltn12 compatible subscriber source
 		if retcom then
 			local src = com.receive(retcom)
 			if src then
-				retcom = nil -- just to help the GC in case this function is kept somewhere
 				return src
 			else
+				retcom = nil -- just to help the GC in case this function is kept somewhere
 				return nil
 			end
 		end
