@@ -78,6 +78,7 @@ function _M.unsub(path, chan)
 			com=chan,
 			path=path
 		})
+		com.send(chan, nil)
 		com.receive(_M.dispatcher) -- Block until it's done for safety reasons.
 	else
 		error("chan not given!")
@@ -103,6 +104,7 @@ function _M.subscriber(name) -- ltn12 compatible subscriber source
 	return function()
 		local src = com.receive(retcom)
 		if src then
+			retcom = nil -- just to help the GC in case this function is kept somewhere
 			return src
 		else
 			return nil
