@@ -59,8 +59,8 @@ func Configure(script string, args []string, cfe *cache.Cache, webroot string, u
 		L.DoString(checker_code)
 		c := make(chan bool)
 		<-c
-		return nil
 	}
+	L.Close()
 	return err
 }
 
@@ -104,8 +104,8 @@ func Eval(script string, args []string, cfe *cache.Cache, webroot string, useRec
 		L.DoString(checker_code)
 		c := make(chan bool)
 		<-c
-		return nil
 	}
+	L.Close()
 	return err
 }
 
@@ -143,5 +143,6 @@ func REPL(args []string, cfe *cache.Cache, webroot string, useRecovery bool, use
 
 	repl.Run(L)
 	L.DoString(checker_code)
+	L.Close()
 	return nil
 }

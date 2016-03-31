@@ -4,6 +4,9 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/carbonsrv/carbon/modules/glue"
 	"github.com/carbonsrv/carbon/modules/helpers"
@@ -13,8 +16,6 @@ import (
 	"github.com/pmylund/go-cache"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
-	"net/http"
-	"time"
 )
 
 // Cache
@@ -159,6 +160,7 @@ func Lua() func(*gin.Context) {
 </body>
 </html>`)
 					context.Abort()
+					L.Close()
 					return
 				}
 			}
@@ -173,6 +175,7 @@ func Lua() func(*gin.Context) {
 </body>
 </html>`)
 				context.Abort()
+				L.Close()
 				return
 			}
 			/*L.DoString("return CONTENT_TO_RETURN")
@@ -183,6 +186,7 @@ func Lua() func(*gin.Context) {
 				i = http.StatusOK
 			}*/
 			//helpers.HTMLString(context, i, m["content"].(string))
+			L.Close()
 		} else {
 			context.Next()
 		}
@@ -200,9 +204,6 @@ func DLR_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.C
 		if dobind {
 			luar.Register(L, "", vals)
 		}
-		defer scheduler.Add(func() {
-			L.Close()
-		})
 		BindContext(L, context)
 		//fmt.Println("before loadbuffer")
 		/*if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
@@ -226,8 +227,10 @@ func DLR_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.C
 </body>
 </html>`)
 			context.Abort()
+			L.Close()
 			return
 		}
+		L.Close()
 	}, nil
 }
 

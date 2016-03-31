@@ -361,6 +361,7 @@ func BindThread(L *lua.State) {
 				if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
 					fmt.Println("thread error: " + L.ToString(-1))
 				}
+				L.Close()
 			})
 			return ch, nil
 		}),
