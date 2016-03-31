@@ -10,23 +10,25 @@ _M.dispatcher = kvstore.get("pubsub:dispatcher_thread") or thread.spawn(function
 	local logger = require("libs.logger")
 	local msgpack = require("msgpack")
 	local thread = require("thread")
+
+	local compaths = {}
+
 	while true do
 		local msg = msgpack.unpack(com.receive(threadcom))
 		if msg.type == "sub" then
-			local compath = kvstore.get("pubsub:coms:"..msg.path)
+			local compath = compaths[msg.path]
 			if not compath then
 				compath = {}
 			end
 			table.insert(compath, msg.com)
-			kvstore.set("pubsub:coms:"..msg.path, compath)
+			compaths[msg.path] = compath
 			com.send(threadcom, nil)
 		elseif msg.type == "unsub" then
-			local compath = kvstore.get("pubsub:coms:"..msg.path)
+			local compath = compaths[msg.path]
 			if compath then
 				for k, v in pairs(compath) do
 					if v == msg.com then
-						compath[k] = nil
-						kvstore.set("pubsub:coms:"..msg.path)
+						compaths[msg.path][k] = nil
 						break
 					end
 				end
@@ -34,6 +36,7 @@ _M.dispatcher = kvstore.get("pubsub:dispatcher_thread") or thread.spawn(function
 		elseif msg.type == "pub" then
 			local path = msg.path
 			local message = msg.msg
+			kvstore.set("pubsub:coms:"..msg.path, compaths[msg.path])
 			local sender = function()
 				local compath = kvstore.get("pubsub:coms:"..path)
 				if not compath then
