@@ -40,12 +40,16 @@ _M.dispatcher = kvstore.get("pubsub:dispatcher_thread") or thread.spawn(function
 				local compath = compaths[msg.path]
 				if compath then
 					for i, chan in pairs(compath) do
-						com.send(chan, message)
+						if msg.try then
+							com.try_send(chan, message) -- on mediocre msg spam/fast processors
+						else
+							com.send(chan, message)
+						end
 					end
 				end
 			end
-			if #(kvstore.get("pubsub:coms:"..path) or {}) >= 3 then
-				thread.spawn(sender)
+			if msg.threaded then
+				thread.spawn(sender) -- not quite as effective with the memory, but it will make the thinger not get stuck because of a dead chan.
 			else
 				sender()
 			end
@@ -85,14 +89,27 @@ function _M.unsub(path, chan)
 	end
 end
 
-function _M.pub(path, msg)
+function _M.pub(path, msg, opt)
+	local mustdeliver, send_threaded
+	if opt == "threaded" then
+		send_threaded = true
+		mustdeliver = true
+	elseif opt then
+		send_threaded = false
+		mustdeliver = true
+	else
+		send_threaded = false
+		mustdeliver = false
+	end
 	if msg == nil then
 		return false, "Can't publish nil value."
 	end
 	com.send(_M.dispatcher, msgpack.pack{
 		type="pub",
 		path=path,
-		msg=msg
+		msg=msg,
+		try=not mustdeliver,
+		threaded=send_threaded,
 	})
 	return true
 end
