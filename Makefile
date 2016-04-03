@@ -1,6 +1,8 @@
 # Compilers and stuff
 GO?=go
 GOFMT?=gofmt
+STRIP?=strip --strip-all
+UPX?=upx --lzma -9
 
 # Vars
 LUA_GLUE=$(wildcard builtin/*) $(wildcard builtin/3rdparty/*) $(wildcard builtin/libs/*) $(wildcard builtin/libs/wrappers/*)
@@ -27,3 +29,7 @@ clean:
 # Convenience stuff
 repl: carbon
 	./carbon -repl
+
+dist: carbon
+	$(STRIP) carbon
+	$(UPX) carbon
