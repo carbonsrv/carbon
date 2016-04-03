@@ -35,6 +35,7 @@ import (
 	"github.com/vifino/contrib/gzip"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
+	"os/exec"
 )
 
 // Vars
@@ -60,6 +61,8 @@ func Bind(L *lua.State, root string) {
 	BindConversions(L)
 	BindMime(L)
 	BindComs(L)
+	BindPipe(L)
+	BindExec(L)
 	BindEncoding(L)
 	BindMarkdown(L)
 	BindLinenoise(L)
@@ -237,13 +240,12 @@ func BindIOEnhancements(L *lua.State) {
 			files, err := ioutil.ReadDir(path)
 			if err != nil {
 				return make([]string, 1), err
-			} else {
-				list := make([]string, len(files))
-				for i := range files {
-					list[i] = files[i].Name()
-				}
-				return list, nil
 			}
+			list := make([]string, len(files))
+			for i := range files {
+				list[i] = files[i].Name()
+			}
+			return list, nil
 		}),
 		"_io_glob": filepath.Glob,
 		"_io_modtime": (func(path string) (int, error) {
@@ -276,9 +278,8 @@ func BindOSEnhancements(L *lua.State) {
 		"_os_exists": (func(path string) bool {
 			if _, err := os.Stat(path); err == nil {
 				return true
-			} else {
-				return false
 			}
+			return false
 		}),
 		"_os_sleep": (func(secs int64) {
 			time.Sleep(time.Duration(secs) * time.Second)
@@ -421,6 +422,117 @@ func BindComs(L *lua.State) {
 	})
 }
 
+// Pipe is the struct containing the reader and writer of a io.Pipe
+type Pipe struct {
+	reader *io.PipeReader
+	writer *io.PipeWriter
+}
+
+// Read from the pipe
+func (p *Pipe) Read(bytes int) (error, error) {
+	b := make([]byte, bytes)
+	_, err := p.reader.Read(b)
+	if err != nil {
+		return nil, err
+	}
+	return errors.New(string(b)), nil
+}
+
+// Write to the pipe
+func (p *Pipe) Write(text string) error {
+	_, err := p.writer.Write([]byte(text))
+	return err
+}
+
+// Close it, dammit!
+func (p *Pipe) Close() error {
+	return p.reader.Close()
+}
+
+// BindPipe binds pipe helpers
+func BindPipe(L *lua.State) {
+	luar.Register(L, "io", luar.Map{
+		"pipe": func() Pipe {
+			r, w := io.Pipe()
+			return Pipe{
+				writer: w,
+				reader: r,
+			}
+		},
+	})
+}
+
+// Command is the struct containing the reader and writer of a io.Pipe
+type Command struct {
+	stdout io.ReadCloser
+	stderr io.ReadCloser
+	stdin  io.WriteCloser
+}
+
+// Read_Stdout reads stdout from the command
+func (c *Command) Read_Stdout(bytes int) (error, error) {
+	b := make([]byte, bytes)
+	_, err := c.stdout.Read(b)
+	if err != nil {
+		return nil, err
+	}
+	return errors.New(string(b)), nil
+}
+
+// Read_Stderr reads stderr from the command
+func (c *Command) Read_Stderr(bytes int) (error, error) {
+	b := make([]byte, bytes)
+	_, err := c.stderr.Read(b)
+	if err != nil {
+		return nil, err
+	}
+	return errors.New(string(b)), nil
+}
+
+// Write_Stdin writes to the command's stdin
+func (c *Command) Write_Stdin(text string) error {
+	_, err := c.stdin.Write([]byte(text))
+	return err
+}
+
+// Close it, dammit!
+func (c *Command) Close() error {
+	return c.stdin.Close()
+}
+
+// BindExec binds exec.exec to call shit.
+func BindExec(L *lua.State) {
+	luar.Register(L, "exec", luar.Map{
+		"exec": func(cmd string, args ...string) (Command, error) {
+			command := exec.Command(cmd, args...)
+			stdin, err := command.StdinPipe()
+			if err != nil {
+				return Command{}, err
+			}
+			stdout, err := command.StdoutPipe()
+			if err != nil {
+				return Command{}, err
+			}
+			stderr, err := command.StderrPipe()
+			if err != nil {
+				return Command{}, err
+			}
+			c := Command{
+				stdin:  stdin,
+				stdout: stdout,
+				stderr: stderr,
+			}
+			if err := command.Start(); err != nil {
+				return Command{}, err
+			}
+			scheduler.Add(func() {
+				command.Wait()
+			})
+			return c, nil
+		},
+	})
+}
+
 // BindNet binds sockets, not really that good. needs rework.
 func BindNet(L *lua.State) {
 	luar.Register(L, "net", luar.Map{
@@ -466,6 +578,7 @@ func BindNet(L *lua.State) {
 	})
 }
 
+// BindMime binds mime lookup functions
 func BindMime(L *lua.State) {
 	luar.Register(L, "carbon", luar.Map{
 		"_mime_byext":  mime.TypeByExtension,

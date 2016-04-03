@@ -11,6 +11,7 @@ carbon: modules/glue/generated_glue.go fmt
 
 modules/glue/generated_glue.go: $(LUA_GLUE)
 	$(GO) generate
+	$(GOFMT) -w -s modules/glue
 
 fmt:
 	$(GOFMT) -w -s .
@@ -22,3 +23,7 @@ clean:
 	rm -f carbon
 
 .PHONY: carbon test
+
+# Convenience stuff
+repl: carbon
+	./carbon -repl

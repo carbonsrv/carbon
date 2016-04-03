@@ -103,8 +103,24 @@ table.insert(package.loaders, 3, loadasset_libs)
 table.insert(package.loaders, 4, loadasset_thirdparty)
 table.insert(package.loaders, 5, loadphysfs)
 
+-- Load wrappers
+local wrappers = {
+	"globalwrappers",
+	"ioandfs",
+	"os",
+	"kvstore",
+	"table",
+	"encoding",
+	"termbox",
+	"debug",
+	"exec"
+}
+for _, wrapper in pairs(wrappers) do
+	require("wrappers."..wrapper)
+end
+
+
 -- Load a few builtin libs.
-require("wrappers.globalwrappers")
 require("thread")
 require("tags")
 
