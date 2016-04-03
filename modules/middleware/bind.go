@@ -315,9 +315,8 @@ func BindKVStore(L *lua.State) { // Thread safe Key Value Store that doesn't per
 			res, found := kvstore.Get(k)
 			if found {
 				return res
-			} else {
-				return nil
 			}
+			return nil
 		}),
 		"_inc": (func(k string, n int64) error {
 			return kvstore.Increment(k, n)

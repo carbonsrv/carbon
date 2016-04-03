@@ -38,10 +38,9 @@ func cacheDump(file string) (string, error, bool) {
 		}
 		cbc.Set(file, res, cache.DefaultExpiration)
 		return res, nil, false
-	} else {
-		//debug("Using Bytecode-cache for " + file)
-		return data_tmp.(string), nil, false
 	}
+	//debug("Using Bytecode-cache for " + file)
+	return data_tmp.(string), nil, false
 }
 
 // bcdump actually dumps the bytecode
@@ -62,9 +61,8 @@ func fileExists(file string) bool {
 		exists := physfs.Exists(file)
 		cfe.Set(file, exists, cache.DefaultExpiration)
 		return exists
-	} else {
-		return data_tmp.(bool)
 	}
+	return data_tmp.(bool)
 }
 
 func fileRead(file string) (string, error) {
@@ -151,18 +149,17 @@ func Lua() func(*gin.Context) {
 				if lerr == false {
 					context.Next()
 					return
-				} else {
-					helpers.HTMLString(context, http.StatusInternalServerError, `<html>
+				}
+				helpers.HTMLString(context, http.StatusInternalServerError, `<html>
 <head><title>Syntax Error in `+context.Request.URL.Path+`</title>
 <body>
 	<h1>Syntax Error in file `+context.Request.URL.Path+`:</h1>
 	<pre>`+string(err.Error())+`</pre>
 </body>
 </html>`)
-					context.Abort()
-					L.Close()
-					return
-				}
+				context.Abort()
+				L.Close()
+				return
 			}
 			//fmt.Println("before loadbuffer")
 			L.LoadBuffer(code, len(code), file) // This shouldn't error, was checked earlier.

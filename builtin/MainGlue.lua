@@ -104,24 +104,51 @@ table.insert(package.loaders, 4, loadasset_thirdparty)
 table.insert(package.loaders, 5, loadphysfs)
 
 -- Load wrappers
+-- LazyLoader! An automatic lazy loading generator.
+function carbon.lazyload_mark(tablename, path)
+	path = path or tablename
+	_G[tablename] = _G[tablename] or {}
+	--print("Marking "..tablename.." to be lazily loaded.")
+	local oldmt = getmetatable(_G[tablename])
+	local oldindex = oldmt and oldmt.__index
+	setmetatable(_G[tablename], {
+		__index=function(t, key)
+			--print("Lazy loaded "..tablename)
+			setmetatable(t, {__index=oldindex or nil})
+			local r = require(path)
+			if r ~= true then
+				_G[tablename] = r
+			end
+			return t[key]
+		end
+	})
+end
+
+require("wrappers.globalwrappers")
+
 local wrappers = {
-	"globalwrappers",
-	"ioandfs",
+	fs=false,
+	"io",
 	"os",
 	"kvstore",
 	"table",
 	"encoding",
 	"termbox",
 	"debug",
-	"exec"
+	"exec",
 }
-for _, wrapper in pairs(wrappers) do
-	require("wrappers."..wrapper)
+for name, wrapper in pairs(wrappers) do
+	if wrapper == false then
+		require("wrappers."..name)
+	elseif wrapper == true then
+		carbon.lazyload_mark(name, "wrappers."..name)
+	else
+		carbon.lazyload_mark(wrapper, "wrappers."..wrapper)
+	end
 end
 
-
 -- Load a few builtin libs.
-require("thread")
+carbon.lazyload_mark("thread")
 require("tags")
 
 thread = thread or require("thread")
