@@ -20,6 +20,8 @@ import (
 	"regexp"
 	"time"
 
+	"os/exec"
+
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"github.com/GeertJohan/go.linenoise"
 	"github.com/carbonsrv/carbon/modules/glue"
@@ -35,7 +37,6 @@ import (
 	"github.com/vifino/contrib/gzip"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
-	"os/exec"
 )
 
 // Vars
@@ -540,11 +541,20 @@ func BindNet(L *lua.State) {
 			config := tls.Config{InsecureSkipVerify: true} // Because I'm not gonna bother with auth.
 			return tls.Dial(proto, addr, &config)
 		},
+		"listen": net.Listen,
 		"write": (func(con interface{}, str string) {
 			fmt.Fprintf(con.(net.Conn), str)
 		}),
 		"readline": (func(con interface{}) (string, error) {
 			return bufio.NewReader(con.(net.Conn)).ReadString('\n')
+		}),
+		"read": (func(con interface{}, count int) (string, error) {
+			b := make([]byte, count)
+			_, err := con.(net.Conn).Read(b)
+			if err != nil {
+				return "", err
+			}
+			return string(b), nil
 		}),
 		"pipe_conn": (func(con interface{}, input, output chan interface{}) {
 			go func() {

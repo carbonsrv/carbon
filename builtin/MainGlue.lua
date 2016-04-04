@@ -7,10 +7,15 @@ local webroot_path = var.root .. (var.root:match("/$") and "" or "/")
 package.cpath = webroot_path.."?.so;"..webroot_path.."loadall.so;"..package.cpath
 
 -- Custom package loaders so that you can require the libraries built into Carbon.
+local cache_do_cache_prefix = "carbon:do_cache:"
+local cache_dont_cache_physfs = "carbon:dont_cache:physfs"
 local cache_key_prefix = "carbon:lua_module:"
 local cache_key_asset = cache_key_prefix .. "asset:"
 local cache_key_asset_location = cache_key_prefix .. "asset_location:"
+local cache_key_physfs = cache_key_prefix .. "physfs:"
+local cache_key_physfs_location = cache_key_prefix .. "physfs_location:"
 
+-- Load bc cache from kvstore
 function loadcache(name)
 	local modname = tostring(name):gsub("%.", "/")
 	local f_bc = kvstore._get(cache_key_asset..modname)
@@ -19,9 +24,18 @@ function loadcache(name)
 		if err then error(err, 0) end
 		return f
 	end
-	return "\n\tno stored bytecode in kvstore under '"..cache_key_asset..modname.."'"
+
+	local f_bc = kvstore._get(cache_key_physfs..modname)
+	if f_bc then
+		local f, err = loadstring(f_bc, kvstore._get(cache_key_physfs_location..modname))
+		if err then error(err, 0) end
+		return f
+	end
+	return "\n\tno stored bytecode in kvstore under '"..cache_key_asset..modname.."'" ..
+		"\n\tno stored bytecode in kvstore under '"..cache_key_physfs..modname.."'"
 end
 
+-- Load from compiled in /builtin/libs
 local function loadasset_libs(name)
 	local modname = tostring(name):gsub("%.", "/")
 	local location = "libs/" .. modname .. ".lua"
@@ -46,9 +60,11 @@ local function loadasset_libs(name)
 		kvstore._set(cache_key_asset_location..modname, location_init)
 		return f
 	end
-	return "\n\tno lib asset '/" .. location .. "' (not compiled in)\n\tno lib asset '/" .. location_init .. "' (not compiled in)"
+	return "\n\tno lib asset '/" .. location .. "' (not compiled in)" ..
+		"\n\tno lib asset '/" .. location_init .. "' (not compiled in)"
 end
 
+-- Load from compiled in /builtin/3rdparty
 local function loadasset_thirdparty(name)
 	local modname = tostring(name):gsub("%.", "/")
 	local location = "3rdparty/" .. modname .. ".lua"
@@ -72,9 +88,11 @@ local function loadasset_thirdparty(name)
 		kvstore._set(cache_key_asset_location..modname, location_init)
 		return f
 	end
-	return "\n\tno thirdparty asset '/" .. location .. "' (not compiled in)\n\tno thirdparty asset '/" .. location_init .. "' (not compiled in)"
+	return "\n\tno thirdparty asset '/" .. location .. "' (not compiled in)"..
+		"\n\tno thirdparty asset '/" .. location_init .. "' (not compiled in)"
 end
 
+-- Load from physfs and cache if not disabled for module
 local function loadphysfs(name)
 	local modname = tostring(name):gsub("%.", "/")
 	local location = modname .. ".lua"
@@ -83,6 +101,10 @@ local function loadphysfs(name)
 		-- Compile and return the module
 		local f, err = loadstring(src, location)
 		if err then error(err, 0) end
+		if kvstore._get(cache_do_cache_prefix..modname) ~= false and kvstore._get(cache_dont_cache_physfs) ~= true then
+			kvstore._set(cache_key_physfs..modname, string.dump(f))
+			kvstore._set(cache_key_physfs_location..modname, location)
+		end
 		return f
 	end
 
@@ -94,7 +116,25 @@ local function loadphysfs(name)
 		if err then error(err, 0) end
 		return f
 	end
-	return "\n\tno file '" .. location .. "' in webroot\n\tno file '" .. location_init .. "' in webroot"
+	return "\n\tno file '" .. location .. "' in webroot"..
+		"\n\tno file '" .. location_init .. "' in webroot"
+end
+
+-- Flush physfs cache
+function carbon.flush_cache(name)
+	local modname = tostring(name):gsub("%.", "/")
+	kvstore._del(cache_key_physfs..modname)
+	kvstore._del(cache_key_physfs_location..modname)
+	package.loaded[modname] = nil
+end
+-- Set the module to not cache
+function carbon.dont_cache(name)
+	if name then
+		local modname = tostring(name):gsub("%.", "/")
+		kvstore._set(cache_do_cache_prefix..modname, false)
+	else
+		kvstore._set(cache_dont_cache_physfs, true)
+	end
 end
 
 -- Install the loaders so that it's called just before the normal Lua loaders
@@ -150,5 +190,3 @@ end
 -- Load a few builtin libs.
 carbon.lazyload_mark("thread")
 require("tags")
-
-thread = thread or require("thread")
