@@ -363,6 +363,7 @@ func BindThread(L *lua.State) {
 					fmt.Println("thread error: " + L.ToString(-1))
 				}
 				L.Close()
+				close(ch)
 			})
 			return ch, nil
 		}),
@@ -374,6 +375,9 @@ func BindComs(L *lua.State) {
 	luar.Register(L, "com", luar.Map{
 		"create": (func() chan interface{} {
 			return make(chan interface{})
+		}),
+		"close": (func(c chan interface{}) {
+			close(c)
 		}),
 		"createBuffered": (func(buffer int) chan interface{} {
 			return make(chan interface{}, buffer)

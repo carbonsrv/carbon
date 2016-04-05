@@ -63,7 +63,7 @@ function _M.sub(path, chan, bindings, buffer)
 	if chan then
 		local chan = chan
 		if type(chan) == "function" then
-			chan = thread.spawn(chan, bindings, buffer or 64)
+			chan = thread.spawn(chan, bindings, buffer or 1024)
 		end
 		com.send(_M.dispatcher, msgpack.pack{
 			type="sub",
