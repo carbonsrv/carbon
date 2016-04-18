@@ -22,6 +22,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/namsral/flag"
 	"github.com/pmylund/go-cache"
+	"github.com/vifino/golua/lua"
 	"golang.org/x/net/http2"
 )
 
@@ -238,10 +239,12 @@ func main() {
 
 	args := flag.Args()
 
+	bindhook := func(_ *lua.State) {}
+
 	if *eval != "" {
 		err := luaconf.Eval(*eval, args, cfe, root, *useRecovery, *useLogger, *run_repl, func(srv *gin.Engine) {
 			serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
-		})
+		}, bindhook)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -253,7 +256,7 @@ func main() {
 		if *run_repl {
 			err := luaconf.REPL(args, cfe, root, *useRecovery, false, func(srv *gin.Engine) {
 				serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
-			})
+			}, bindhook)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -261,7 +264,7 @@ func main() {
 		} else {
 			err := luaconf.Eval(glue.GetGlue("bootscript.lua"), args, cfe, root, *useRecovery, *useLogger, *run_repl, func(srv *gin.Engine) {
 				serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
-			})
+			}, bindhook)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -293,7 +296,7 @@ func main() {
 			}
 			err = luaconf.Eval(script_src, args, cfe, script, *useRecovery, *useLogger, *run_repl, func(srv *gin.Engine) {
 				serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
-			})
+			}, bindhook)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
@@ -301,7 +304,7 @@ func main() {
 		} else {
 			err := luaconf.Configure(script, args, cfe, root, *useRecovery, *useLogger, *run_repl, func(srv *gin.Engine) {
 				serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
-			})
+			}, bindhook)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)

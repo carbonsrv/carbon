@@ -11,6 +11,7 @@ local cache_do_cache_prefix = "carbon:do_cache:"
 local cache_dont_cache_physfs = "carbon:dont_cache:physfs"
 local cache_key_prefix = "carbon:lua_module:"
 local cache_key_app = cache_key_prefix .. "app:" -- for custom stuff
+local cache_key_app_location = cache_key_prefix .. "app_location:"
 local cache_key_asset = cache_key_prefix .. "asset:"
 local cache_key_asset_location = cache_key_prefix .. "asset_location:"
 local cache_key_physfs = cache_key_prefix .. "physfs:"

@@ -21,7 +21,7 @@ end
 `
 
 // Setup basic state
-func Setup(args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, runrepl bool, finalizer func(srv *gin.Engine)) *lua.State {
+func Setup(args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, runrepl bool, finalizer func(srv *gin.Engine), bindhook func(L *lua.State)) *lua.State {
 	srv := gin.New()
 	if useLogger {
 		srv.Use(gin.Logger())
@@ -49,14 +49,15 @@ func Setup(args []string, cfe *cache.Cache, webroot string, useRecovery bool, us
 	})
 	middleware.Bind(L, webroot)
 	middleware.BindStatic(L, cfe)
+	bindhook(L)
 	L.DoString(glue.MainGlue())
 	L.DoString(glue.ConfGlue())
 	return L
 }
 
 // Configure the server based on a lua script.
-func Configure(script string, args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, runrepl bool, finalizer func(srv *gin.Engine)) error {
-	L := Setup(args, cfe, webroot, useRecovery, useLogger, runrepl, finalizer)
+func Configure(script string, args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, runrepl bool, finalizer func(srv *gin.Engine), bindhook func(L *lua.State)) error {
+	L := Setup(args, cfe, webroot, useRecovery, useLogger, runrepl, finalizer, bindhook)
 
 	err := L.DoFile(script)
 	if err == nil {
@@ -72,8 +73,8 @@ func Configure(script string, args []string, cfe *cache.Cache, webroot string, u
 }
 
 // Eval lua string to Configure the server
-func Eval(script string, args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, runrepl bool, finalizer func(srv *gin.Engine)) error {
-	L := Setup(args, cfe, webroot, useRecovery, useLogger, runrepl, finalizer)
+func Eval(script string, args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, runrepl bool, finalizer func(srv *gin.Engine), bindhook func(L *lua.State)) error {
+	L := Setup(args, cfe, webroot, useRecovery, useLogger, runrepl, finalizer, bindhook)
 
 	err := L.DoString(script)
 	if err == nil {
@@ -89,8 +90,8 @@ func Eval(script string, args []string, cfe *cache.Cache, webroot string, useRec
 }
 
 // REPL runs a lua repl
-func REPL(args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, finalizer func(srv *gin.Engine)) error {
-	L := Setup(args, cfe, webroot, useRecovery, useLogger, true, finalizer)
+func REPL(args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, finalizer func(srv *gin.Engine), bindhook func(L *lua.State)) error {
+	L := Setup(args, cfe, webroot, useRecovery, useLogger, true, finalizer, bindhook)
 
 	repl.Run(L)
 	L.DoString(checker_code)
