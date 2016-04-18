@@ -6,6 +6,13 @@ Carbon is a Lua Application Toolkit with focus on Web Servers, written in [Go](h
 # Installing
 `go get -u github.com/carbonsrv/carbon`
 
+## Dependencies
+- [LuaJIT 2.X](http://luajit.org)
+- [PhysFS](https://icculus.org/physfs/)
+- [go-bindata](https://github.com/jteeuwen/go-bindata)
+
+The development headers of LuaJIT and PhysFS are also required.
+
 # Usage
 ## Flags
 To get this list, just type `carbon -h`.
