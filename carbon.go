@@ -6,16 +6,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/DeedleFake/Go-PhysicsFS/physfs"
-	"github.com/carbonsrv/carbon/modules/glue"
-	"github.com/carbonsrv/carbon/modules/luaconf"
-	"github.com/carbonsrv/carbon/modules/middleware"
-	"github.com/carbonsrv/carbon/modules/scheduler"
-	"github.com/carbonsrv/carbon/modules/static"
-	"github.com/gin-gonic/gin"
-	"github.com/namsral/flag"
-	"github.com/pmylund/go-cache"
-	"golang.org/x/net/http2"
 	"log"
 	"net/http"
 	"os"
@@ -23,6 +13,16 @@ import (
 	"runtime"
 	"strconv"
 	"time"
+
+	"github.com/DeedleFake/Go-PhysicsFS/physfs"
+	"github.com/carbonsrv/carbon/modules/glue"
+	"github.com/carbonsrv/carbon/modules/luaconf"
+	"github.com/carbonsrv/carbon/modules/middleware"
+	"github.com/carbonsrv/carbon/modules/scheduler"
+	"github.com/gin-gonic/gin"
+	"github.com/namsral/flag"
+	"github.com/pmylund/go-cache"
+	"golang.org/x/net/http2"
 )
 
 // General
@@ -116,19 +116,6 @@ func debug(str string) {
 // Server
 func new_server() *gin.Engine {
 	return gin.New()
-}
-func bootstrap(srv *gin.Engine, dir string, cfe *cache.Cache) {
-	switcher := middleware.ExtRoute(middleware.Plan{
-		".lua": middleware.Lua(),
-		"***":  staticServe.ServeCached("", staticServe.PhysFS("", "", true, true), cfe),
-	})
-	/*srv.GET(`/:file`, switcher)
-	srv.POST(`/:file`, switcher)*/
-	srv.Use(switcher)
-	/*st := staticServe.ServeCached("", staticServe.PhysFS("", true, true), cfe)
-	lr := luaroute(dir)
-	srv.Use(lr)
-	srv.Use(st)*/
 }
 
 func serve(srv http.Handler, en_http bool, en_https bool, en_http2 bool, bind string, binds string, cert string, key string) {

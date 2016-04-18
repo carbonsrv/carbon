@@ -10,6 +10,7 @@ package.cpath = webroot_path.."?.so;"..webroot_path.."loadall.so;"..package.cpat
 local cache_do_cache_prefix = "carbon:do_cache:"
 local cache_dont_cache_physfs = "carbon:dont_cache:physfs"
 local cache_key_prefix = "carbon:lua_module:"
+local cache_key_app = cache_key_prefix .. "app:" -- for custom stuff
 local cache_key_asset = cache_key_prefix .. "asset:"
 local cache_key_asset_location = cache_key_prefix .. "asset_location:"
 local cache_key_physfs = cache_key_prefix .. "physfs:"
@@ -18,6 +19,14 @@ local cache_key_physfs_location = cache_key_prefix .. "physfs_location:"
 -- Load bc cache from kvstore
 function loadcache(name)
 	local modname = tostring(name):gsub("%.", "/")
+
+	local f_bc = kvstore._get(cache_key_app..modname)
+	if f_bc then
+		local f, err = loadstring(f_bc, kvstore._get(cache_key_app_location..modname))
+		if err then error(err, 0) end
+		return f
+	end
+
 	local f_bc = kvstore._get(cache_key_asset..modname)
 	if f_bc then
 		local f, err = loadstring(f_bc, kvstore._get(cache_key_asset_location..modname))

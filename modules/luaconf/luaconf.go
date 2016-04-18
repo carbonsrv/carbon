@@ -8,6 +8,7 @@ import (
 	"github.com/carbonsrv/carbon/modules/repl"
 	"github.com/carbonsrv/carbon/modules/scheduler"
 	"github.com/pmylund/go-cache"
+	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
 )
 
@@ -19,8 +20,8 @@ if srv.used == false then
 end
 `
 
-// Configure the server based on a lua script.
-func Configure(script string, args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, runrepl bool, finalizer func(srv *gin.Engine)) error {
+// Setup basic state
+func Setup(args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, runrepl bool, finalizer func(srv *gin.Engine)) *lua.State {
 	srv := gin.New()
 	if useLogger {
 		srv.Use(gin.Logger())
@@ -50,6 +51,12 @@ func Configure(script string, args []string, cfe *cache.Cache, webroot string, u
 	middleware.BindStatic(L, cfe)
 	L.DoString(glue.MainGlue())
 	L.DoString(glue.ConfGlue())
+	return L
+}
+
+// Configure the server based on a lua script.
+func Configure(script string, args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, runrepl bool, finalizer func(srv *gin.Engine)) error {
+	L := Setup(args, cfe, webroot, useRecovery, useLogger, runrepl, finalizer)
 
 	err := L.DoFile(script)
 	if err == nil {
@@ -66,35 +73,7 @@ func Configure(script string, args []string, cfe *cache.Cache, webroot string, u
 
 // Eval lua string to Configure the server
 func Eval(script string, args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, runrepl bool, finalizer func(srv *gin.Engine)) error {
-	srv := gin.New()
-	if useLogger {
-		srv.Use(gin.Logger())
-	}
-	if useRecovery {
-		srv.Use(gin.Recovery())
-	}
-	L := luar.Init()
-
-	var didnt_run_yet = true
-	luar.Register(L, "carbon", luar.Map{ // srv and the state
-		"srv": srv,
-		"L":   L,
-		"launch_server": func() {
-			if didnt_run_yet {
-				scheduler.Add(func() {
-					finalizer(srv)
-				})
-				didnt_run_yet = false
-			}
-		},
-	})
-	luar.Register(L, "", luar.Map{
-		"arg": args,
-	})
-	middleware.Bind(L, webroot)
-	middleware.BindStatic(L, cfe)
-	L.DoString(glue.MainGlue())
-	L.DoString(glue.ConfGlue())
+	L := Setup(args, cfe, webroot, useRecovery, useLogger, runrepl, finalizer)
 
 	err := L.DoString(script)
 	if err == nil {
@@ -111,35 +90,7 @@ func Eval(script string, args []string, cfe *cache.Cache, webroot string, useRec
 
 // REPL runs a lua repl
 func REPL(args []string, cfe *cache.Cache, webroot string, useRecovery bool, useLogger bool, finalizer func(srv *gin.Engine)) error {
-	srv := gin.New()
-	if useLogger {
-		srv.Use(gin.Logger())
-	}
-	if useRecovery {
-		srv.Use(gin.Recovery())
-	}
-	L := luar.Init()
-
-	var didnt_run_yet = true
-	luar.Register(L, "carbon", luar.Map{ // srv and the state
-		"srv": srv,
-		"L":   L,
-		"launch_server": func() {
-			if didnt_run_yet {
-				scheduler.Add(func() {
-					finalizer(srv)
-				})
-				didnt_run_yet = false
-			}
-		},
-	})
-	luar.Register(L, "", luar.Map{
-		"arg": args,
-	})
-	middleware.Bind(L, webroot)
-	middleware.BindStatic(L, cfe)
-	L.DoString(glue.MainGlue())
-	L.DoString(glue.ConfGlue())
+	L := Setup(args, cfe, webroot, useRecovery, useLogger, true, finalizer)
 
 	repl.Run(L)
 	L.DoString(checker_code)
