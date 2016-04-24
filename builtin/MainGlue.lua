@@ -165,10 +165,12 @@ function carbon.lazyload_mark(tablename, path)
 			--print("Lazy loaded "..tablename)
 			setmetatable(t, oldmt or nil)
 			local r = require(path)
+			local res = {}
 			if r ~= true then
-				t = r
+				res = r
+				_G[tablename] = r
 			end
-			return t[key]
+			return res[key] or t[key]
 		end
 	})
 	_G[tablename] = old
