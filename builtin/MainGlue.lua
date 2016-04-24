@@ -49,13 +49,14 @@ end
 local function loadasset_libs(name)
 	local modname = tostring(name):gsub("%.", "/")
 	local location = "libs/" .. modname .. ".lua"
+	local strip = kvstore._get("carbon:strip_internal_bytecode")
 
 	local src = carbon.glue(location)
 	if src ~= "" then
 		-- Compile and return the module
 		local f, err = loadstring(src, location)
 		if err then error(err, 0) end
-		kvstore._set(cache_key_asset..modname, string.dump(f))
+		kvstore._set(cache_key_asset..modname, string.dump(f, strip))
 		kvstore._set(cache_key_asset_location..modname, location)
 		return f
 	end
@@ -66,7 +67,7 @@ local function loadasset_libs(name)
 		-- Compile and return the module
 		local f, err = loadstring(src, location)
 		if err then error(err, 0) end
-		kvstore._set(cache_key_asset..modname, string.dump(f))
+		kvstore._set(cache_key_asset..modname, string.dump(f, strip))
 		kvstore._set(cache_key_asset_location..modname, location_init)
 		return f
 	end
@@ -78,12 +79,14 @@ end
 local function loadasset_thirdparty(name)
 	local modname = tostring(name):gsub("%.", "/")
 	local location = "3rdparty/" .. modname .. ".lua"
+	local strip = kvstore._get("carbon:strip_internal_bytecode")
+
 	local src = carbon.glue(location)
 	if src ~= "" then
 		-- Compile and return the module
 		local f, err = loadstring(src, location)
 		if err then error(err, 0) end
-		kvstore._set(cache_key_asset..modname, string.dump(f))
+		kvstore._set(cache_key_asset..modname, string.dump(f, strip))
 		kvstore._set(cache_key_asset_location..modname, location)
 		return f
 	end
@@ -94,7 +97,7 @@ local function loadasset_thirdparty(name)
 		-- Compile and return the module
 		local f, err = loadstring(src, location)
 		if err then error(err, 0) end
-		kvstore._set(cache_key_asset..modname, string.dump(f))
+		kvstore._set(cache_key_asset..modname, string.dump(f, strip))
 		kvstore._set(cache_key_asset_location..modname, location_init)
 		return f
 	end
@@ -124,6 +127,10 @@ local function loadphysfs(name)
 		-- Compile and return the module
 		local f, err = loadstring(src, location)
 		if err then error(err, 0) end
+		if kvstore._get(cache_do_cache_prefix..modname) ~= false and kvstore._get(cache_dont_cache_physfs) ~= true then
+			kvstore._set(cache_key_physfs..modname, string.dump(f))
+			kvstore._set(cache_key_physfs_location..modname, location_init)
+		end
 		return f
 	end
 	return "\n\tno file '" .. location .. "' in webroot"..
