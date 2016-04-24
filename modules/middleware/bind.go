@@ -282,8 +282,8 @@ func BindOSEnhancements(L *lua.State) {
 			}
 			return false
 		}),
-		"_os_sleep": (func(secs int64) {
-			time.Sleep(time.Duration(secs) * time.Second)
+		"_os_sleep": (func(milliseconds int64) {
+			time.Sleep(time.Duration(milliseconds) * time.Millisecond)
 		}),
 		"_os_chdir":   os.Chdir,
 		"_os_abspath": filepath.Abs,
@@ -294,7 +294,7 @@ func BindOSEnhancements(L *lua.State) {
 // BindRedis binds the redis library
 func BindRedis(L *lua.State) {
 	luar.Register(L, "redis", luar.Map{
-		"connectTimeout": (func(host string, timeout int) (*redis.Client, error) {
+		"connectTimeout": (func(host string, timeout float64) (*redis.Client, error) {
 			return redis.DialTimeout("tcp", host, time.Duration(timeout)*time.Second)
 		}),
 		"connect": (func(host string) (*redis.Client, error) {
@@ -308,6 +308,9 @@ func BindKVStore(L *lua.State) { // Thread safe Key Value Store that doesn't per
 	luar.Register(L, "kvstore", luar.Map{
 		"_set": (func(k string, v interface{}) {
 			kvstore.Set(k, v, -1)
+		}),
+		"_set_timeout": (func(k string, v interface{}, timeout int64) {
+			kvstore.Set(k, v, time.Duration(timeout)*time.Millisecond)
 		}),
 		"_del": (func(k string) {
 			kvstore.Delete(k)

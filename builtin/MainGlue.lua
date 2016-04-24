@@ -157,21 +157,21 @@ table.insert(package.loaders, 5, loadphysfs)
 -- LazyLoader! An automatic lazy loading generator.
 function carbon.lazyload_mark(tablename, path)
 	path = path or tablename
-	_G[tablename] = _G[tablename] or {}
+	local old = _G[tablename] or {}
 	--print("Marking "..tablename.." to be lazily loaded.")
-	local oldmt = getmetatable(_G[tablename])
-	local oldindex = oldmt and oldmt.__index
-	setmetatable(_G[tablename], {
+	local oldmt = getmetatable(old)
+	setmetatable(old, {
 		__index=function(t, key)
 			--print("Lazy loaded "..tablename)
-			setmetatable(t, {__index=oldindex or nil})
+			setmetatable(t, oldmt or nil)
 			local r = require(path)
 			if r ~= true then
-				_G[tablename] = r
+				t = r
 			end
 			return t[key]
 		end
 	})
+	_G[tablename] = old
 end
 
 require("wrappers.globalwrappers")

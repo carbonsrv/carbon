@@ -1,12 +1,15 @@
 -- kvstore
-kvstore = kvstore or {}
-function kvstore.set(name, value)
+function kvstore.set(name, value, timeout)
 	if name then
+		if timeout then
+			kvstore._set_timeout(tostring(name), value, tonumber(timeout))
+		end
 		kvstore._set(tostring(name), value)
 	else
 		error("No name given.")
 	end
 end
+
 
 function kvstore.del(name)
 	if name then
