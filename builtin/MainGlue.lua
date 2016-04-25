@@ -192,6 +192,7 @@ local wrappers = {
 	"kvstore",
 	"table",
 	"encoding",
+	"mime",
 	"termbox",
 	"debug",
 	"exec",
