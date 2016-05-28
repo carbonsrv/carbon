@@ -474,6 +474,7 @@ type Command struct {
 	stdout io.ReadCloser
 	stderr io.ReadCloser
 	stdin  io.WriteCloser
+	cmd    *exec.Cmd
 }
 
 // Read_Stdout reads stdout from the command
@@ -503,8 +504,22 @@ func (c *Command) Write_Stdin(text string) error {
 }
 
 // Close it, dammit!
-func (c *Command) Close() error {
-	return c.stdin.Close()
+func (c *Command) Close() {
+	c.stdin.Close()
+	c.stdout.Close()
+	c.stderr.Close()
+}
+
+// Kill misbehaving programs.
+func (c *Command) Kill() error {
+	e := c.cmd.Process.Kill()
+	c.Close()
+	return e
+}
+
+// Exited checks if the process exited already
+func (c *Command) State() *os.ProcessState {
+	return c.cmd.ProcessState
 }
 
 // BindExec binds exec.exec to call shit.
@@ -528,13 +543,14 @@ func BindExec(L *lua.State) {
 				stdin:  stdin,
 				stdout: stdout,
 				stderr: stderr,
+				cmd:    command,
 			}
 			if err := command.Start(); err != nil {
 				return Command{}, err
 			}
-			scheduler.Add(func() {
+			/*scheduler.Add(func() {
 				command.Wait()
-			})
+			})*/
 			return c, nil
 		},
 	})

@@ -597,7 +597,7 @@ local function unpack_map (c, n)
     for i = 1, n do
         local k = decode(c)
         local val = decode(c)
-        if k == nil then
+        if k == nil or k ~= k then
             k = m.sentinel
         end
         if k ~= nil then
