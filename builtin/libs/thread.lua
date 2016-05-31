@@ -70,11 +70,11 @@ function thread.run(fn, ...)
 		local threadfn = args.fn
 		local thread_args = args.args
 		args = nil
-		com.send(thrcom, msgpack.pack({threadfn(unpack(thread_args))}))
+		com.send(thrcom, msgpack.pack({threadfn(unpack(thread_args, 1, thread_args.n))}))
 	end)
 	local mpbinds_raw, err = msgpack.pack({
 		["fn"] = fn,
-		["args"] = {...}
+		["args"] = table.pack(...)
 		})
 	if err ~= nil then
 		error(err)
@@ -88,7 +88,9 @@ function thread.run(fn, ...)
 	return function()
 		if not resgot then
 			resgot = true
-			local res = unpack(msgpack.unpack(com.receive(ch)))
+			local tmp = msgpack.unpack(com.receive(ch))
+			local res = unpack(tmp, 1, tmp.n)
+			tmp = nil
 			ch = nil
 			return res
 		end
@@ -104,7 +106,7 @@ function thread.rpcthread() -- not working, issues with binding or something .-.
 			local args = msgpack.unpack(src)
 			local f, err = loadstring(args.f)
 			if not err then
-				com.send(threadcom, msgpack.pack({pcall(f, unpack(args.args))}))
+				com.send(threadcom, msgpack.pack({pcall(f, unpack(args.args, 1, args.args.n))}))
 			else
 				com.send(threadcom, msgpack.pack({false, err}))
 			end
@@ -114,12 +116,13 @@ function thread.rpcthread() -- not working, issues with binding or something .-.
 	function call(f, ...)
 		com.send(rpc, msgpack.pack({
 			f = f,
-			args = {...}
+			args = table.pack(...)
 		}))
 	end
 
 	local function recieve()
-		return unpack(msgpack.unpack(com.receive(rpc)))
+		local tmp = msgpack.unpack(com.receive(rpc))
+		return unpack(tmp, 1, tmp.n)
 	end
 
 	return {
