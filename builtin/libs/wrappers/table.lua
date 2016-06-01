@@ -1,6 +1,12 @@
 -- table enhancements
-table.unpack = unpack
 
+-- Light fixes
+table.unpack = table.unpack or unpack
+table.pack = table.pack or function pack(...)
+	return { n = select("#", ...), ... }
+end
+
+-- New stuff
 function table.scopy(orig) -- http://lua-users.org/wiki/CopyTable
 	local orig_type = type(orig)
 	local copy
