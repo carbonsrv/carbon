@@ -115,6 +115,8 @@ func debug(str string) {
 }
 
 // Server
+var timeout time.Duration = 10 * time.Second
+
 func new_server() *gin.Engine {
 	return gin.New()
 }
@@ -135,8 +137,8 @@ func serveHTTP(srv http.Handler, bind string, en_http2 bool) {
 	s := &http.Server{
 		Addr:           bind,
 		Handler:        srv,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
+		ReadTimeout:    timeout,
+		WriteTimeout:   timeout,
 		MaxHeaderBytes: 1 << 20,
 	}
 	if en_http2 {
@@ -151,8 +153,8 @@ func serveHTTPS(srv http.Handler, bind string, en_http2 bool, cert string, key s
 	s := &http.Server{
 		Addr:           bind,
 		Handler:        srv,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
+		ReadTimeout:    timeout,
+		WriteTimeout:   timeout,
 		MaxHeaderBytes: 1 << 20,
 	}
 	if en_http2 {
@@ -184,6 +186,7 @@ func main() {
 	var en_http = flag.Bool("http", true, "Listen HTTP")
 	var en_https = flag.Bool("https", false, "Listen HTTPS")
 	var en_http2 = flag.Bool("http2", false, "Enable HTTP/2")
+	var set_timeout = flag.Int64("timeout", 0, "Timeout for HTTP read/write calls. (Seconds)")
 
 	wrkrs := 2
 	if runtime.NumCPU() > 2 {
@@ -201,6 +204,7 @@ func main() {
 
 	flag.Parse()
 
+	timeout = time.Duration(*set_timeout) * time.Second
 	if *en_https {
 		if *key == "" || *cert == "" {
 			panic("Need to have a Key and a Cert defined.")
