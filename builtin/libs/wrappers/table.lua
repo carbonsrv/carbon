@@ -2,7 +2,7 @@
 
 -- Light fixes
 table.unpack = table.unpack or unpack
-table.pack = table.pack or function pack(...)
+table.pack = table.pack or function(...)
 	return { n = select("#", ...), ... }
 end
 
