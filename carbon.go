@@ -22,8 +22,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/namsral/flag"
 	"github.com/pmylund/go-cache"
+	"github.com/valyala/fasthttp"
+	"github.com/valyala/fasthttp/fasthttpadaptor"
 	"github.com/vifino/golua/lua"
-	"golang.org/x/net/http2"
 )
 
 // General
@@ -121,46 +122,39 @@ func new_server() *gin.Engine {
 	return gin.New()
 }
 
-func serve(srv http.Handler, en_http bool, en_https bool, en_http2 bool, bind string, binds string, cert string, key string) {
+func serve(srv_stock http.Handler, en_http bool, en_https bool, bind string, binds string, cert string, key string) {
 	end := make(chan bool)
+	srv := fasthttpadaptor.NewFastHTTPHandler(srv_stock)
 	if en_http {
-		go serveHTTP(srv, bind, en_http2)
+		go serveHTTP(srv, bind)
 	}
 	if en_https {
 		cert, _ := filepath.Abs(cert)
 		key, _ := filepath.Abs(key)
-		go serveHTTPS(srv, binds, en_http2, cert, key)
+		go serveHTTPS(srv, binds, cert, key)
 	}
 	<-end
 }
-func serveHTTP(srv http.Handler, bind string, en_http2 bool) {
-	s := &http.Server{
-		Addr:           bind,
-		Handler:        srv,
-		ReadTimeout:    timeout,
-		WriteTimeout:   timeout,
-		MaxHeaderBytes: 1 << 20,
+func serveHTTP(srv fasthttp.RequestHandler, bind string) {
+	s := &fasthttp.Server{
+		Handler:      srv,
+		ReadTimeout:  timeout,
+		WriteTimeout: timeout,
 	}
-	if en_http2 {
-		http2.ConfigureServer(s, nil)
-	}
-	err := s.ListenAndServe()
+	err := s.ListenAndServe(bind)
+
 	if err != nil {
 		panic(err)
 	}
 }
-func serveHTTPS(srv http.Handler, bind string, en_http2 bool, cert string, key string) {
-	s := &http.Server{
-		Addr:           bind,
-		Handler:        srv,
-		ReadTimeout:    timeout,
-		WriteTimeout:   timeout,
-		MaxHeaderBytes: 1 << 20,
+func serveHTTPS(srv fasthttp.RequestHandler, bind string, cert string, key string) {
+	s := &fasthttp.Server{
+		Handler:      srv,
+		ReadTimeout:  timeout,
+		WriteTimeout: timeout,
 	}
-	if en_http2 {
-		http2.ConfigureServer(s, nil)
-	}
-	err := s.ListenAndServeTLS(cert, key)
+	err := s.ListenAndServeTLS(bind, cert, key)
+
 	if err != nil {
 		panic(err)
 	}
@@ -185,7 +179,6 @@ func main() {
 	var key = flag.String("key", "", "Key File for HTTPS")
 	var en_http = flag.Bool("http", true, "Listen HTTP")
 	var en_https = flag.Bool("https", false, "Listen HTTPS")
-	var en_http2 = flag.Bool("http2", false, "Enable HTTP/2")
 	var set_timeout = flag.Int64("timeout", 0, "Timeout for HTTP read/write calls. (Seconds)")
 
 	wrkrs := 2
@@ -247,7 +240,7 @@ func main() {
 
 	if *eval != "" {
 		err := luaconf.Eval(*eval, args, cfe, root, *useRecovery, *useLogger, *run_repl, func(srv *gin.Engine) {
-			serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
+			serve(srv, *en_http, *en_https, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 		}, bindhook)
 		if err != nil {
 			fmt.Println(err)
@@ -259,7 +252,7 @@ func main() {
 	if script == "" {
 		if *run_repl {
 			err := luaconf.REPL(args, cfe, root, *useRecovery, false, func(srv *gin.Engine) {
-				serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
+				serve(srv, *en_http, *en_https, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 			}, bindhook)
 			if err != nil {
 				fmt.Println(err)
@@ -267,7 +260,7 @@ func main() {
 			}
 		} else {
 			err := luaconf.Eval(glue.GetGlue("bootscript.lua"), args, cfe, root, *useRecovery, *useLogger, *run_repl, func(srv *gin.Engine) {
-				serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
+				serve(srv, *en_http, *en_https, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 			}, bindhook)
 			if err != nil {
 				fmt.Println(err)
@@ -299,7 +292,7 @@ func main() {
 				}
 			}
 			err = luaconf.Eval(script_src, args, cfe, script, *useRecovery, *useLogger, *run_repl, func(srv *gin.Engine) {
-				serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
+				serve(srv, *en_http, *en_https, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 			}, bindhook)
 			if err != nil {
 				fmt.Println(err)
@@ -307,7 +300,7 @@ func main() {
 			}
 		} else {
 			err := luaconf.Configure(script, args, cfe, root, *useRecovery, *useLogger, *run_repl, func(srv *gin.Engine) {
-				serve(srv, *en_http, *en_https, *en_http2, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
+				serve(srv, *en_http, *en_https, *host+":"+strconv.Itoa(*port), *host+":"+strconv.Itoa(*ports), *cert, *key)
 			}, bindhook)
 			if err != nil {
 				fmt.Println(err)
