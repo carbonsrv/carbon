@@ -177,7 +177,7 @@ function carbon.lazyload_mark(tablename, path)
 				res = r
 				_G[tablename] = r
 			end
-			return res[key] or t[key]
+			return res[key] or (_G[tablename] or t)[key]
 		end
 	})
 	_G[tablename] = old

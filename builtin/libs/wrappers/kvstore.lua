@@ -1,10 +1,14 @@
 -- kvstore
 function kvstore.set(name, value, timeout)
 	if name then
-		if timeout then
-			kvstore._set_timeout(tostring(name), value, tonumber(timeout))
+		if value ~= nil then
+			if timeout then
+				kvstore._set_timeout(tostring(name), value, tonumber(timeout))
+			end
+			kvstore._set(tostring(name), value)
+		else
+			kvstore._del(tostring(name))
 		end
-		kvstore._set(tostring(name), value)
 	else
 		error("No name given.")
 	end
@@ -39,7 +43,7 @@ function kvstore.inc(name, number)
 	if name then
 		kvstore._inc(tostring(name), tonumber(number) or 1)
 	else
-		error("No name or number given.")
+		error("No name given.")
 	end
 end
 
