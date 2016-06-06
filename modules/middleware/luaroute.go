@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
@@ -90,22 +91,26 @@ var jobs int
 // Preloaded is the chan that contains the preloaded states
 var Preloaded chan *lua.State
 
+func newstate() *lua.State {
+	L := luar.Init()
+	Bind(L, webroot)
+	err := L.DoString(glue.MainGlue())
+	if err != nil {
+		panic(err)
+	}
+	err = L.DoString(glue.RouteGlue())
+	if err != nil {
+		panic(err)
+	}
+	return L
+}
+
 // Preloader is the function that preloads the states
 func Preloader() {
 	Preloaded = make(chan *lua.State, jobs)
 	for {
 		//fmt.Println("preloading")
-		L := luar.Init()
-		Bind(L, webroot)
-		err := L.DoString(glue.MainGlue())
-		if err != nil {
-			panic(err)
-		}
-		err = L.DoString(glue.RouteGlue())
-		if err != nil {
-			panic(err)
-		}
-		Preloaded <- L
+		Preloaded <- newstate()
 	}
 }
 
@@ -233,14 +238,17 @@ func DLR_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin.C
 
 // DLR_RUS does the same as above, but reuses states
 func DLR_RUS(bcode string, instances int, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but reuses states. Much faster. Higher memory use though, because more states.
-	insts := instances
-	if instances < 0 {
-		insts = 2
-		if jobs/2 > 1 {
-			insts = jobs
+	pool := sync.Pool{}
+	create_func := func() interface{} {
+		L := GetInstance()
+		if dobind {
+			luar.Register(L, "", vals)
 		}
+		L.LoadBuffer(bcode, len(bcode), "route")
+		L.PushValue(-1)
+		return L
 	}
-	schan := make(chan *lua.State, insts)
+
 	for i := 0; i < jobs/2; i++ {
 		L := GetInstance()
 		if dobind {
@@ -249,11 +257,12 @@ func DLR_RUS(bcode string, instances int, dobind bool, vals map[string]interface
 		if L.LoadBuffer(bcode, len(bcode), "route") != 0 {
 			return func(context *gin.Context) {}, errors.New(L.ToString(-1))
 		}
-		L.PushValue(-1)
-		schan <- L
+		pool.Put(L)
 	}
+	pool.New = create_func
+
 	return func(context *gin.Context) {
-		L := <-schan
+		L := pool.Get().(*lua.State)
 		BindContext(L, context)
 		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
 			helpers.HTMLString(context, http.StatusInternalServerError, `<html>
@@ -264,10 +273,10 @@ func DLR_RUS(bcode string, instances int, dobind bool, vals map[string]interface
 </body>
 </html>`)
 			context.Abort()
+			L.Close()
 			return
 		}
-		L.PushValue(-1)
-		schan <- L
+		pool.Put(L)
 	}, nil
 }
 
@@ -340,23 +349,27 @@ func DLRWS_NS(bcode string, dobind bool, vals map[string]interface{}) (func(*gin
 
 // DLRWS_RUS also does the thing for websockets, but reuses states, not quite handy given how many connections a websocket could take and how long the connection could keep alive.
 func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interface{}) (func(*gin.Context), error) { // Same as above, but reusing states.
-	insts := instances
-	if instances < 0 {
-		insts = 2
-		if jobs/2 > 1 {
-			insts = jobs
+	pool := sync.Pool{}
+	create_func := func() interface{} {
+		L := GetInstance()
+		if dobind {
+			luar.Register(L, "", vals)
 		}
+		L.PushValue(-1)
+		return L
 	}
-	schan := make(chan *lua.State, insts)
+
 	for i := 0; i < jobs/2; i++ {
 		L := GetInstance()
 		if dobind {
 			luar.Register(L, "", vals)
 		}
-		schan <- L
+		pool.Put(L)
 	}
+	pool.New = create_func
+
 	return func(context *gin.Context) {
-		L := <-schan
+		L := pool.Get().(*lua.State)
 		BindContext(L, context)
 		conn, err := upgrader.Upgrade(context.Writer, context.Request, nil)
 		if err != nil {
@@ -399,9 +412,10 @@ func DLRWS_RUS(bcode string, instances int, dobind bool, vals map[string]interfa
 		if L.Pcall(0, 0, 0) != 0 { // != 0 means error in execution
 			fmt.Println("Websocket Lua error: " + L.ToString(-1))
 			context.Abort()
+			L.Close()
 			return
 		}
-		schan <- L
+		pool.Put(L)
 		// Close websocket.
 		conn.Close()
 	}, nil
