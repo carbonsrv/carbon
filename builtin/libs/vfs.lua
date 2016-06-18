@@ -3,6 +3,9 @@
 
 vfs = {}
 
+-- Depends on: ltn12
+local ltn12 = require("ltn12")
+
 -- Helpers:
 -- Relative <-> Absolute Path conversion
 vfs.helpers = {}
@@ -77,6 +80,10 @@ vfs.is_relative = is_relative
 -- These functions should set up the env for the other functions, like read.
 
 -- You should at least provide read for a read-only fs, add write if you have a read-write fs. However, you should probably add exists, size, modtime, rename, mkdir, delete, isdir, getcwd, chdir and list if you want to have a fully fledged filesystem that is read-writable, has directories and keeps track of the current directory.
+-- You can also implement other methods for your backends specific features.
+-- One thing to implement would be LTN12 compatible reader and writer, however they don't have to exist.
+-- If they don't, rather crude LTN12 wrappers around read and write exists as a fallback if they don't.
+-- LTN12 compatibility would make things more efficient given proper implementation, because of the streaming ability, resulting in possibly faster transfer but mostly less memory use.
 
 vfs.backends = {}
 
@@ -114,6 +121,9 @@ function vfs.backends.native(drivename, path) -- native backend
 			fh:close()
 			return txt
 		end,
+		reader = function(loc)
+			return ltn12.source.file(io.open(getpath(loc)))
+		end,
 		write = function(loc, txt)
 			local fh, err = io.open(getpath(loc), "w")
 			if err then
@@ -123,6 +133,16 @@ function vfs.backends.native(drivename, path) -- native backend
 			fh:close()
 			return true
 		end,
+		writer = function(loc)
+			return ltn12.sink.file(io.open(getpath(loc)))
+		end,
+		copy = function(src, dst)
+			return ltn12.pump.all(
+				ltn12.source.file(io.open(getpath(src))),
+				ltn12.sink.file(io.open(getpath(dst)))
+			)
+		end,
+
 		delete = function(loc)
 			return os.remove(getpath(loc))
 		end,
@@ -163,8 +183,11 @@ function vfs.backends.native(drivename, path) -- native backend
 end
 
 if carbon then
+	-- Read-only (for now) physfs backend for carbon
+	-- TODO: LTN12 compatible reader
+	-- TODO: Maybe write compatibility?
 	local physfs = physfs or fs
-	function vfs.backends.physfs(drivename, path, ismounted) -- read-only physfs backend for carbon
+	function vfs.backends.physfs(drivename, path, ismounted)
 		if not ismounted and not physfs.exists("/"..drivename) then
 			physfs.mount(path, "/"..drivename)
 		end
@@ -223,15 +246,19 @@ if carbon then
 					return unpack(res, 2, res.n)
 				end
 			end
-			return setmetatable({
+			local tmp = {
 				unmount = function(...)
 					call("unmount")
 					kvstore._del(kvstore_key_base.."com")
 					kvstore._del(kvstore_key_base.."args")
 				end
-			}, {__index = function(_, name)
-				return function(...) return call(name, ...) end
-			end})
+			}
+			for k, v in pairs(kvstore._get(kvstore_key_base.."methods")) do
+				tmp[v] = function(...)
+					return call(v, ...)
+				end
+			end
+			return tmp
 		else -- init backend and put the com in the kvstore
 			local vfs_backend = vfs.backends[sharedbackend]
 			kvstore._set(kvstore_key_base.."args", msgpack.pack(table.pack(...)))
@@ -239,19 +266,20 @@ if carbon then
 				local msgpack = require("msgpack")
 				local bargs = msgpack.unpack(kvstore._get(kvstore_key_base.."args"))
 				vfs = require("vfs")
-				local backend = vfs_backend(drivename, unpack(bargs, 1, bargs.n))
+				local drive = vfs_backend(drivename, unpack(bargs, 1, bargs.n))
+
+				local methodlist = {}
+				for k, _ in pairs(drive) do
+					table.insert(methodlist, k)
+				end
+				kvstore._set(kvstore_key_base.."methods", methodlist)
 
 				while true do
 					local src = com.receive(threadcom)
 					local cmd = msgpack.unpack(src)
 
 					local name, args = cmd.method, cmd.args
-					local res
-					if not backend[name] then
-						res = {false, "VFS: Backend "..sharedbackend.." provides no function "..name}
-					else
-						res = table.pack(pcall(backend[name], unpack(args, 1, args.n)))
-					end
+					local res = table.pack(pcall(drive[name], unpack(args, 1, args.n)))
 					com.send(threadcom, msgpack.pack(res))
 					if name == "unmount" then -- I guess it is time to go.
 						return
@@ -328,6 +356,67 @@ local function parse_path(path, default)
 	end
 end
 vfs.parse_path = parse_path
+
+-- Helpers which overwrite backend functions.
+function vfs.copy(fpsrc, fpdst)
+	local fpsrc_drivename, fpsrc_path = parse_path(fpsrc)
+	local fpdst_drivename, fpdst_path = parse_path(fpdst)
+	local fpsrc_drive = vfs.drives[fpsrc]
+	local fpdst_drive = vfs.drives[fpdst]
+	local fpsrc_backend = vfs.backends[fpsrc_drive]
+	local fpdst_backend = vfs.backends[fpdst_drive]
+
+	if fpsrc_drive == fpdst_drive then -- same device copy
+		if fpsrc_drive.copy then -- backend has a specific copy function
+			return fpsrc_drive.copy(fpsrc_path, fpdst_path)
+		end
+	end
+
+	-- streaming inter device copy
+	if fpsrc_drive.reader and fpdst_drive.writer then -- ltn12! woo!
+		return ltn12.pump.all(
+			fpsrc_backend.reader(fpsrc_path),
+			fpdst_backend.writer(fpdst_path)
+		)
+	end
+
+	-- fallback
+	local src = fpsrc_drive.read(fpsrc_path)
+	return fpdst.write(fpdst_path, src)
+end
+
+function vfs.reader(src)
+	local src_drivename, src_path = parse_path(src)
+	local src_drive = vfs.drives[src_drivename]
+
+	if src_drive.reader then -- native LTN12 reader exists
+		return src_drive.reader(src_path)
+	end
+
+	-- A quite dirty hack, just for programs which definitly want a LTN12 reader, but the backend doesn't have one.
+	-- Probably not that efficient.
+	local src = src_drive.read(src_path)
+	return ltn12.source.string(src)
+end
+
+function vfs.writer(dst)
+	local dst_drivename, dst_path = parse_path(dst)
+	local dst_drive = vfs.drives[dst_drivename]
+
+	if dst_drive.writer then
+		return dst_drive.writer(dst_path)
+	end
+
+	-- Another dirty hack. This one just concatenates chunk after chunk and writes it out when there is no more.
+	local s = ""
+	return function(chunk)
+		if not chunk then
+			return dst_drive.write(dst_path, chunk)
+		end
+		s = s .. tostring(chunk)
+		return 1
+	end
+end
 
 -- Generic function addition
 -- Magic!
