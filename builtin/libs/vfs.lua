@@ -1,10 +1,7 @@
 -- Carbon VFS
 -- modular simplistic virtual filesystem handling designed for carbon
 
-local vfs = {}
-
--- method caching
-local err, tos, strm, strf, strsub, strgsub, tconcat = error, tostring, string.match, string.find, string.sub, string.gsub, table.concat
+vfs = {}
 
 -- Helpers:
 -- Relative <-> Absolute Path conversion
@@ -38,22 +35,22 @@ end
 
 
 local function e(msg)
-	err("VFS: "..msg, 0)
+	error("VFS: "..msg, 0)
 end
 
 local function is_relative(path)
-	return strsub(path, 1, 1) ~= "/" -- that's probably not the best...
+	return string.sub(path, 1, 1) ~= "/" -- that's probably not the best...
 end
 
 local function abspath(rel, base)
-	if strsub(rel, 1, 1) == "/" then -- just in case rel is actually absolute
+	if string.sub(rel, 1, 1) == "/" then -- just in case rel is actually absolute
 		return rel
 	end
 	if rel == "" or rel == "." then
 		return base -- didn't change path
 	end
 
-	base = strgsub(base, "^/", "")
+	base = string.gsub(base, "^/", "")
 	local path = strsplt(base, "/")
 	local pathn = #path
 	local relpath = strsplt(rel, "/")
@@ -70,11 +67,10 @@ local function abspath(rel, base)
 			path[pathn] = elm
 		end
 	end
-	return "/"..tconcat(path, "/")
+	return "/"..table.concat(path, "/")
 end
-
-vfs.helpers.is_relative = is_relative
-vfs.helpers.abspath = abspath
+vfs.abspath = abspath
+vfs.is_relative = is_relative
 
 -- Backends:
 -- Backends have an init function with arguments to support it.
@@ -134,7 +130,7 @@ function vfs.backends.native(drivename, path) -- native backend
 			return os.rename(getpath(loc1), getpath(loc2))
 		end,
 	}
-	
+
 	-- Mostly carbon specific additions.
 	-- TODO: Maybe add LFS support?
 	if os.exists then
@@ -169,7 +165,7 @@ end
 if carbon then
 	local physfs = physfs or fs
 	function vfs.backends.physfs(drivename, path, ismounted) -- read-only physfs backend for carbon
-		if not ismounted then
+		if not ismounted and not physfs.exists("/"..drivename) then
 			physfs.mount(path, "/"..drivename)
 		end
 		local cwd = "/"
@@ -193,7 +189,7 @@ if carbon then
 			list = function(loc) return physfs.list(getdir(loc)) end,
 			modtime = function(loc) return physfs.modtime(getdir(loc)) end,
 			size = function(loc) return physfs.size(getdir(loc)) end,
-	
+
 			-- generic functions
 			chdir = function(loc) cwd = abspath(loc, cwd) return cwd end,
 			getcwd = function(loc) return cwd end,
@@ -201,6 +197,70 @@ if carbon then
 			-- deinit function
 			unmount = function() if not ismounted then physfs.unmount(base) end end,
 		}
+	end
+
+	-- Some very cool special goodie: A thread-safe proxy backend.
+	-- Allows a single instance of a backend to be used by serveral threads, sharing it's cwd and whatnot.
+	function vfs.backends.shared(drivename, sharedbackend, ...)
+		local msgpack = require("msgpack")
+		local kvstore_key_base = "carbon:vfs:"..drivename..":"
+		if not sharedbackend then
+			if not kvstore._get(kvstore_key_base.."com") then
+				e("Shared backend has not been initialized for drive "..drivename)
+			end
+
+			local function call(name, ...)
+				local shrd = kvstore._get(kvstore_key_base.."com")
+				com.send(shrd, msgpack.pack({
+					method = name,
+					args = table.pack(...)
+				}))
+
+				local res = msgpack.unpack(com.receive(shrd))
+				if res[1] == false then
+					error(res[2], 0)
+				elseif res[1] == true then
+					return unpack(res, 2, res.n)
+				end
+			end
+			return setmetatable({
+				unmount = function(...)
+					call("unmount")
+					kvstore._del(kvstore_key_base.."com")
+					kvstore._del(kvstore_key_base.."args")
+				end
+			}, {__index = function(_, name)
+				return function(...) return call(name, ...) end
+			end})
+		else -- init backend and put the com in the kvstore
+			local vfs_backend = vfs.backends[sharedbackend]
+			kvstore._set(kvstore_key_base.."args", msgpack.pack(table.pack(...)))
+			local shrd = thread.spawn(function()
+				local msgpack = require("msgpack")
+				local bargs = msgpack.unpack(kvstore._get(kvstore_key_base.."args"))
+				vfs = require("vfs")
+				local backend = vfs_backend(drivename, unpack(bargs, 1, bargs.n))
+
+				while true do
+					local src = com.receive(threadcom)
+					local cmd = msgpack.unpack(src)
+
+					local name, args = cmd.method, cmd.args
+					local res
+					if not backend[name] then
+						res = {false, "VFS: Backend "..sharedbackend.." provides no function "..name}
+					else
+						res = table.pack(pcall(backend[name], unpack(args, 1, args.n)))
+					end
+					com.send(threadcom, msgpack.pack(res))
+					if name == "unmount" then -- I guess it is time to go.
+						return
+					end
+				end
+			end)
+			kvstore._set(kvstore_key_base.."com", shrd)
+			return vfs.backends.shared(drivename)
+		end
 	end
 end
 
@@ -218,12 +278,15 @@ local function get_drive_field(drive, field)
 end
 
 local function call_backend(drive, func, ...)
-	local f = get_drive_field(drive, func)
+	local f = vfs.get_drive_field(drive, func)
 	if f then
 		return f(...)
 	end
 	e("Drive "..drive.." provides no function named "..func)
 end
+
+vfs.get_drive_field = get_drive_field
+vfs.call_backend = call_backend
 
 -- drive init and unmount
 function vfs.new(drivename, backend, ...)
@@ -247,16 +310,24 @@ end
 -- default drive selection:
 -- if the path is not in the form of "drive:whatever", use the default drive.
 
--- set vfs.default_drive to "root" or whatever drive you want the default.
+-- call vfs.default_drive with"root" or whatever drive you want the default.
+local default_drive_key = "carbon:vfs:default_drive"
+function vfs.set_default_drive(drivename)
+	kvstore._set(default_drive_key, drivename)
+end
+function vfs.default_drive()
+	return kvstore._get(default_drive_key)
+end
 
 local function parse_path(path, default)
 	local drive, filepath = string.match(path or "", "^(%w-):(.+)$")
 	if drive and filepath then -- full vfs path
 		return drive, filepath
 	else -- "normal" path, like /bla
-		return default or vfs.default_drive, path
+		return default or vfs.default_drive(), path
 	end
 end
+vfs.parse_path = parse_path
 
 -- Generic function addition
 -- Magic!

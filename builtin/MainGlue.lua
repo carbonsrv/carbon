@@ -181,9 +181,8 @@ require("wrappers.globalwrappers")
 
 -- VFS madness
 require("wrappers.physfs")
-vfs = require("vfs")
+require("vfs")
 vfs.new("root", "physfs", nil, true)
-vfs.default_drive = "root"
 
 local wrappers = {
 	"fs",
