@@ -278,7 +278,7 @@ local function get_drive_field(drive, field)
 end
 
 local function call_backend(drive, func, ...)
-	local f = vfs.get_drive_field(drive, func)
+	local f = get_drive_field(drive, func)
 	if f then
 		return f(...)
 	end
