@@ -1,126 +1,39 @@
--- fs wrappers
+-- fs compatability layer for vfs
+-- Carbon 1.3 added vfs, a more generic virtual filesystem framework. fs, which is now just a wrapper around vfs is still there for convenience, however some less used functions are stubs/unsupported.
+
 fs = {}
-function fs.mount(dir, mp, app)
-	if dir then
-		local err = carbon._fs_mount(dir, mp or "/", app or false)
-		if err then
-			error(err, 0)
-		end
-	else
-		error("No dir given.")
-	end
+
+-- Manual incompatability notices
+function fs.mount()
+	error("Please use vfs' vfs.new('drivename', 'physfs', '/path/to/archive.zip') or something similar instead of fs.mount.", 0)
 end
 
-function fs.exists(file)
-	if file then
-		return carbon._fs_exists(file)
-	else
-		error("No file given.")
-	end
+function fs.unmount()
+	error("Please use vfs' vfs.umount('drivename') instead of fs.unmount.", 0)
 end
 
-function fs.isDir(path)
-	if path then
-		return carbon._fs_isDir(path)
-	else
-		error("No path given.")
-	end
-end
-
-function fs.mkdir(path)
-	if path then
-		local err = carbon._fs_mkdir(path)
-		if err then
-			error(err, 0)
-		end
-	else
-		error("No path given.")
-	end
-end
-
-function fs.umount(path)
-	if path then
-		local err = carbon._fs_umount(path)
-		if err then
-			error(err, 0)
-		end
-	else
-		error("No path given.")
-	end
-end
-
-function fs.delete(path)
-	if path then
-		local err = carbon._fs_delete(path)
-		if err then
-			error(err, 0)
-		end
-	else
-		error("No path given.")
-	end
-end
-
-function fs.setWriteDir(path)
-	if path then
-		local err = carbon._fs_setWriteDir(path)
-		if err then
-			error(err, 0)
-		end
-	else
-		error("No path given.")
-	end
+function fs.setWriteDir()
+	print("Warning: Writing to physfs is no longer supported, since everything moved to vfs and no support exists for the physfs backend. Therefore, fs.setWriteDir is useless.")
 end
 
 function fs.getWriteDir()
-	return carbon._fs_getWriteDir()
+	error("fs.getWriteDir got removed, since fs.setWriteDir is defunct.", 0)
 end
 
-function fs.list(path)
-	if path then
-		local list, err = carbon._fs_list(path)
-		if err then
-			return nil, err
-		end
-		return luar.slice2table(list)
-	else
-		error("No path given.")
+-- Automated direct conversions.
+local direct_conversions = {
+	exists = "exists",
+	isDir = "isdir",
+	mkdir = "mkdir",
+	delete = "delete",
+	modtime = "modtime",
+	readfile = "read",
+	list = "list",
+	size = "size",
+}
+
+for old, new in pairs(direct_conversions) do
+	fs[old] = function(file, ...)
+		return vfs[new]("root:"..(file or "/"), ...)
 	end
 end
-
-function fs.modtime(path)
-	if path then
-		local mt, err = carbon._fs_modtime(path)
-		if err then
-			return nil, err
-		end
-		return mt
-	else
-		error("No path given.")
-	end
-end
-
-function fs.readfile(path)
-	if path then
-		local content, err = carbon._fs_readfile(path)
-		if err then
-			return nil, err
-		end
-		return content
-	else
-		error("No path given.")
-	end
-end
-
-function fs.size(path)
-	if path then
-		local size, err = carbon._fs_size(path)
-		if err then
-			return nil, err
-		end
-		return size
-	else
-		error("No path given.")
-	end
-end
-
-return fs

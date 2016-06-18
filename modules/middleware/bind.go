@@ -166,16 +166,16 @@ func BindStatic(L *lua.State, cfe *cache.Cache) {
 // BindPhysFS binds the physfs library functions.
 func BindPhysFS(L *lua.State) {
 	luar.Register(L, "carbon", luar.Map{ // PhysFS
-		"_fs_mount":       physfs.Mount,
-		"_fs_exists":      physfs.Exists,
-		"_fs_isDir":       physfs.IsDirectory,
-		"_fs_getFS":       physfs.FileSystem,
-		"_fs_mkdir":       physfs.Mkdir,
-		"_fs_umount":      physfs.RemoveFromSearchPath,
-		"_fs_delete":      physfs.Delete,
-		"_fs_setWriteDir": physfs.SetWriteDir,
-		"_fs_getWriteDir": physfs.GetWriteDir,
-		"_fs_list": func(name string) (fl []string, err error) {
+		"_physfs_mount":       physfs.Mount,
+		"_physfs_exists":      physfs.Exists,
+		"_physfs_isDir":       physfs.IsDirectory,
+		"_physfs_getFS":       physfs.FileSystem,
+		"_physfs_mkdir":       physfs.Mkdir,
+		"_physfs_umount":      physfs.RemoveFromSearchPath,
+		"_physfs_delete":      physfs.Delete,
+		"_physfs_setWriteDir": physfs.SetWriteDir,
+		"_physfs_getWriteDir": physfs.GetWriteDir,
+		"_physfs_list": func(name string) (fl []string, err error) {
 			if physfs.Exists(name) {
 				if physfs.IsDirectory(name) {
 					return physfs.EnumerateFiles(name)
@@ -184,7 +184,7 @@ func BindPhysFS(L *lua.State) {
 			}
 			return nil, errors.New("open " + name + ": no such file or directory")
 		},
-		"_fs_readfile": func(file string) (string, error) {
+		"_physfs_readfile": func(file string) (string, error) {
 			if physfs.Exists(file) {
 				f, err := physfs.Open(file)
 				defer f.Close()
@@ -212,14 +212,14 @@ func BindPhysFS(L *lua.State) {
 			}
 			return "", errors.New(file + ": No such file or directory")
 		},
-		"_fs_modtime": func(name string) (int, error) {
+		"_physfs_modtime": func(name string) (int, error) {
 			mt, err := physfs.GetLastModTime(name)
 			if err != nil {
 				return -1, err
 			}
 			return int(mt.UTC().Unix()), nil
 		},
-		"_fs_size": func(path string) (int64, error) {
+		"_physfs_size": func(path string) (int64, error) {
 			f, err := physfs.Open(path)
 			defer f.Close()
 			if err != nil {

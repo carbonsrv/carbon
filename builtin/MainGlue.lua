@@ -8,14 +8,14 @@ package.cpath = webroot_path.."?.so;"..webroot_path.."loadall.so;"..package.cpat
 
 -- Custom package loaders so that you can require the libraries built into Carbon.
 local cache_do_cache_prefix = "carbon:do_cache:"
-local cache_dont_cache_physfs = "carbon:dont_cache:physfs"
+local cache_dont_cache_vfs = "carbon:dont_cache:vfs"
 local cache_key_prefix = "carbon:lua_module:"
 local cache_key_app = cache_key_prefix .. "app:" -- for custom stuff
 local cache_key_app_location = cache_key_prefix .. "app_location:"
 local cache_key_asset = cache_key_prefix .. "asset:"
 local cache_key_asset_location = cache_key_prefix .. "asset_location:"
-local cache_key_physfs = cache_key_prefix .. "physfs:"
-local cache_key_physfs_location = cache_key_prefix .. "physfs_location:"
+local cache_key_vfs = cache_key_prefix .. "vfs:"
+local cache_key_vfs_location = cache_key_prefix .. "vfs_location:"
 
 -- Load bc cache from kvstore
 function loadcache(name)
@@ -35,101 +35,97 @@ function loadcache(name)
 		return f
 	end
 
-	local f_bc = kvstore._get(cache_key_physfs..modname)
+	local f_bc = kvstore._get(cache_key_vfs..modname)
 	if f_bc then
-		local f, err = loadstring(f_bc, kvstore._get(cache_key_physfs_location..modname))
+		local f, err = loadstring(f_bc, kvstore._get(cache_key_vfs_location..modname))
 		if err then error(err, 0) end
 		return f
 	end
 	return "\n\tno stored bytecode in kvstore under '"..cache_key_asset..modname.."'" ..
-		"\n\tno stored bytecode in kvstore under '"..cache_key_physfs..modname.."'"
+		"\n\tno stored bytecode in kvstore under '"..cache_key_vfs..modname.."'"
 end
 
--- Load from compiled in /builtin/libs
-local function loadasset_libs(name)
+local function loadassets(name)
+	-- Load from compiled in /builtin/libs
 	local modname = tostring(name):gsub("%.", "/")
-	local location = "libs/" .. modname .. ".lua"
+	local location_libs = "libs/" .. modname .. ".lua"
+	local location_3rdparty = "3rdparty/" .. modname .. ".lua"
 	local strip = kvstore._get("carbon:strip_internal_bytecode")
 
-	local src = carbon.glue(location)
+	local src = carbon.glue(location_libs)
 	if src ~= "" then
 		-- Compile and return the module
-		local f, err = loadstring(src, location)
+		local f, err = loadstring(src, location_libs)
 		if err then error(err, 0) end
 		kvstore._set(cache_key_asset..modname, string.dump(f, strip))
-		kvstore._set(cache_key_asset_location..modname, location)
+		kvstore._set(cache_key_asset_location..modname, location_libs)
 		return f
 	end
 
-	local location_init = "libs/" .. modname .. "/init.lua"
-	local src = carbon.glue(location_init)
+	local location_init_libs = "libs/" .. modname .. "/init.lua"
+	local src = carbon.glue(location_init_libs)
 	if src ~= "" then
 		-- Compile and return the module
-		local f, err = loadstring(src, location)
+		local f, err = loadstring(src, location_libs)
 		if err then error(err, 0) end
 		kvstore._set(cache_key_asset..modname, string.dump(f, strip))
-		kvstore._set(cache_key_asset_location..modname, location_init)
+		kvstore._set(cache_key_asset_location..modname, location_init_libs)
 		return f
 	end
-	return "\n\tno lib asset '/" .. location .. "' (not compiled in)" ..
-		"\n\tno lib asset '/" .. location_init .. "' (not compiled in)"
+
+	-- Load from compiled in /builtin/3rdparty
+	local src = carbon.glue(location_3rdparty)
+	if src ~= "" then
+		-- Compile and return the module
+		local f, err = loadstring(src, location_3rdparty)
+		if err then error(err, 0) end
+		kvstore._set(cache_key_asset..modname, string.dump(f, strip))
+		kvstore._set(cache_key_asset_location..modname, location_3rdparty)
+		return f
+	end
+
+	local location_init_3rdparty = "3rdparty/" .. modname .. "/init.lua"
+	local src = carbon.glue(location_init_3rdparty)
+	if src ~= "" then
+		-- Compile and return the module
+		local f, err = loadstring(src, location_3rdparty)
+		if err then error(err, 0) end
+		kvstore._set(cache_key_asset..modname, string.dump(f, strip))
+		kvstore._set(cache_key_asset_location..modname, location_init_3rdparty)
+		return f
+	end
+
+	return "\n\tno lib asset '/" .. location_libs .. "' (not compiled in)" ..
+		"\n\tno lib asset '/" .. location_init_libs .. "' (not compiled in)" ..
+		"\n\tno thirdparty asset '/" .. location_3rdparty .. "' (not compiled in)"..
+		"\n\tno thirdparty asset '/" .. location_init_3rdparty .. "' (not compiled in)"
 end
 
--- Load from compiled in /builtin/3rdparty
-local function loadasset_thirdparty(name)
-	local modname = tostring(name):gsub("%.", "/")
-	local location = "3rdparty/" .. modname .. ".lua"
-	local strip = kvstore._get("carbon:strip_internal_bytecode")
-
-	local src = carbon.glue(location)
-	if src ~= "" then
-		-- Compile and return the module
-		local f, err = loadstring(src, location)
-		if err then error(err, 0) end
-		kvstore._set(cache_key_asset..modname, string.dump(f, strip))
-		kvstore._set(cache_key_asset_location..modname, location)
-		return f
-	end
-
-	local location_init = "3rdparty/" .. modname .. "/init.lua"
-	local src = carbon.glue(location_init)
-	if src ~= "" then
-		-- Compile and return the module
-		local f, err = loadstring(src, location)
-		if err then error(err, 0) end
-		kvstore._set(cache_key_asset..modname, string.dump(f, strip))
-		kvstore._set(cache_key_asset_location..modname, location_init)
-		return f
-	end
-	return "\n\tno thirdparty asset '/" .. location .. "' (not compiled in)"..
-		"\n\tno thirdparty asset '/" .. location_init .. "' (not compiled in)"
-end
-
--- Load from physfs and cache if not disabled for module
-local function loadphysfs(name)
+-- Load from vfs default drive and cache if not disabled for module
+local function loadvfs(name)
 	local modname = tostring(name):gsub("%.", "/")
 	local location = modname .. ".lua"
-	local src, err1 = fs.readfile(location)
+	local src, err1 = vfs.read(location)
 	if src then
 		-- Compile and return the module
 		local f, err = loadstring(src, location)
 		if err then error(err, 0) end
-		if kvstore._get(cache_do_cache_prefix..modname) ~= false and kvstore._get(cache_dont_cache_physfs) ~= true then
-			kvstore._set(cache_key_physfs..modname, string.dump(f))
-			kvstore._set(cache_key_physfs_location..modname, location)
+		if kvstore._get(cache_do_cache_prefix..modname) ~= false and kvstore._get(cache_dont_cache_vfs) ~= true then
+			kvstore._set(cache_key_vfs..modname, string.dump(f))
+			kvstore._set(cache_key_vfs_location..modname, location)
 		end
 		return f
 	end
 
 	local location_init = modname .. "/init.lua"
-	local src, err2 = fs.readfile(location_init)
+	local src, err2 = vfs.read(location_init)
 	if src then
 		-- Compile and return the module
 		local f, err = loadstring(src, location)
 		if err then error(err, 0) end
-		if kvstore._get(cache_do_cache_prefix..modname) ~= false and kvstore._get(cache_dont_cache_physfs) ~= true then
-			kvstore._set(cache_key_physfs..modname, string.dump(f))
-			kvstore._set(cache_key_physfs_location..modname, location_init)
+		if kvstore._get(cache_do_cache_prefix..modname) ~= false and kvstore._get(cache_dont_cache_vfs) ~= true then
+			kvstore._set(cache_key_vfs..modname, string.dump(f))
+			kvstore._set(cache_key_vfs_location..modname, location_init)
 		end
 		return f
 	end
@@ -137,11 +133,11 @@ local function loadphysfs(name)
 		"\n\tno file '" .. location_init .. "' in webroot"
 end
 
--- Flush physfs cache
+-- Flush require cache
 function carbon.flush_cache(name)
 	local modname = tostring(name):gsub("%.", "/")
-	kvstore._del(cache_key_physfs..modname)
-	kvstore._del(cache_key_physfs_location..modname)
+	kvstore._del(cache_key_vfs..modname)
+	kvstore._del(cache_key_vfs_location..modname)
 	package.loaded[modname] = nil
 end
 -- Set the module to not cache
@@ -150,15 +146,14 @@ function carbon.dont_cache(name)
 		local modname = tostring(name):gsub("%.", "/")
 		kvstore._set(cache_do_cache_prefix..modname, false)
 	else
-		kvstore._set(cache_dont_cache_physfs, true)
+		kvstore._set(cache_dont_cache_vfs, true)
 	end
 end
 
 -- Install the loaders so that it's called just before the normal Lua loaders
 table.insert(package.loaders, 2, loadcache)
-table.insert(package.loaders, 3, loadasset_libs)
-table.insert(package.loaders, 4, loadasset_thirdparty)
-table.insert(package.loaders, 5, loadphysfs)
+table.insert(package.loaders, 3, loadassets)
+table.insert(package.loaders, 4, loadvfs)
 
 -- Load wrappers
 -- LazyLoader! An automatic lazy loading generator.
@@ -166,11 +161,10 @@ function carbon.lazyload_mark(tablename, path)
 	path = path or tablename
 	local old = _G[tablename] or {}
 	--print("Marking "..tablename.." to be lazily loaded.")
-	local oldmt = getmetatable(old)
 	setmetatable(old, {
 		__index=function(t, key)
 			--print("Lazy loaded "..tablename)
-			setmetatable(t, oldmt or nil)
+			setmetatable(t, nil)
 			local r = require(path)
 			local res = {}
 			if r ~= true then
@@ -185,12 +179,19 @@ end
 
 require("wrappers.globalwrappers")
 
+-- VFS madness
+require("wrappers.physfs")
+vfs = require("vfs")
+vfs.new("root", "physfs", nil, true)
+vfs.default_drive = "root"
+
 local wrappers = {
-	fs=false,
+	"fs",
 	"io",
 	"os",
 	"kvstore",
 	"table",
+	"string",
 	"encoding",
 	"mime",
 	"termbox",

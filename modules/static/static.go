@@ -33,7 +33,7 @@ func OwnFS(fs http.FileSystem, root, prefix string, indexes bool) *localFileSyst
 	return &localFileSystem{
 		FileSystem: fs,
 		origfs:     fs,
-		root:       root,
+		root:       "/root/" + root,
 		prefix:     prefix,
 		indexes:    indexes,
 		physfs:     false,
