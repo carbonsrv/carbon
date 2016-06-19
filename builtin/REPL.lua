@@ -228,7 +228,16 @@ while true do
 			local res = table.pack(pcall(fn))
 			local suc = table.remove(res, 1)
 			if suc then
-				print(serialize.simple(table.unpack(res, 1, res.n)))
+				local suc, out = pcall(serialize.simple, table.unpack(res, 1, res.n))
+				if suc then
+					print(out)
+				else
+					if type(res) ~= "string" then
+						print(tostring(res))
+					else
+						print(res)
+					end
+				end
 			else
 				print("Error: "..tostring(res[1]))
 			end

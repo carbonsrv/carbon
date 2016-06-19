@@ -39,10 +39,13 @@ import (
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
 
+	// DB stuff
 	"database/sql"
+	_ "github.com/cznic/ql/driver"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-yql"
 )
 
 // Vars

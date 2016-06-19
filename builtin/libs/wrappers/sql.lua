@@ -33,9 +33,11 @@ function sql.drivers() -- returns list of drivers available
 end
 
 function sql.open(driver, dsn) -- generates a database wrapper
-	if not driver or not dsn then
-		error("SQL: open needs driver and dsn", 0)
+	if not driver then
+		error("SQL: open needs at least driver", 0)
 	end
+
+	dsn = dsn or ""
 
 	local db, err = carbon._sql_open(driver, dsn)
 	if err then
