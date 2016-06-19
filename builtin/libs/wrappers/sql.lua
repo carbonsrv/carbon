@@ -44,7 +44,7 @@ function sql.open(driver, src) -- generates a database wrapper
 	
 	return {
 		con = db,
-		close = function()
+		close = function(self)
 			local err = self.con.Close()
 			if err then
 				return false, err
@@ -72,25 +72,38 @@ function sql.open(driver, src) -- generates a database wrapper
 
 			return convert_rows(rows)
 		end,
-		prepare = function(stmt)
+		prepare = function(origself, stmt)
 			if not stmt then
 				error("SQL: prepare needs statement!", 0)
 			end
 
 			do_ping(self.con)
-			local pstmt, err = self.con.Prepare(stmt)
+			local pstmt, err = origself.con.Prepare(stmt)
 			if err then
 				return nil, err
 			end
 
-			return function(...)
-				local rows, err = pstmt.Query(...)
-				if err then
-					return nil, err
-				end
+			return {
+				con = pstmt,
+				query = function(self, ...)
+					local rows, err = self.con.Query(...)
+					if err then
+						return nil, err
+					end
 
-				return convert_rows(rows)
-			end
+					return convert_rows(rows)
+				end,
+				exec = function(self, ...)
+					return self.con.Exec(...)
+				end,
+				close = function(self)
+					local err = self.con.Close()
+					if err then
+						return false, err
+					end
+					return true, nil
+				end,
+			}
 		end,
 	}
 end
