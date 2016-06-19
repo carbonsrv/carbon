@@ -683,7 +683,7 @@ func BindTermbox(L *lua.State) {
 		"Sync":          termbox.Sync,
 		"SetInputMode":  termbox.SetInputMode,
 		"SetOutputMode": termbox.SetOutputMode,
-		"PollEvent": func() map[string]interface{} {
+		"PollEventRaw": func() map[string]interface{} {
 			e := termbox.PollEvent()
 			return map[string]interface{}{
 				"Type":   e.Type,
