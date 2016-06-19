@@ -27,7 +27,12 @@ local function convert_rows(rows)
 	return final
 end
 
-function sql.open(driver, src)
+-- API
+function sql.drivers() -- returns list of drivers available
+	return luar.slice2table(carbon._sql_drivers())
+end
+
+function sql.open(driver, src) -- generates a database wrapper
 	if not driver or not src then
 		error("SQL: open needs driver and src", 0)
 	end
@@ -39,6 +44,13 @@ function sql.open(driver, src)
 	
 	return {
 		con = db,
+		close = function()
+			local err = self.con.Close()
+			if err then
+				return false, err
+			end
+			return true, nil
+		end,
 		exec = function(self, stmt, ...)
 			if not stmt then
 				error("SQL: exec needs statemement!", 0)
