@@ -32,12 +32,12 @@ function sql.drivers() -- returns list of drivers available
 	return luar.slice2table(carbon._sql_drivers())
 end
 
-function sql.open(driver, src) -- generates a database wrapper
-	if not driver or not src then
-		error("SQL: open needs driver and src", 0)
+function sql.open(driver, dsn) -- generates a database wrapper
+	if not driver or not dsn then
+		error("SQL: open needs driver and dsn", 0)
 	end
 
-	local db, err = carbon._sql_open(driver, src)
+	local db, err = carbon._sql_open(driver, dsn)
 	if err then
 		return nil, err
 	end
@@ -77,16 +77,17 @@ function sql.open(driver, src) -- generates a database wrapper
 				error("SQL: prepare needs statement!", 0)
 			end
 
-			do_ping(origself)
+			do_ping(origself.con)
 			local pstmt, err = origself.con.Prepare(stmt)
 			if err then
 				return nil, err
 			end
 
 			return {
-				con = pstmt,
+				["con"] = origself.con,
+				["pstmt"] = pstmt,
 				query = function(self, ...)
-					local rows, err = self.con.Query(...)
+					local rows, err = self.pstmt.Query(...)
 					if err then
 						return nil, err
 					end
@@ -94,10 +95,10 @@ function sql.open(driver, src) -- generates a database wrapper
 					return convert_rows(rows)
 				end,
 				exec = function(self, ...)
-					return self.con.Exec(...)
+					return self.pstmt.Exec(...)
 				end,
 				close = function(self)
-					local err = self.con.Close()
+					local err = self.pstmt.Close()
 					if err then
 						return false, err
 					end
