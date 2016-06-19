@@ -749,6 +749,37 @@ func BindLinenoise(L *lua.State) {
 		"loadHistory":  linenoise.LoadHistory,
 		"setMultiline": linenoise.SetMultiline,
 	})
+	lua_complfn := func(L *lua.State) int {
+		if L.LTypename(1) != "function" {
+			// TODO: error
+		}
+
+		L.PushValue(1)
+		compfn_ref := L.Ref(lua.LUA_REGISTRYINDEX)
+
+		str_slice_type := reflect.TypeOf([]string{})
+
+		linenoise.SetCompletionHandler(func(in string) []string {
+			L.RawGeti(lua.LUA_REGISTRYINDEX, compfn_ref)
+			L.PushString(in)
+			if L.Pcall(1, 1, 0) != 0 { // call compfn with (1) in string, 1 return value
+				// TODO: error maybe?
+				return []string{}
+			}
+			if L.LTypename(-1) != "table" {
+				// TODO: error or something
+				return []string{}
+			}
+			str_slice := luar.CopyTableToSlice(L, str_slice_type, -1)
+			return str_slice.([]string)
+		})
+		return 1
+	}
+	//L.Register("linenoise.SetCompletionHandler", lua_complfn)
+	L.GetGlobal("linenoise")
+	L.PushString("setCompletionHandler")
+	L.PushGoFunction(lua_complfn)
+	L.SetTable(-3)
 }
 
 // BindTermbox binds the termbox-go library.

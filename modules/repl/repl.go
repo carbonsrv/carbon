@@ -35,9 +35,9 @@ func Run(L *lua.State) {
 		return
 	}
 	// particularly the completion logic
-	complete := luar.NewLuaObjectFromName(L, "carbon._lua_candidates")
+	//complete := luar.NewLuaObjectFromName(L, "carbon._lua_candidates")
 	// this function returns a string slice of candidates
-	str_slice := luar.Types([]string{})
+	/*str_slice := luar.Types([]string{})
 
 	linenoise.SetCompletionHandler(func(in string) []string {
 		val, err := complete.Callf(str_slice, in)
@@ -45,7 +45,7 @@ func Run(L *lua.State) {
 			return []string{}
 		}
 		return val[0].([]string)
-	})
+	})*/
 
 	fmt.Println(Banner)
 	L.DoString(`print(jit.version)`)
@@ -280,4 +280,5 @@ mt.__pairs = function(st)
 		local cc = sdump(st)
 		return pairs(cc)
 end
+linenoise.setCompletionHandler(carbon._lua_candidates)
 `
