@@ -77,7 +77,7 @@ function sql.open(driver, src) -- generates a database wrapper
 				error("SQL: prepare needs statement!", 0)
 			end
 
-			do_ping(self.con)
+			do_ping(origself)
 			local pstmt, err = origself.con.Prepare(stmt)
 			if err then
 				return nil, err
