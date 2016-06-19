@@ -196,7 +196,6 @@ local wrappers = {
 	"termbox",
 	"debug",
 	"exec",
-	"sql",
 }
 for name, wrapper in pairs(wrappers) do
 	if wrapper == false then
