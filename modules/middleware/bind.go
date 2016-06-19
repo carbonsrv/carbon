@@ -17,6 +17,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"time"
 
@@ -37,6 +38,11 @@ import (
 	"github.com/vifino/contrib/gzip"
 	"github.com/vifino/golua/lua"
 	"github.com/vifino/luar"
+
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // Vars
@@ -53,6 +59,7 @@ func Bind(L *lua.State, root string) {
 	BindCarbon(L)
 	BindMiddleware(L)
 	BindRedis(L)
+	BindSQL(L)
 	BindKVStore(L)
 	BindPhysFS(L)
 	BindIOEnhancements(L)
@@ -299,6 +306,86 @@ func BindRedis(L *lua.State) {
 		}),
 		"connect": (func(host string) (*redis.Client, error) {
 			return redis.Dial("tcp", host)
+		}),
+	})
+}
+
+type sql_rows struct {
+	Len  int
+	Vals []map[string]interface{}
+}
+
+// BindSQL binds the database library
+func BindSQL(L *lua.State) {
+	luar.Register(L, "carbon", luar.Map{
+		"_sql_drivers": sql.Drivers,
+		"_sql_open":    sql.Open,
+
+		"_sql_rows": (func(rows *sql.Rows) (sql_rows, error) {
+			var res = make([]map[string]interface{}, 0)
+			rowno := 0
+			names, err := rows.Columns()
+			if err != nil {
+				return sql_rows{}, err
+			}
+			numnames := len(names)
+
+			for rows.Next() {
+				//fmt.Println("Generating interfaces...")
+				var elems = make([]interface{}, numnames)
+				for i := range elems {
+					var ii interface{}
+					elems[i] = &ii
+				}
+
+				//fmt.Println("Scanning...")
+				err := rows.Scan(elems...)
+				if err != nil {
+					return sql_rows{}, err
+				}
+
+				//fmt.Println("Storing in map...")
+				rowtmp := make(map[string]interface{})
+				for i, name := range names {
+					var elm_val = *(elems[i].(*interface{}))
+					var elm_type = reflect.TypeOf(elm_val).String()
+					//fmt.Println(elm_type)
+					if elm_type == "[]uint8" {
+						rowtmp[name] = string(elm_val.([]uint8))
+					} else {
+						rowtmp[name] = elm_val
+					}
+				}
+
+				//fmt.Println("Adding to slice...")
+				n := len(res)
+				newres := make([]map[string]interface{}, n+1)
+				//fmt.Printf("Len: %d\n", n)
+				copy(newres, res)
+				newres[n] = rowtmp
+				res = newres
+
+				//fmt.Printf("Row %d: %#v\n", rowno, rowtmp)
+				rowno += 1
+			}
+
+			final := sql_rows{
+				Len:  len(res),
+				Vals: res,
+			}
+
+			err = rows.Err()
+			if err != nil {
+				return final, err
+			} else {
+				return final, nil
+			}
+		}),
+		"_sql_getrow": (func(rows sql_rows, n int) (map[string]interface{}, error) {
+			if n <= rows.Len && n > 0 {
+				return rows.Vals[n-1], nil
+			}
+			return make(map[string]interface{}), errors.New("out of bounds")
 		}),
 	})
 }
