@@ -26,14 +26,15 @@ end
 function kvstore.get(name)
 	if name then
 		local res = kvstore._get(name)
-		local t = tostring(res)
-		if t == "map[string]interface {}" then
-			return luar.map2table(res)
-		elseif t == "[]interface {}" then
-			return luar.slice2table(res)
-		else
-			return res
+		if not type(res) == "string" then
+			local t = tostring(res)
+			if t == "map[string]interface {}" then
+				return luar.map2table(res)
+			elseif t == "[]interface {}" then
+				return luar.slice2table(res)
+			end
 		end
+		return res
 	else
 		error("No name given.")
 	end

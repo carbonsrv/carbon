@@ -253,7 +253,7 @@ if carbon then
 					kvstore._del(kvstore_key_base.."args")
 				end
 			}
-			for k, v in pairs(kvstore._get(kvstore_key_base.."methods")) do
+			for k, v in pairs(luar.slice2table(kvstore._get(kvstore_key_base.."methods"))) do
 				tmp[v] = function(...)
 					return call(v, ...)
 				end
@@ -274,6 +274,8 @@ if carbon then
 				end
 				kvstore._set(kvstore_key_base.."methods", methodlist)
 
+				com.send(threadcom, true) -- indicate that we are done initializing
+
 				while true do
 					local src = com.receive(threadcom)
 					local cmd = msgpack.unpack(src)
@@ -286,6 +288,7 @@ if carbon then
 					end
 				end
 			end)
+			com.receive(shrd) -- block until thread is done with init
 			kvstore._set(kvstore_key_base.."com", shrd)
 			return vfs.backends.shared(drivename)
 		end
