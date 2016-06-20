@@ -1,10 +1,12 @@
-local db = sql.open("sqlite3",":memory:")
+local db = sql.open("ql-mem", "test.qldb") -- memory backed ql database
 
-db:exec("CREATE TABLE users (name text, age int)") -- Create a new table called users with the rows name and age
-db:exec("CREATE TABLE admins (name text, age int)") -- Same as above for admins
-db:exec("INSERT INTO users (name, age) VALUES ($1, $2)", "bauen1", 15)
-db:exec("INSERT INTO users (name, age) VALUES ($1, $2)", "bob", 21)
-db:exec("INSERT INTO users (name, age) VALUES ($1, $2)", "vifino", 16)
+assert(db:begin(function() -- ql needs everything to be in a transaction
+	assert(db:exec("CREATE TABLE users (name string, age float64)")) -- Create a new table called users with the rows name and age
+	assert(db:exec("INSERT INTO users (name, age) VALUES ($1, $2)", "bauen1", 15))
+	assert(db:exec("INSERT INTO users (name, age) VALUES ($1, $2)", "bob", 21))
+	assert(db:exec("INSERT INTO users (name, age) VALUES ($1, $2)", "vifino", 16))
+	return true -- commit
+end))
 
 print("Listing all users:")
 local rows = assert(db:query("SELECT * FROM users"))
