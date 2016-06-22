@@ -184,7 +184,6 @@ end
 
 if carbon then
 	-- Read-only (for now) physfs backend for carbon
-	-- TODO: LTN12 compatible reader
 	-- TODO: Maybe write compatibility?
 	local physfs = physfs or fs
 	function vfs.backends.physfs(drivename, path, ismounted)
@@ -209,6 +208,17 @@ if carbon then
 			exists = function(loc) return physfs.exists(getdir(loc)) end,
 			isdir = function(loc) return physfs.isDir(getdir(loc)) end,
 			read = function(loc) return physfs.readfile(getdir(loc)) end,
+			reader = function(loc)
+				local i = 1
+				return function()
+					local chunk, err = physfs.readat(getdir(loc), i, ltn12.BLOCKSIZE)
+					i = i + ltn12.BLOCKSIZE
+					if err or chunk == "" then
+						return nil
+					end
+					return chunk, i
+				end
+			end,
 			list = function(loc) return physfs.list(getdir(loc)) end,
 			modtime = function(loc) return physfs.modtime(getdir(loc)) end,
 			size = function(loc) return physfs.size(getdir(loc)) end,
@@ -219,6 +229,73 @@ if carbon then
 
 			-- deinit function
 			unmount = function() if not ismounted then physfs.unmount(base) end end,
+		}
+	end
+
+	function vfs.backends.gofs(drivename, fs, prefix)
+		if not fs then
+			e("Backend GOFS: Needs http.FileSystem.")
+		end
+
+		local cwd = "/"
+		local base = "/"..(prefix or "")
+		local function getdir(path)
+			return base .. abspath(path or ".", cwd)
+		end
+
+		return {
+			-- disabled modifying functions
+			write = function() e("Drive "..drivename..": writing disabled!") end,
+			mkdir = function() e("Drive "..drivename..": directory creation disabled!") end,
+			delete = function() e("Drive "..drivename..": file removal disabled!") end,
+			rename = function() e("Drive "..drivename..": renaming disabled!") end,
+
+			-- read only funcs
+			exists = function(loc) return carbon._filesystem_exists(fs, getdir(loc)) end,
+			isdir = function(loc) return carbon._filesystem_isdir(fs, getdir(loc)) end,
+			read = function(loc)
+				local str, err = carbon._filesystem_readfile(fs, getdir(loc))
+				if err then
+					return nil, err
+				end
+				return str
+			end,
+			reader = function(loc)
+				local i = 1
+				return function()
+					local chunk, err = carbon._filesystem_readat(fs, getdir(loc), i, ltn12.BLOCKSIZE)
+					i = i + ltn12.BLOCKSIZE
+					if err or chunk == "" then
+						return nil
+					end
+					return chunk, i
+				end
+			end,
+			list = function(loc)
+				local res, err = carbon._filesystem_list(fs, getdir(loc))
+				if err then
+					return nil, err
+				end
+				return luar.slice2table(res), nil
+			end,
+			modtime = function(loc)
+				local res, err = carbon._filesystem_modtime(fs, getdir(loc))
+				if err then
+					return nil, err
+				end
+				return res, nil
+			end,
+			size = function(loc)
+				local res, err = carbon._filesystem_size(fs, getdir(loc))
+				if err then
+					return nil, err
+				end
+				return res, nil
+			end,
+
+			-- generic functions
+			chdir = function(loc) cwd = abspath(loc, cwd) return cwd end,
+			getcwd = function(loc) return cwd end,
 		}
 	end
 
@@ -254,8 +331,10 @@ if carbon then
 				end
 			}
 			for k, v in pairs(luar.slice2table(kvstore._get(kvstore_key_base.."methods"))) do
-				tmp[v] = function(...)
-					return call(v, ...)
+				if not k == "unmount" then 
+					tmp[v] = function(...)
+						return call(v, ...)
+					end
 				end
 			end
 			return tmp

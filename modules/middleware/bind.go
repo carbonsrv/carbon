@@ -4,6 +4,10 @@
 package middleware
 
 import (
+	////
+	//  Standard packages
+	////
+
 	"bufio"
 	"bytes"
 	"crypto/tls"
@@ -15,20 +19,31 @@ import (
 	"math/rand"
 	"mime"
 	"net"
+	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"regexp"
 	"time"
 
-	"os/exec"
+	////
+	//  External
+	////
 
-	"github.com/DeedleFake/Go-PhysicsFS/physfs"
-	"github.com/GeertJohan/go.linenoise"
+	// Internal packages
 	"github.com/carbonsrv/carbon/modules/glue"
 	"github.com/carbonsrv/carbon/modules/helpers"
 	"github.com/carbonsrv/carbon/modules/scheduler"
 	"github.com/carbonsrv/carbon/modules/static"
+
+	// Binding of Go values to Lua
+	"github.com/vifino/golua/lua"
+	"github.com/vifino/luar"
+
+	// Generic
+	"github.com/DeedleFake/Go-PhysicsFS/physfs"
+	"github.com/GeertJohan/go.linenoise"
 	"github.com/fzzy/radix/redis"
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-runewidth"
@@ -36,8 +51,6 @@ import (
 	"github.com/pmylund/go-cache"
 	"github.com/shurcooL/github_flavored_markdown"
 	"github.com/vifino/contrib/gzip"
-	"github.com/vifino/golua/lua"
-	"github.com/vifino/luar"
 
 	// DB stuff
 	"database/sql"
@@ -64,7 +77,7 @@ func Bind(L *lua.State, root string) {
 	BindRedis(L)
 	BindSQL(L)
 	BindKVStore(L)
-	BindPhysFS(L)
+	BindFS(L)
 	BindIOEnhancements(L)
 	BindOSEnhancements(L)
 	BindThread(L)
@@ -173,8 +186,8 @@ func BindStatic(L *lua.State, cfe *cache.Cache) {
 	})
 }
 
-// BindPhysFS binds the physfs library functions.
-func BindPhysFS(L *lua.State) {
+// BindFS binds the physfs library and more generic http.FileSystem functions.
+func BindFS(L *lua.State) {
 	luar.Register(L, "carbon", luar.Map{ // PhysFS
 		"_physfs_mount":       physfs.Mount,
 		"_physfs_exists":      physfs.Exists,
@@ -194,13 +207,16 @@ func BindPhysFS(L *lua.State) {
 			}
 			return nil, errors.New("open " + name + ": no such file or directory")
 		},
-		"_physfs_readfile": func(file string) (string, error) {
-			if physfs.Exists(file) {
-				f, err := physfs.Open(file)
-				defer f.Close()
+		"_physfs_readfile": func(filename string) (string, error) {
+			if physfs.Exists(filename) {
+				// open and error if failure
+				f, err := physfs.Open(filename)
 				if err != nil {
 					return "", err
 				}
+				defer f.Close()
+
+				// get fileinfo
 				fi, err := f.Stat()
 				if err != nil {
 					return "", err
@@ -210,7 +226,7 @@ func BindPhysFS(L *lua.State) {
 				_, err = r.Read(buf)
 				if err != nil {
 					if err.Error() == "EOF" { // Hack. Sometimes, things just don't work. No idea why.
-						f2, _ := physfs.Open(file)
+						f2, _ := physfs.Open(filename)
 						buf := bytes.NewBuffer(nil)
 						io.Copy(buf, f2)
 						f.Close()
@@ -220,14 +236,30 @@ func BindPhysFS(L *lua.State) {
 				}
 				return string(buf), err
 			}
-			return "", errors.New(file + ": No such file or directory")
+			return "", errors.New(filename + ": No such file or directory")
 		},
-		"_physfs_modtime": func(name string) (int, error) {
+		"_physfs_readat": func(filename string, at, count int64) (string, error, int) {
+			if physfs.Exists(filename) {
+				f, err := physfs.Open(filename)
+				if err != nil {
+					return "", err, -1
+				}
+
+				// Read count bytes starting by at
+				buf := make([]byte, count)
+				f.Seek(at, os.SEEK_SET)
+				read, _ := f.Read(buf)
+
+				return string(buf[:read]), err, read
+			}
+			return "", errors.New(filename + ": No such file or directory"), -1
+		},
+		"_physfs_modtime": func(name string) (int64, error) {
 			mt, err := physfs.GetLastModTime(name)
 			if err != nil {
 				return -1, err
 			}
-			return int(mt.UTC().Unix()), nil
+			return mt.UTC().Unix(), nil
 		},
 		"_physfs_size": func(path string) (int64, error) {
 			f, err := physfs.Open(path)
@@ -240,6 +272,143 @@ func BindPhysFS(L *lua.State) {
 				return -1, err
 			}
 			return info.Size(), nil
+		},
+	})
+
+	luar.Register(L, "carbon", luar.Map{
+		"_filesystem_readfile": func(fs http.FileSystem, filename string) (string, error) {
+			// Open file, schedule cleanup and error if failure
+			f, err := fs.Open(filename)
+			if err != nil {
+				return "", err
+			}
+			defer f.Close()
+
+			// Stat to get size for allocating the buffer
+			fi, err := f.Stat()
+			if err != nil {
+				return "", err
+			}
+			r := bufio.NewReader(f)
+			buf := make([]byte, fi.Size())
+			_, err = r.Read(buf)
+			if err != nil {
+				if err.Error() == "EOF" { // Hack. Sometimes, things just don't work. No idea why.
+					f2, _ := fs.Open(filename)
+					buf := bytes.NewBuffer(nil)
+					io.Copy(buf, f2)
+					f2.Close()
+					return string(buf.Bytes()), nil
+				}
+				return "", err
+			}
+			return string(buf), err
+		},
+		"_filesystem_readat": func(fs http.FileSystem, filename string, at, count int64) (string, error, int) {
+			// Open file, schedule cleanup and return false if failure
+			f, err := fs.Open(filename)
+			if err != nil {
+				return "", err, -1
+			}
+			defer f.Close()
+
+			// Read count bytes starting by at
+			buf := make([]byte, count)
+			//read, err := f.ReadAt(buf, at)
+			if s, ok := f.(io.Seeker); ok {
+				s.Seek(at, os.SEEK_SET)
+			} else {
+				io.CopyN(ioutil.Discard, f, at)
+			}
+			read, _ := f.Read(buf)
+
+			return string(buf[:read]), err, read
+		},
+		"_filesystem_exists": func(fs http.FileSystem, filename string) bool {
+			// Open file, schedule cleanup and return status
+			f, err := fs.Open(filename)
+			if err != nil {
+				return false
+			}
+			f.Close()
+			return true
+		},
+		"_filesystem_isdir": func(fs http.FileSystem, filename string) bool {
+			// Open file, schedule cleanup and return false if failure
+			f, err := fs.Open(filename)
+			if err != nil {
+				return false
+			}
+			defer f.Close()
+
+			// get fileinfo
+			fi, err := f.Stat()
+			if err != nil {
+				return false
+			}
+
+			return fi.IsDir()
+		},
+		"_filesystem_modtime": func(fs http.FileSystem, filename string) (int64, error) {
+			// Open file, schedule cleanup, return if failure
+			f, err := fs.Open(filename)
+			if err != nil {
+				return -1, err
+			}
+
+			// get fileinfo
+			fi, err := f.Stat()
+			if err != nil {
+				return -1, err
+			}
+			return fi.ModTime().UTC().Unix(), nil
+		},
+		"_filesystem_size": func(fs http.FileSystem, filename string) (int64, error) {
+			// Open file, schedule cleanup and error if failure
+			f, err := fs.Open(filename)
+			if err != nil {
+				return -1, err
+			}
+			defer f.Close()
+
+			// Stat to get size for allocating the buffer
+			fi, err := f.Stat()
+			if err != nil {
+				return -1, err
+			}
+
+			return fi.Size(), nil
+		},
+		"_filesystem_list": func(fs http.FileSystem, dirname string) ([]string, error) {
+			// Open dirname and check if it is really a dir
+			f, err := fs.Open(dirname)
+			if err != nil {
+				return make([]string, 0), err
+			}
+			defer f.Close()
+
+			fi, err := f.Stat()
+			if err != nil {
+				fmt.Println("Stat")
+				return make([]string, 0), err
+			}
+
+			if fi.IsDir() == false {
+				fmt.Println("isdir")
+				return make([]string, 0), errors.New("dirname is not dir")
+			}
+
+			files, err := f.Readdir(-1)
+			if err != nil {
+				fmt.Println("readdir")
+				return make([]string, 0), err
+			}
+
+			list := make([]string, len(files))
+			for i := range files {
+				list[i] = files[i].Name()
+			}
+			return list, nil
 		},
 	})
 }
@@ -259,12 +428,12 @@ func BindIOEnhancements(L *lua.State) {
 			return list, nil
 		}),
 		"_io_glob": filepath.Glob,
-		"_io_modtime": (func(path string) (int, error) {
+		"_io_modtime": (func(path string) (int64, error) {
 			info, err := os.Stat(path)
 			if err != nil {
 				return -1, err
 			}
-			return int(info.ModTime().UTC().Unix()), nil
+			return info.ModTime().UTC().Unix(), nil
 		}),
 		"_io_isDir": func(path string) bool {
 			info, err := os.Stat(path)
@@ -957,8 +1126,8 @@ func BindTermbox(L *lua.State) {
 // BindOther binds misc things
 func BindOther(L *lua.State) {
 	luar.Register(L, "", luar.Map{
-		"unixtime": (func() int {
-			return int(time.Now().UTC().Unix())
+		"unixtime": (func() int64 {
+			return time.Now().UTC().Unix()
 		}),
 		"regexp": regexp.Compile,
 	})

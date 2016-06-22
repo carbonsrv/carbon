@@ -67,8 +67,12 @@ function sql.open(driver, dsn) -- generates a database wrapper
 			do_ping(self)
 
 			self.in_transaction = true
-			self.con = self.main_con.Begin()
-			
+			local tx, err = self.main_con.Begin()
+			if err then
+				return nil, err
+			end
+			self.con = tx
+
 			if fn then
 				local docommit = fn(self)
 				if docommit == true then

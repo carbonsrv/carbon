@@ -6,25 +6,22 @@ function physfs.mount(dir, mp, app)
 		if err then
 			error(err, 0)
 		end
-	else
-		error("No dir given.")
 	end
+	error("No dir given.")
 end
 
 function physfs.exists(file)
 	if file then
 		return carbon._physfs_exists(file)
-	else
-		error("No file given.")
 	end
+	error("No file given.")
 end
 
 function physfs.isDir(path)
 	if path then
 		return carbon._physfs_isDir(path)
-	else
-		error("No path given.")
 	end
+	error("No path given.")
 end
 
 function physfs.mkdir(path)
@@ -33,9 +30,8 @@ function physfs.mkdir(path)
 		if err then
 			error(err, 0)
 		end
-	else
-		error("No path given.")
 	end
+	error("No path given.")
 end
 
 function physfs.umount(path)
@@ -44,9 +40,8 @@ function physfs.umount(path)
 		if err then
 			error(err, 0)
 		end
-	else
-		error("No path given.")
 	end
+	error("No path given.")
 end
 
 function physfs.delete(path)
@@ -55,9 +50,8 @@ function physfs.delete(path)
 		if err then
 			error(err, 0)
 		end
-	else
-		error("No path given.")
 	end
+	error("No path given.")
 end
 
 function physfs.setWriteDir(path)
@@ -66,9 +60,8 @@ function physfs.setWriteDir(path)
 		if err then
 			error(err, 0)
 		end
-	else
-		error("No path given.")
 	end
+	error("No path given.")
 end
 
 function physfs.getWriteDir()
@@ -82,9 +75,8 @@ function physfs.list(path)
 			return nil, err
 		end
 		return luar.slice2table(list)
-	else
-		error("No path given.")
 	end
+	error("No path given.")
 end
 
 function physfs.modtime(path)
@@ -94,9 +86,8 @@ function physfs.modtime(path)
 			return nil, err
 		end
 		return mt
-	else
-		error("No path given.")
 	end
+	error("No path given.")
 end
 
 function physfs.readfile(path)
@@ -106,9 +97,19 @@ function physfs.readfile(path)
 			return nil, err
 		end
 		return content
-	else
-		error("No path given.")
 	end
+	error("No path given.")
+end
+
+function physfs.readat(path, at, count)
+	if path and at and count then
+		local s, err, count = carbon._physfs_readat(path, at, count)
+		if err then
+			return nil, err
+		end
+		return s, nil, count
+	end
+	error("No path given.")
 end
 
 function physfs.size(path)
@@ -118,9 +119,8 @@ function physfs.size(path)
 			return nil, err
 		end
 		return size
-	else
-		error("No path given.")
 	end
+	error("No path given.")
 end
 
 return physfs
