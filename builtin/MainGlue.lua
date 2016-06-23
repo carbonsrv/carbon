@@ -181,7 +181,7 @@ require("wrappers.globalwrappers")
 
 -- VFS madness
 require("wrappers.physfs")
-require("vfs")
+vfs = require("vfs")
 vfs.new("root", "physfs", nil, true)
 
 local wrappers = {

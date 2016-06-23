@@ -6,7 +6,7 @@ local function do_ping(self)
 	if not self.in_tranaction then
 		local err = self.main_con.Ping()
 		if err then
-			error("SQL: Database connection ping failed.", 0)
+			error("SQL: Database connection ping failed: "..err, 0)
 		end
 	end
 end

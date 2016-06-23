@@ -1,6 +1,6 @@
 package main
 
-//go:generate go-bindata -nomemcopy -o modules/glue/generated_lua.go -pkg=glue -prefix "./builtin" ./builtin ./builtin/3rdparty ./builtin/libs ./builtin/libs/wrappers
+//go:generate make glue
 
 import (
 	"bufio"
