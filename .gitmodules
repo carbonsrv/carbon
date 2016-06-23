@@ -1,0 +1,3 @@
+[submodule "vfs"]
+	path = builtin/libs/vfs
+	url = https://github.com/carbonsrv/vfs
