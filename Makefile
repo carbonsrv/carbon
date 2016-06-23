@@ -4,6 +4,7 @@ GOFMT?=gofmt
 GO_BINDATA?=go-bindata
 STRIP?=strip --strip-all
 UPX?=upx --lzma -9
+GIT?=git
 
 # Vars
 GLUE_DIRS=$(shell find ./builtin -type d | grep -v ".git")
@@ -11,12 +12,16 @@ GLUE_FILES=$(shell find ./builtin -type f | grep -v ".git")
 GLUE_OUTPUT=modules/glue/generated_glue.go
 
 all: carbon
-carbon: $(GLUE_OUTPUT) fmt
+carbon: submodules $(GLUE_OUTPUT) fmt
 	$(GO) build -o $@ -v ./carbon.go
 
-$(GLUE_OUTPUT): $(GLUE_FILES)
+$(GLUE_OUTPUT): submodules $(GLUE_FILES)
 	$(GO_BINDATA) -nomemcopy -o $(GLUE_OUTPUT) -pkg=glue -prefix "./builtin" $(GLUE_DIRS)
 	$(GOFMT) -w -s modules/glue
+
+submodules: .gitmodules builtin/libs/vfs
+	$(GIT) submodule init
+	$(GIT) submodule update
 
 fmt:
 	$(GOFMT) -w -s .
