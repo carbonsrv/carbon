@@ -9,40 +9,21 @@ package.cpath = webroot_path.."?.so;"..webroot_path.."loadall.so;"..package.cpat
 -- Custom package loaders so that you can require the libraries built into Carbon.
 local cache_do_cache_prefix = "carbon:do_cache:"
 local cache_dont_cache_vfs = "carbon:dont_cache:vfs"
-local cache_key_prefix = "carbon:lua_module:"
-local cache_key_app = cache_key_prefix .. "app:" -- for custom stuff
-local cache_key_app_location = cache_key_prefix .. "app_location:"
-local cache_key_asset = cache_key_prefix .. "asset:"
-local cache_key_asset_location = cache_key_prefix .. "asset_location:"
-local cache_key_vfs = cache_key_prefix .. "vfs:"
-local cache_key_vfs_location = cache_key_prefix .. "vfs_location:"
+local cache_key_bc = "carbon:lua_module:bc:"
+local cache_key_loc = "carbon:lua_module:loc:"
 
 -- Load bc cache from kvstore
 function loadcache(name)
 	local modname = tostring(name):gsub("%.", "/")
 
-	local f_bc = kvstore._get(cache_key_app..modname)
+	local f_bc = kvstore._get(cache_key_bc..modname)
 	if f_bc then
-		local f, err = loadstring(f_bc, kvstore._get(cache_key_app_location..modname))
+		local f, err = loadstring(f_bc, kvstore._get(cache_key_loc..modname))
 		if err then error(err, 0) end
 		return f
 	end
 
-	local f_bc = kvstore._get(cache_key_asset..modname)
-	if f_bc then
-		local f, err = loadstring(f_bc, kvstore._get(cache_key_asset_location..modname))
-		if err then error(err, 0) end
-		return f
-	end
-
-	local f_bc = kvstore._get(cache_key_vfs..modname)
-	if f_bc then
-		local f, err = loadstring(f_bc, kvstore._get(cache_key_vfs_location..modname))
-		if err then error(err, 0) end
-		return f
-	end
-	return "\n\tno stored bytecode in kvstore under '"..cache_key_asset..modname.."'" ..
-		"\n\tno stored bytecode in kvstore under '"..cache_key_vfs..modname.."'"
+	return "\n\tno stored bytecode in kvstore under '"..cache_key_bc..modname.."'"
 end
 
 local function loadassets(name)
@@ -57,8 +38,8 @@ local function loadassets(name)
 		-- Compile and return the module
 		local f, err = loadstring(src, location_libs)
 		if err then error(err, 0) end
-		kvstore._set(cache_key_asset..modname, string.dump(f, strip))
-		kvstore._set(cache_key_asset_location..modname, location_libs)
+		kvstore._set(cache_key_bc..modname, string.dump(f, strip))
+		kvstore._set(cache_key_loc..modname, location_libs)
 		return f
 	end
 
@@ -68,8 +49,8 @@ local function loadassets(name)
 		-- Compile and return the module
 		local f, err = loadstring(src, location_libs)
 		if err then error(err, 0) end
-		kvstore._set(cache_key_asset..modname, string.dump(f, strip))
-		kvstore._set(cache_key_asset_location..modname, location_init_libs)
+		kvstore._set(cache_key_bc..modname, string.dump(f, strip))
+		kvstore._set(cache_key_loc..modname, location_init_libs)
 		return f
 	end
 
@@ -79,8 +60,8 @@ local function loadassets(name)
 		-- Compile and return the module
 		local f, err = loadstring(src, location_3rdparty)
 		if err then error(err, 0) end
-		kvstore._set(cache_key_asset..modname, string.dump(f, strip))
-		kvstore._set(cache_key_asset_location..modname, location_3rdparty)
+		kvstore._set(cache_key_bc..modname, string.dump(f, strip))
+		kvstore._set(cache_key_loc..modname, location_3rdparty)
 		return f
 	end
 
@@ -90,8 +71,8 @@ local function loadassets(name)
 		-- Compile and return the module
 		local f, err = loadstring(src, location_3rdparty)
 		if err then error(err, 0) end
-		kvstore._set(cache_key_asset..modname, string.dump(f, strip))
-		kvstore._set(cache_key_asset_location..modname, location_init_3rdparty)
+		kvstore._set(cache_key_bc..modname, string.dump(f, strip))
+		kvstore._set(cache_key_loc..modname, location_init_3rdparty)
 		return f
 	end
 
@@ -101,43 +82,11 @@ local function loadassets(name)
 		"\n\tno thirdparty asset '/" .. location_init_3rdparty .. "' (not compiled in)"
 end
 
--- Load from vfs default drive and cache if not disabled for module
-local function loadvfs(name)
-	local modname = tostring(name):gsub("%.", "/")
-	local location = modname .. ".lua"
-	local src, err1 = vfs.read(location)
-	if src then
-		-- Compile and return the module
-		local f, err = loadstring(src, location)
-		if err then error(err, 0) end
-		if kvstore._get(cache_do_cache_prefix..modname) ~= false and kvstore._get(cache_dont_cache_vfs) ~= true then
-			kvstore._set(cache_key_vfs..modname, string.dump(f))
-			kvstore._set(cache_key_vfs_location..modname, location)
-		end
-		return f
-	end
-
-	local location_init = modname .. "/init.lua"
-	local src, err2 = vfs.read(location_init)
-	if src then
-		-- Compile and return the module
-		local f, err = loadstring(src, location)
-		if err then error(err, 0) end
-		if kvstore._get(cache_do_cache_prefix..modname) ~= false and kvstore._get(cache_dont_cache_vfs) ~= true then
-			kvstore._set(cache_key_vfs..modname, string.dump(f))
-			kvstore._set(cache_key_vfs_location..modname, location_init)
-		end
-		return f
-	end
-	return "\n\tno file '" .. location .. "' in webroot"..
-		"\n\tno file '" .. location_init .. "' in webroot"
-end
-
 -- Flush require cache
 function carbon.flush_cache(name)
 	local modname = tostring(name):gsub("%.", "/")
-	kvstore._del(cache_key_vfs..modname)
-	kvstore._del(cache_key_vfs_location..modname)
+	kvstore._del(cache_key_bc..modname)
+	kvstore._del(cache_key_loc..modname)
 	package.loaded[modname] = nil
 end
 -- Set the module to not cache
@@ -153,7 +102,16 @@ end
 -- Install the loaders so that it's called just before the normal Lua loaders
 table.insert(package.loaders, 2, loadcache)
 table.insert(package.loaders, 3, loadassets)
-table.insert(package.loaders, 4, loadvfs)
+
+-- Global wrappers
+require("wrappers.globalwrappers")
+
+-- VFS madness
+require("wrappers.physfs")
+vfs = require("vfs")
+vfs.new("root", "physfs", nil, true)
+vfs.searchpath("root:/?.lua;root:/?/init.lua;/?.lua;/?/init.lua")
+table.insert(package.loaders, 4, vfs.loader)
 
 -- Load wrappers
 -- LazyLoader! An automatic lazy loading generator.
@@ -176,13 +134,6 @@ function carbon.lazyload_mark(tablename, path)
 	})
 	_G[tablename] = old
 end
-
-require("wrappers.globalwrappers")
-
--- VFS madness
-require("wrappers.physfs")
-vfs = require("vfs")
-vfs.new("root", "physfs", nil, true)
 
 local wrappers = {
 	"fs",

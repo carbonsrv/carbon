@@ -22,7 +22,6 @@ $(GLUE_OUTPUT): submodules $(GLUE_FILES)
 submodules: .gitmodules builtin/libs/vfs
 	$(GIT) submodule init
 	$(GIT) submodule foreach "git checkout master && git pull"
-	$(GIT) submodule update
 
 fmt:
 	$(GOFMT) -w -s .
