@@ -7,8 +7,8 @@ UPX?=upx --lzma -9
 GIT?=git
 
 # Vars
-GLUE_DIRS=$(shell find ./builtin -type d | grep -v ".git")
-GLUE_FILES=$(shell find ./builtin -type f | grep -v ".git")
+GLUE_DIRS=$(shell find ./builtin -type d | grep -v ".git" | grep -v "spec")
+GLUE_FILES=$(shell find ./builtin -type f | grep -v ".git" | grep -v "spec")
 GLUE_OUTPUT=modules/glue/generated_glue.go
 
 all: carbon

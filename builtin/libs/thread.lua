@@ -70,7 +70,7 @@ function thread.run(fn, ...)
 		local threadfn = args.fn
 		local thread_args = args.args
 		args = nil
-		com.send(thrcom, msgpack.pack({threadfn(unpack(thread_args, 1, thread_args.n))}))
+		com.send(thrcom, msgpack.pack({pcall(threadfn, unpack(thread_args, 1, thread_args.n))}))
 	end)
 	local mpbinds_raw, err = msgpack.pack({
 		["fn"] = fn,
