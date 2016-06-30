@@ -23,8 +23,6 @@ ENV GOPATH /usr/local/go
 
 RUN \
 	echo http://dl-4.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories \
-	&& echo "http://repo.i0i0.me/alpine/edge" >> /etc/apk/repositories \
-	&& cd /etc/apk/keys && wget http://repo.i0i0.me/alpine/adinator1999@gmail.com-5675c1f0.rsa.pub \
 	&& apk update \
 	&& apk upgrade \
 	&& apk add --update \
