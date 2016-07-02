@@ -110,7 +110,6 @@ require("wrappers.globalwrappers")
 require("wrappers.physfs")
 vfs = require("vfs")
 vfs.new("root", "physfs", nil, true)
-vfs.searchpath("root:/?.lua;root:/?/init.lua;/?.lua;/?/init.lua")
 table.insert(package.loaders, 4, vfs.loader)
 
 -- Load wrappers
