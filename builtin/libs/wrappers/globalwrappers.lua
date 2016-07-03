@@ -18,3 +18,7 @@ getmetatable("").__mod = function(a, b)
 		return string.format(a, b)
 	end
 end
+
+-- Previous Carbon version had unixtime() as a special function since not on every single platform os.time() returns a unix timestamp.
+-- However, most platforms do. Any POSIX-y one, at least.
+unixtime = os.time

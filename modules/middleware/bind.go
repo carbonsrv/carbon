@@ -1126,9 +1126,6 @@ func BindTermbox(L *lua.State) {
 // BindOther binds misc things
 func BindOther(L *lua.State) {
 	luar.Register(L, "", luar.Map{
-		"unixtime": (func() int64 {
-			return time.Now().UTC().Unix()
-		}),
 		"regexp": regexp.Compile,
 	})
 	luar.Register(L, "carbon", luar.Map{
