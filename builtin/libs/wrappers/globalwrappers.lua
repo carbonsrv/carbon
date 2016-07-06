@@ -19,6 +19,15 @@ getmetatable("").__mod = function(a, b)
 	end
 end
 
+-- Allow character access using overloading
+getmetatable("").__index = function(s,k)
+	if type(k)=="number" then
+		return string.sub(s,k,k)
+	else
+		return string[k]
+	end
+end
+
 -- Previous Carbon version had unixtime() as a special function since not on every single platform os.time() returns a unix timestamp.
 -- However, most platforms do. Any POSIX-y one, at least.
 unixtime = os.time
