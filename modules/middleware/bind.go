@@ -186,33 +186,38 @@ func BindStatic(L *lua.State, cfe *cache.Cache) {
 	})
 }
 
+var physfs_fhandles = make(map[string]*physfs.File)
+var physfs_fhandles_used = make(map[string]int)
+
+func physfs_openfile(filename string) (*physfs.File, error) {
+	fh, ok := physfs_fhandles[filename]
+	if ok {
+		return fh, nil
+	}
+	fh, err := physfs.Open(filename)
+	if err != nil {
+		physfs_fhandles[filename] = fh
+		return fh, nil
+	}
+	return fh, err
+}
+func physfs_needfile(filename string) {
+	physfs_fhandles_used[filename] += 1
+}
+func physfs_closefile(filename string) error {
+	fh, ok := physfs_fhandles[filename]
+	if ok {
+		if physfs_fhandles_used[filename] == 1 {
+			delete(physfs_fhandles, filename)
+			delete(physfs_fhandles_used, filename)
+			return fh.Close()
+		}
+	}
+	return errors.New("File not opened.")
+}
+
 // BindFS binds the physfs library and more generic http.FileSystem functions.
 func BindFS(L *lua.State) {
-	fhandles := make(map[string]*physfs.File)
-	fhandles_used := make(map[string]int)
-	fo := func(filename string) (*physfs.File, error) {
-		fh, ok := fhandles[filename]
-		if ok {
-			return fh, nil
-		}
-		fh, err := physfs.Open(filename)
-		fhandles[filename] = fh
-		return fh, err
-	}
-	fuser := func(filename string) {
-		fhandles_used[filename] += 1
-	}
-	fc := func(filename string) error {
-		fh, ok := fhandles[filename]
-		if ok {
-			if fhandles_used[filename] == 1 {
-				delete(fhandles, filename)
-				delete(fhandles_used, filename)
-				return fh.Close()
-			}
-		}
-		return errors.New("File not opened.")
-	}
 
 	luar.Register(L, "carbon", luar.Map{ // PhysFS
 		"_physfs_mount":       physfs.Mount,
@@ -236,12 +241,12 @@ func BindFS(L *lua.State) {
 		"_physfs_readfile": func(filename string) (string, error) {
 			if physfs.Exists(filename) {
 				// open and error if failure
-				fuser(filename)
-				f, err := fo(filename)
+				physfs_needfile(filename)
+				f, err := physfs_openfile(filename)
 				if err != nil {
 					return "", err
 				}
-				defer fc(filename)
+				defer physfs_closefile(filename)
 
 				// get fileinfo
 				fi, err := f.Stat()
@@ -253,11 +258,11 @@ func BindFS(L *lua.State) {
 				_, err = r.Read(buf)
 				if err != nil {
 					if err.Error() == "EOF" { // Hack. Sometimes, things just don't work. No idea why.
-						fuser(filename)
-						f2, _ := fo(filename)
+						physfs_needfile(filename)
+						f2, _ := physfs_openfile(filename)
 						buf := bytes.NewBuffer(nil)
 						io.Copy(buf, f2)
-						fc(filename)
+						physfs_closefile(filename)
 						return string(buf.Bytes()), nil
 					}
 					return "", err
@@ -268,7 +273,7 @@ func BindFS(L *lua.State) {
 		},
 		"_physfs_readat": func(filename string, at, count int64) (string, error, int) {
 			if physfs.Exists(filename) {
-				f, err := fo(filename)
+				f, err := physfs_openfile(filename)
 				if err != nil {
 					return "", err, -1
 				}
@@ -284,7 +289,7 @@ func BindFS(L *lua.State) {
 		},
 		"_physfs_readn": func(filename string, count int64) (string, error, int) {
 			if physfs.Exists(filename) {
-				f, err := fo(filename)
+				f, err := physfs_openfile(filename)
 				if err != nil {
 					return "", err, -1
 				}
@@ -305,9 +310,9 @@ func BindFS(L *lua.State) {
 			return mt.UTC().Unix(), nil
 		},
 		"_physfs_size": func(path string) (int64, error) {
-			fuser(path)
-			f, err := fo(path)
-			defer fc(path)
+			physfs_needfile(path)
+			f, err := physfs_openfile(path)
+			defer physfs_closefile(path)
 			if err != nil {
 				return -1, err
 			}
@@ -317,8 +322,8 @@ func BindFS(L *lua.State) {
 			}
 			return info.Size(), nil
 		},
-		"_physfs_needfile": fuser,
-		"_physfs_close":    fc,
+		"_physfs_needfile": physfs_needfile,
+		"_physfs_close":    physfs_closefile,
 	})
 
 	luar.Register(L, "carbon", luar.Map{
@@ -510,9 +515,13 @@ func BindOSEnhancements(L *lua.State) {
 		"_os_sleep": (func(milliseconds int64) {
 			time.Sleep(time.Duration(milliseconds) * time.Millisecond)
 		}),
-		"_os_chdir":   os.Chdir,
-		"_os_abspath": filepath.Abs,
-		"_os_pwd":     os.Getwd,
+		"_os_chdir":     os.Chdir,
+		"_os_abspath":   filepath.Abs,
+		"_os_pwd":       os.Getwd,
+		"_os_removeall": os.RemoveAll,
+		"_os_mkdir": func(path string, mode uint32) error {
+			return os.Mkdir(path, os.FileMode(mode))
+		},
 	})
 }
 

@@ -6,22 +6,23 @@ function physfs.mount(dir, mp, app)
 		if err then
 			error(err, 0)
 		end
+		return true
 	end
-	error("No dir given.")
+	error("physfs: mount: No dir given.")
 end
 
 function physfs.exists(file)
 	if file then
 		return carbon._physfs_exists(file)
 	end
-	error("No file given.")
+	error("physfs: exists: No file given.")
 end
 
 function physfs.isDir(path)
 	if path then
 		return carbon._physfs_isDir(path)
 	end
-	error("No path given.")
+	error("physfs: isDir: No path given.")
 end
 
 function physfs.mkdir(path)
@@ -30,18 +31,20 @@ function physfs.mkdir(path)
 		if err then
 			error(err, 0)
 		end
+		return true
 	end
-	error("No path given.")
+	error("physfs: mkdir: No path given.")
 end
 
 function physfs.umount(path)
 	if path then
 		local err = carbon._physfs_umount(path)
 		if err then
-			error(err, 0)
+			return err
 		end
+		return true
 	end
-	error("No path given.")
+	error("physfs: umount: No path given.")
 end
 
 function physfs.delete(path)
@@ -50,8 +53,9 @@ function physfs.delete(path)
 		if err then
 			error(err, 0)
 		end
+		return true
 	end
-	error("No path given.")
+	error("physfs: delete: No path given.")
 end
 
 function physfs.setWriteDir(path)
@@ -60,8 +64,9 @@ function physfs.setWriteDir(path)
 		if err then
 			error(err, 0)
 		end
+		return true
 	end
-	error("No path given.")
+	error("physfs: setWriteDir: No path given.")
 end
 
 function physfs.getWriteDir()
@@ -76,7 +81,7 @@ function physfs.list(path)
 		end
 		return luar.slice2table(list)
 	end
-	error("No path given.")
+	error("physfs: list: No path given.")
 end
 
 function physfs.modtime(path)
@@ -87,7 +92,7 @@ function physfs.modtime(path)
 		end
 		return mt
 	end
-	error("No path given.")
+	error("physfs: modtime: No path given.")
 end
 
 function physfs.readfile(path)
@@ -98,7 +103,7 @@ function physfs.readfile(path)
 		end
 		return content
 	end
-	error("No path given.")
+	error("physfs: readfile: No path given.")
 end
 
 function physfs.readat(path, at, count)
@@ -109,7 +114,7 @@ function physfs.readat(path, at, count)
 		end
 		return s, nil, count
 	end
-	error("No path given.")
+	error("physfs: readat: No path given.")
 end
 function physfs.readn(path, count)
 	if path and count then
@@ -119,7 +124,7 @@ function physfs.readn(path, count)
 		end
 		return s, nil, count
 	end
-	error("No path given.")
+	error("physfs: readn: No path given.")
 end
 
 function physfs.size(path)
@@ -130,21 +135,21 @@ function physfs.size(path)
 		end
 		return size
 	end
-	error("No path given.")
+	error("physfs: size: No path given.")
 end
 
 function physfs.needfile(path)
 	if path then
 		return carbon._physfs_needfile(path)
 	end
-	error("No path given.")
+	error("physfs: needfile: No path given.")
 end
 
 function physfs.close(path)
 	if path then
 		return carbon._physfs_close(path)
 	end
-	error("No path given.")
+	error("physfs: close: No path given.")
 end
 
 return physfs
