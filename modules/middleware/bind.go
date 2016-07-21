@@ -188,6 +188,25 @@ func BindStatic(L *lua.State, cfe *cache.Cache) {
 
 // BindFS binds the physfs library and more generic http.FileSystem functions.
 func BindFS(L *lua.State) {
+	fhandles := make(map[string]*physfs.File)
+	fo := func(filename string) (*physfs.File, error) {
+		fh, ok := fhandles[filename]
+		if ok {
+			return fh, nil
+		}
+		fh, err := physfs.Open(filename)
+		fhandles[filename] = fh
+		return fh, err
+	}
+	fc := func(filename string) error {
+		fh, ok := fhandles[filename]
+		if ok {
+			delete(fhandles, filename)
+			return fh.Close()
+		}
+		return errors.New("File not opened.")
+	}
+
 	luar.Register(L, "carbon", luar.Map{ // PhysFS
 		"_physfs_mount":       physfs.Mount,
 		"_physfs_exists":      physfs.Exists,
@@ -210,11 +229,11 @@ func BindFS(L *lua.State) {
 		"_physfs_readfile": func(filename string) (string, error) {
 			if physfs.Exists(filename) {
 				// open and error if failure
-				f, err := physfs.Open(filename)
+				f, err := fo(filename)
 				if err != nil {
 					return "", err
 				}
-				defer f.Close()
+				defer fc(filename)
 
 				// get fileinfo
 				fi, err := f.Stat()
@@ -226,10 +245,10 @@ func BindFS(L *lua.State) {
 				_, err = r.Read(buf)
 				if err != nil {
 					if err.Error() == "EOF" { // Hack. Sometimes, things just don't work. No idea why.
-						f2, _ := physfs.Open(filename)
+						f2, _ := fo(filename)
 						buf := bytes.NewBuffer(nil)
 						io.Copy(buf, f2)
-						f.Close()
+						fc(filename)
 						return string(buf.Bytes()), nil
 					}
 					return "", err
@@ -240,7 +259,7 @@ func BindFS(L *lua.State) {
 		},
 		"_physfs_readat": func(filename string, at, count int64) (string, error, int) {
 			if physfs.Exists(filename) {
-				f, err := physfs.Open(filename)
+				f, err := fo(filename)
 				if err != nil {
 					return "", err, -1
 				}
@@ -248,6 +267,21 @@ func BindFS(L *lua.State) {
 				// Read count bytes starting by at
 				buf := make([]byte, count)
 				f.Seek(at, os.SEEK_SET)
+				read, _ := f.Read(buf)
+
+				return string(buf[:read]), err, read
+			}
+			return "", errors.New(filename + ": No such file or directory"), -1
+		},
+		"_physfs_readn": func(filename string, count int64) (string, error, int) {
+			if physfs.Exists(filename) {
+				f, err := fo(filename)
+				if err != nil {
+					return "", err, -1
+				}
+
+				// Read count bytes
+				buf := make([]byte, count)
 				read, _ := f.Read(buf)
 
 				return string(buf[:read]), err, read
@@ -262,8 +296,8 @@ func BindFS(L *lua.State) {
 			return mt.UTC().Unix(), nil
 		},
 		"_physfs_size": func(path string) (int64, error) {
-			f, err := physfs.Open(path)
-			defer f.Close()
+			f, err := fo(path)
+			defer fc(path)
 			if err != nil {
 				return -1, err
 			}
@@ -273,6 +307,7 @@ func BindFS(L *lua.State) {
 			}
 			return info.Size(), nil
 		},
+		"_physfs_close": fc,
 	})
 
 	luar.Register(L, "carbon", luar.Map{

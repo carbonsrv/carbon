@@ -111,6 +111,16 @@ function physfs.readat(path, at, count)
 	end
 	error("No path given.")
 end
+function physfs.readn(path, count)
+	if path and count then
+		local s, err, count = carbon._physfs_readn(path, count)
+		if err then
+			return nil, err
+		end
+		return s, nil, count
+	end
+	error("No path given.")
+end
 
 function physfs.size(path)
 	if path then
@@ -119,6 +129,13 @@ function physfs.size(path)
 			return nil, err
 		end
 		return size
+	end
+	error("No path given.")
+end
+
+function physfs.close(path)
+	if path then
+		return carbon._physfs_close(path)
 	end
 	error("No path given.")
 end
