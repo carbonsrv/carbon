@@ -133,6 +133,13 @@ function physfs.size(path)
 	error("No path given.")
 end
 
+function physfs.needfile(path)
+	if path then
+		return carbon._physfs_needfile(path)
+	end
+	error("No path given.")
+end
+
 function physfs.close(path)
 	if path then
 		return carbon._physfs_close(path)

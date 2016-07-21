@@ -189,6 +189,7 @@ func BindStatic(L *lua.State, cfe *cache.Cache) {
 // BindFS binds the physfs library and more generic http.FileSystem functions.
 func BindFS(L *lua.State) {
 	fhandles := make(map[string]*physfs.File)
+	fhandles_used := make(map[string]int)
 	fo := func(filename string) (*physfs.File, error) {
 		fh, ok := fhandles[filename]
 		if ok {
@@ -198,11 +199,17 @@ func BindFS(L *lua.State) {
 		fhandles[filename] = fh
 		return fh, err
 	}
+	fuser := func(filename string) {
+		fhandles_used[filename] += 1
+	}
 	fc := func(filename string) error {
 		fh, ok := fhandles[filename]
 		if ok {
-			delete(fhandles, filename)
-			return fh.Close()
+			if fhandles_used[filename] == 1 {
+				delete(fhandles, filename)
+				delete(fhandles_used, filename)
+				return fh.Close()
+			}
 		}
 		return errors.New("File not opened.")
 	}
@@ -229,6 +236,7 @@ func BindFS(L *lua.State) {
 		"_physfs_readfile": func(filename string) (string, error) {
 			if physfs.Exists(filename) {
 				// open and error if failure
+				fuser(filename)
 				f, err := fo(filename)
 				if err != nil {
 					return "", err
@@ -245,6 +253,7 @@ func BindFS(L *lua.State) {
 				_, err = r.Read(buf)
 				if err != nil {
 					if err.Error() == "EOF" { // Hack. Sometimes, things just don't work. No idea why.
+						fuser(filename)
 						f2, _ := fo(filename)
 						buf := bytes.NewBuffer(nil)
 						io.Copy(buf, f2)
@@ -296,6 +305,7 @@ func BindFS(L *lua.State) {
 			return mt.UTC().Unix(), nil
 		},
 		"_physfs_size": func(path string) (int64, error) {
+			fuser(path)
 			f, err := fo(path)
 			defer fc(path)
 			if err != nil {
@@ -307,7 +317,8 @@ func BindFS(L *lua.State) {
 			}
 			return info.Size(), nil
 		},
-		"_physfs_close": fc,
+		"_physfs_needfile": fuser,
+		"_physfs_close":    fc,
 	})
 
 	luar.Register(L, "carbon", luar.Map{
