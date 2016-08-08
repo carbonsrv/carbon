@@ -23,7 +23,7 @@ end
 
 function os.sleep(secs)
 	if tonumber(secs) then
-		carbon._os_sleep(tonumber(secs)*1000)
+		return carbon._os_sleep(tonumber(secs)*1000)
 	end
 	error("secs not a number!")
 end
